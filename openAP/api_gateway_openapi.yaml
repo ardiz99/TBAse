@@ -1,0 +1,25 @@
+openapi: 3.0.1
+info:
+  title: Gacha Game API Gateway
+  version: 1.0.0
+  description: API gateway for the Gacha game microservices.
+
+paths:
+  /roll:
+    get:
+      summary: Roll a gacha item
+      description: Retrieve a random gacha item based on rarity distribution.
+      responses:
+        '200':
+          description: A rolled gacha item.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rarity:
+                    type: string
+                    description: The rarity level of the rolled item.
+                  image:
+                    type: string
+                    description: URL or path of the gacha item image.

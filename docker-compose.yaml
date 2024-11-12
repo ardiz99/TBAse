@@ -60,6 +60,42 @@ services:
       - DATABASE_PASSWORD=gachapassword
       - DATABASE_NAME=gachadb
 
+  # Swagger UI for auth_service
+  swagger-ui-auth:
+    image: swaggerapi/swagger-ui
+    ports:
+      - "8081:8080"
+    environment:
+      SWAGGER_JSON: /openAP/auth_service_openapi.yaml
+    volumes:
+      - ./openAP:/openAP
+    networks:
+      - gacha-network
+
+  # Swagger UI for gacha_service
+  swagger-ui-gacha:
+    image: swaggerapi/swagger-ui
+    ports:
+      - "8082:8080"
+    environment:
+      SWAGGER_JSON: /openAP/gacha_service_openapi.yaml
+    volumes:
+      - ./openAP:/openAP
+    networks:
+      - gacha-network
+
+  # Swagger UI for auction_service
+  swagger-ui-auction:
+    image: swaggerapi/swagger-ui
+    ports:
+      - "8083:8080"
+    environment:
+      SWAGGER_JSON: /openAP/auction_service_openapi.yaml
+    volumes:
+      - ./openAP:/openAP
+    networks:
+      - gacha-network
+
 networks:
   gacha-network:
 
