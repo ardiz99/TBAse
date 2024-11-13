@@ -60,7 +60,7 @@ services:
       - DATABASE_PASSWORD=gachapassword
       - DATABASE_NAME=gachadb
 
-  # Swagger UI for auth_service
+  # Swagger UI per auth_service
   swagger-ui-auth:
     image: swaggerapi/swagger-ui
     ports:
@@ -72,7 +72,7 @@ services:
     networks:
       - gacha-network
 
-  # Swagger UI for gacha_service
+  # Swagger UI per gacha_service
   swagger-ui-gacha:
     image: swaggerapi/swagger-ui
     ports:
@@ -84,7 +84,7 @@ services:
     networks:
       - gacha-network
 
-  # Swagger UI for auction_service
+  # Swagger UI per auction_service
   swagger-ui-auction:
     image: swaggerapi/swagger-ui
     ports:

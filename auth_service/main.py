@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from authlib.jose import JsonWebToken, JWTClaims, JoseError
+from authlib.jose import JsonWebToken, JoseError
 import mysql.connector
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -8,27 +8,38 @@ app = Flask(__name__)
 
 # Configure JWT with Authlib
 jwt = JsonWebToken(['HS256'])
-SECRET_KEY = "your-secret-key"  # This should be kept secure
+SECRET_KEY = "your-secret-key"  # This should be stored securely
 
 # Database connection function
 def get_db_connection():
     return mysql.connector.connect(
-        host=os.getenv("DATABASE_HOST"),
-        user=os.getenv("DATABASE_USER"),
-        password=os.getenv("DATABASE_PASSWORD"),
-        database=os.getenv("DATABASE_NAME")
+        host=os.getenv("DATABASE_HOST", "localhost"),
+        user=os.getenv("DATABASE_USER", "root"),
+        password=os.getenv("DATABASE_PASSWORD", "password"),
+        database=os.getenv("DATABASE_NAME", "ase")
     )
 
 # User registration route
 @app.route('/register', methods=['POST'])
 def register():
-    username = request.json.get('username')
-    password = request.json.get('password')
+    data = request.json
+    first_name = data.get('FirstName')
+    last_name = data.get('LastName')
+    email = data.get('Email')
+    password = data.get('Password')
+    currency_amount = data.get('CurrencyAmount')
+
     hashed_password = generate_password_hash(password)
-    
+
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_password))
+    cursor.execute(
+        """
+        INSERT INTO users ( FirstName, LastName, Email, Password, CurrencyAmount)
+        VALUES (%s, %s, %s, %s, %s)
+        """,
+        (first_name, last_name, email, hashed_password, currency_amount)
+    )
     conn.commit()
     conn.close()
     return jsonify(message="User registered"), 201
@@ -36,19 +47,19 @@ def register():
 # User login route
 @app.route('/login', methods=['POST'])
 def login():
-    username = request.json.get('username')
-    password = request.json.get('password')
+    email = request.json.get('Email')
+    password = request.json.get('Password')
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT password FROM users WHERE username=%s", (username,))
+    cursor.execute("SELECT Password FROM users WHERE Email=%s", (email,))
     user = cursor.fetchone()
     conn.close()
 
     if user and check_password_hash(user[0], password):
         # Create JWT token using Authlib
         header = {'alg': 'HS256'}
-        payload = {'sub': username}
+        payload = {'sub': email}
         token = jwt.encode(header, payload, SECRET_KEY)
         return jsonify(access_token=token.decode('utf-8')), 200
     else:

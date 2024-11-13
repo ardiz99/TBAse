@@ -2,13 +2,13 @@ openapi: 3.0.1
 info:
   title: Authentication Service
   version: 1.0.0
-  description: Handles user authentication and authorization for the Gacha game.
+  description: Handles user registration and authentication for the Gacha game.
 
 paths:
   /register:
     post:
       summary: Register a new user
-      description: Endpoint for registering a new user.
+      description: Endpoint for registering a new user with detailed fields.
       requestBody:
         required: true
         content:
@@ -16,10 +16,17 @@ paths:
             schema:
               type: object
               properties:
-                username:
+                FirstName:
                   type: string
-                password:
+                LastName:
                   type: string
+                Email:
+                  type: string
+                Password:
+                  type: string
+                CurrencyAmount:
+                  type: number
+                  format: float
       responses:
         '201':
           description: User registered successfully.
@@ -37,9 +44,9 @@ paths:
             schema:
               type: object
               properties:
-                username:
+                Email:
                   type: string
-                password:
+                Password:
                   type: string
       responses:
         '200':
