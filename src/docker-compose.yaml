@@ -1,67 +1,96 @@
 version: '3.8'
 
 services:
-  mysql:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: gachadb
-      MYSQL_USER: gachauser
-      MYSQL_PASSWORD: gachapassword
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - gacha-network
-
   api-gateway:
     build: ./api_gateway
+    container_name: api-gateway
     ports:
       - "8000:8000"
-    networks:
-      - gacha-network
     depends_on:
       - auth-service
+      - currency-service
       - gacha-service
       - auction-service
+    networks:
+      - gacha-network
 
   auth-service:
     build: ./auth_service
+    container_name: auth-service
     ports:
       - "8001:8001"
     networks:
       - gacha-network
     environment:
-      - DATABASE_HOST=mysql
-      - DATABASE_USER=gachauser
-      - DATABASE_PASSWORD=gachapassword
-      - DATABASE_NAME=gachadb
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=root_password
+      - DB_NAME=mydatabase
+
+  currency-service:
+    build: ./currency_service
+    container_name: currency-service
+    ports:
+      - "8004:8004"
+    networks:
+      - gacha-network
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=root_password
+      - DB_NAME=mydatabase
 
   gacha-service:
     build: ./gacha_service
+    container_name: gacha-service
     ports:
       - "8002:8002"
     networks:
       - gacha-network
     environment:
-      - DATABASE_HOST=mysql
-      - DATABASE_USER=gachauser
-      - DATABASE_PASSWORD=gachapassword
-      - DATABASE_NAME=gachadb
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=root_password
+      - DB_NAME=mydatabase
 
   auction-service:
     build: ./auction_service
+    container_name: auction-service
     ports:
       - "8003:8003"
     networks:
       - gacha-network
     environment:
-      - DATABASE_HOST=mysql
-      - DATABASE_USER=gachauser
-      - DATABASE_PASSWORD=gachapassword
-      - DATABASE_NAME=gachadb
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=root_password
+      - DB_NAME=mydatabase
+
+  db-manager:
+    build: ./db_manager
+    container_name: db-manager
+    ports:
+      - "8005:8005"
+    networks:
+      - gacha-network
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=root_password
+      - DB_NAME=mydatabase
+
+  db:
+    image: mysql:8.0
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: mydatabase
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    networks:
+      - gacha-network
 
 networks:
   gacha-network:
+    driver: bridge #aaaaaaaaaa
 
-volumes:
-  mysql_data:

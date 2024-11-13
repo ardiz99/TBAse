@@ -6,6 +6,7 @@ import pandas as pd
 app = Flask(__name__)
 engine = create_engine('sqlite:///ase.db')
 
+
 @app.route('/login')
 def login():
     email = request.args.get('email', type=str)
@@ -22,7 +23,6 @@ def login():
         return make_response("Login successful", 200)
     else:
         return make_response('Invalid input\n', 400)
-
 
 
 if __name__ == '__main__':
