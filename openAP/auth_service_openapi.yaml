@@ -2,13 +2,17 @@ openapi: 3.0.1
 info:
   title: Authentication Service
   version: 1.0.0
-  description: Handles user registration and authentication for the Gacha game.
+  description: Gestisce la registrazione e l'autenticazione degli utenti per il gioco.
+
+servers:
+  - url: http://localhost:8081
+    description: URL proxy per l'autenticazione tramite Nginx
 
 paths:
   /register:
     post:
-      summary: Register a new user
-      description: Endpoint for registering a new user with detailed fields.
+      summary: Registrazione nuovo utente
+      description: Endpoint per registrare un nuovo utente.
       requestBody:
         required: true
         content:
@@ -16,6 +20,8 @@ paths:
             schema:
               type: object
               properties:
+                UserId:
+                  type: string
                 FirstName:
                   type: string
                 LastName:
@@ -29,14 +35,14 @@ paths:
                   format: float
       responses:
         '201':
-          description: User registered successfully.
+          description: Utente registrato con successo.
         '400':
-          description: Bad request
+          description: Richiesta non valida
 
   /login:
     post:
-      summary: Login and retrieve an access token
-      description: Endpoint to login and get a JWT access token.
+      summary: Login e accesso token
+      description: Endpoint per effettuare il login e ottenere un token JWT.
       requestBody:
         required: true
         content:
@@ -50,7 +56,7 @@ paths:
                   type: string
       responses:
         '200':
-          description: Access token retrieved successfully.
+          description: Token di accesso recuperato con successo.
           content:
             application/json:
               schema:
@@ -58,14 +64,14 @@ paths:
                 properties:
                   access_token:
                     type: string
-                    description: JWT token for accessing protected endpoints.
+                    description: Token JWT per accedere agli endpoint protetti.
         '401':
-          description: Unauthorized
+          description: Non autorizzato
 
   /protected:
     get:
-      summary: Access a protected resource
-      description: Endpoint for accessing protected resources that require a valid JWT token.
+      summary: Accesso a risorsa protetta
+      description: Endpoint per accedere alle risorse protette che richiedono un token JWT valido.
       parameters:
         - name: Authorization
           in: header
@@ -75,6 +81,6 @@ paths:
             example: "Bearer <your_token>"
       responses:
         '200':
-          description: Access granted to protected resource.
+          description: Accesso consentito alla risorsa protetta.
         '401':
-          description: Invalid or expired token
+          description: Token non valido o scaduto

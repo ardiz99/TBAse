@@ -2,7 +2,7 @@
 FROM python:3.9-slim
 
 # Set the working directory
-WORKDIR /PROGETTO
+WORKDIR /TBASE
 
 # Copy requirements file and install dependencies
 COPY requirements.txt .

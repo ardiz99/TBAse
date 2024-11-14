@@ -4,25 +4,14 @@ services:
   mysql:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: gachadb
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: ase
       MYSQL_USER: gachauser
       MYSQL_PASSWORD: gachapassword
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - gacha-network
-
-  api-gateway:
-    build: ./api_gateway
     ports:
-      - "8000:8000"
+      - "3307:3306"  # Espone la porta di MySQL per connessioni esterne
     networks:
       - gacha-network
-    depends_on:
-      - auth-service
-      - gacha-service
-      - auction-service
 
   auth-service:
     build: ./auth_service
@@ -31,70 +20,36 @@ services:
     networks:
       - gacha-network
     environment:
-      - DATABASE_HOST=mysql
+      - DATABASE_HOST=localhost
       - DATABASE_USER=gachauser
       - DATABASE_PASSWORD=gachapassword
-      - DATABASE_NAME=gachadb
+      - DATABASE_NAME=ase
 
-  gacha-service:
-    build: ./gacha_service
+  # Nginx Proxy per auth-service
+  nginx-auth-proxy:
+    image: nginx:latest
+    volumes:
+      - ./nginx_auth_proxy.conf:/etc/nginx/conf.d/default.conf
     ports:
-      - "8002:8002"
+      - "8081:80"
     networks:
       - gacha-network
-    environment:
-      - DATABASE_HOST=mysql
-      - DATABASE_USER=gachauser
-      - DATABASE_PASSWORD=gachapassword
-      - DATABASE_NAME=gachadb
+    depends_on:
+      - auth-service
 
-  auction-service:
-    build: ./auction_service
-    ports:
-      - "8003:8003"
-    networks:
-      - gacha-network
-    environment:
-      - DATABASE_HOST=mysql
-      - DATABASE_USER=gachauser
-      - DATABASE_PASSWORD=gachapassword
-      - DATABASE_NAME=gachadb
-
-  # Swagger UI per auth_service
+  # Swagger UI per auth-service
   swagger-ui-auth:
     image: swaggerapi/swagger-ui
-    ports:
-      - "8081:8080"
     environment:
       SWAGGER_JSON: /openAP/auth_service_openapi.yaml
     volumes:
       - ./openAP:/openAP
-    networks:
-      - gacha-network
-
-  # Swagger UI per gacha_service
-  swagger-ui-gacha:
-    image: swaggerapi/swagger-ui
     ports:
       - "8082:8080"
-    environment:
-      SWAGGER_JSON: /openAP/gacha_service_openapi.yaml
-    volumes:
-      - ./openAP:/openAP
     networks:
       - gacha-network
-
-  # Swagger UI per auction_service
-  swagger-ui-auction:
-    image: swaggerapi/swagger-ui
-    ports:
-      - "8083:8080"
-    environment:
-      SWAGGER_JSON: /openAP/auction_service_openapi.yaml
-    volumes:
-      - ./openAP:/openAP
-    networks:
-      - gacha-network
+    depends_on:
+      - nginx-auth-proxy
 
 networks:
   gacha-network:
