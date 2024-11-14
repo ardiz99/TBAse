@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 8005
 
-CMD ["python", "main.py"]
+CMD ["python","-u","main.py"]

@@ -24,7 +24,7 @@ def roll_gacha():
             rarity = key
             break
 
-    response = requests.get('http://127.0.0.1:8005')
+    response = requests.get('http://db-manager:8005')
     return jsonify(response.json())
 
 

@@ -77,7 +77,8 @@ services:
       - DB_HOST=db
       - DB_USER=root
       - DB_PASSWORD=root_password
-      - DB_NAME=mydatabase
+      - DB_NAME=ase
+      - PYTHONUNBUFFERED=1
 
   db:
     image: mysql:8.0

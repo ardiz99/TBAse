@@ -13,27 +13,27 @@ CODES = {
 
 connection = None
 
+#
+# def set_not_found():
+#     global CODES
+#     CODES["200"] = 0
+#     CODES["404"] = 1
+#
+#
+# def set_generic_error():
+#     global CODES
+#     CODES["200"] = 0
+#     CODES["500"] = 1
 
-def set_not_found():
-    global CODES
-    CODES["200"] = 0
-    CODES["404"] = 1
 
-
-def set_generic_error():
-    global CODES
-    CODES["200"] = 0
-    CODES["500"] = 1
-
-
-def send_response(response=""):
-    global CODES
-    if CODES["200"] == 1:
-        return jsonify(response), 200
-    elif CODES["404"] == 1:
-        return jsonify("Error! Not Found."), 404
-    else:
-        return jsonify("Unkonwn error"), 500
+# def send_response(response=""):
+#     global CODES
+#     if CODES["200"] == 1:
+#         return jsonify(response), 200
+#     elif CODES["404"] == 1:
+#         return jsonify("Error! Not Found."), 404
+#     else:
+#         return jsonify("Unkonwn error"), 500
 
 
 # Funzione per inizializzare la connessione
@@ -67,8 +67,7 @@ def roll_gacha():
 
     if connection is None:
         print("Errore: connessione al database non riuscita.")
-        set_generic_error()
-        return send_response()
+        return jsonify("Unkonwn error"), 505
     try:
         cursor = connection.cursor(dictionary=True)
         query = "SELECT * FROM Gacha WHERE GachaId = 1"
@@ -77,14 +76,13 @@ def roll_gacha():
         print(result)
 
         if not result:
-            set_not_found()
+            jsonify("Error! Not Found."), 404
 
         cursor.close()
         close_db_connection()
-        return send_response(result)
+        return jsonify(result), 200
     except Error as e:
-        set_generic_error()
-        return send_response()
+        return jsonify("Unkonwn error"), 505
 
 
 if __name__ == "__main__":
