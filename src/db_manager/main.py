@@ -1,17 +1,17 @@
-from flask import Flask, jsonify, make_response
+from flask import Flask, jsonify, request
 import mysql.connector
 from mysql.connector import Error
 import os
 
 app = Flask(__name__)
 
-CODES = {
-    "200": 1,
-    "404": 0,
-    "500": 0
+RESPONSE = {
+    "code": 200,
+    "data": []
 }
 
 connection = None
+
 
 #
 # def set_not_found():
@@ -36,11 +36,20 @@ connection = None
 #         return jsonify("Unkonwn error"), 500
 
 
+def reset_response():
+    RESPONSE["code"] = 200
+    RESPONSE["data"] = []
+
+
 # Funzione per inizializzare la connessione
 def init_db_connection():
     global connection
     try:
         connection = mysql.connector.connect(
+            # host="localhost",
+            # user="root",
+            # password="diego",
+            # database="ase"
             host=os.getenv('DB_HOST'),
             user=os.getenv('DB_USER'),
             password=os.getenv('DB_PASSWORD'),
@@ -48,6 +57,12 @@ def init_db_connection():
         )
         if connection.is_connected():
             print("Connessione al database MySQL riuscita.")
+            print(connection.server_host)
+            print(connection.server_port)
+            print(os.getenv('DB_HOST'))
+            print(os.getenv('DB_USER'))
+            print(os.getenv('DB_PASSWORD'))
+            print(os.getenv('DB_NAME'))
     except Error as e:
         print(f"Errore di connessione a MySQL: {e}")
 
@@ -60,8 +75,13 @@ def close_db_connection():
         print("Connessione al database MySQL chiusa.")
 
 
-@app.route('/')
+@app.route('/roll')
 def roll_gacha():
+    rarity = request.args.get('rarity')
+    # rarity = "Legendary"
+
+    reset_response()
+
     global connection
     init_db_connection()
 
@@ -70,17 +90,18 @@ def roll_gacha():
         return jsonify("Unkonwn error"), 505
     try:
         cursor = connection.cursor(dictionary=True)
-        query = "SELECT * FROM Gacha WHERE GachaId = 1"
+        query = "SELECT * FROM gacha WHERE Rarity = '{}';".format(rarity)
         cursor.execute(query)
         result = cursor.fetchall()
-        print(result)
 
         if not result:
             jsonify("Error! Not Found."), 404
 
         cursor.close()
         close_db_connection()
-        return jsonify(result), 200
+        RESPONSE["code"] = 200
+        RESPONSE["data"] = result
+        return jsonify(RESPONSE)
     except Error as e:
         return jsonify("Unkonwn error"), 505
 
