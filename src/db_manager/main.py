@@ -2,43 +2,11 @@ from flask import Flask, jsonify, request
 import mysql.connector
 from mysql.connector import Error
 import os
+import utils as u
 
 app = Flask(__name__)
 
-RESPONSE = {
-    "code": 200,
-    "data": []
-}
-
 connection = None
-
-
-#
-# def set_not_found():
-#     global CODES
-#     CODES["200"] = 0
-#     CODES["404"] = 1
-#
-#
-# def set_generic_error():
-#     global CODES
-#     CODES["200"] = 0
-#     CODES["500"] = 1
-
-
-# def send_response(response=""):
-#     global CODES
-#     if CODES["200"] == 1:
-#         return jsonify(response), 200
-#     elif CODES["404"] == 1:
-#         return jsonify("Error! Not Found."), 404
-#     else:
-#         return jsonify("Unkonwn error"), 500
-
-
-def reset_response():
-    RESPONSE["code"] = 200
-    RESPONSE["data"] = []
 
 
 # Funzione per inizializzare la connessione
@@ -46,14 +14,14 @@ def init_db_connection():
     global connection
     try:
         connection = mysql.connector.connect(
-            # host="localhost",
-            # user="root",
-            # password="diego",
-            # database="ase"
-            host=os.getenv('DB_HOST'),
-            user=os.getenv('DB_USER'),
-            password=os.getenv('DB_PASSWORD'),
-            database=os.getenv('DB_NAME')
+            host="localhost",
+            user="root",
+            password="diego",
+            database="ase"
+            # host=os.getenv('DB_HOST'),
+            # user=os.getenv('DB_USER'),
+            # password=os.getenv('DB_PASSWORD'),
+            # database=os.getenv('DB_NAME')
         )
         if connection.is_connected():
             print("Connessione al database MySQL riuscita.")
@@ -75,19 +43,20 @@ def close_db_connection():
         print("Connessione al database MySQL chiusa.")
 
 
-@app.route('/roll')
-def roll_gacha():
+@app.route('/get_gacha_by_rarity')
+def get_gacha_by_rarity():
     rarity = request.args.get('rarity')
     # rarity = "Legendary"
 
-    reset_response()
+    u.reset_response()
 
     global connection
     init_db_connection()
 
     if connection is None:
         print("Errore: connessione al database non riuscita.")
-        return jsonify("Unkonwn error"), 505
+        u.generic_error()
+        return jsonify(u.RESPONSE)
     try:
         cursor = connection.cursor(dictionary=True)
         query = "SELECT * FROM gacha WHERE Rarity = '{}';".format(rarity)
@@ -95,15 +64,95 @@ def roll_gacha():
         result = cursor.fetchall()
 
         if not result:
-            jsonify("Error! Not Found."), 404
+            u.not_found()
+            return jsonify(u.RESPONSE)
 
         cursor.close()
         close_db_connection()
-        RESPONSE["code"] = 200
-        RESPONSE["data"] = result
-        return jsonify(RESPONSE)
+        u.RESPONSE["code"] = 200
+        u.RESPONSE["data"] = result
+        u.RESPONSE["message"] = ""
+        return jsonify(u.RESPONSE)
     except Error as e:
-        return jsonify("Unkonwn error"), 505
+        u.generic_error()
+        return jsonify(u.RESPONSE)
+
+
+@app.route('/get_amount')
+def get_amount():
+    email = request.args.get('email')
+    # email = "taylor.smith@example.com"
+
+    u.reset_response()
+
+    global connection
+    init_db_connection()
+
+    if connection is None:
+        print("Errore: connessione al database non riuscita.")
+        u.generic_error()
+        return jsonify(u.RESPONSE)
+    try:
+        cursor = connection.cursor(dictionary=True)
+        query = "SELECT CurrencyAmount FROM user WHERE Email = '{}';".format(email)
+        cursor.execute(query)
+        result = cursor.fetchall()
+
+        cursor.close()
+        close_db_connection()
+
+        if not result:
+            u.not_found()
+            return jsonify(u.RESPONSE)
+
+        u.RESPONSE["code"] = 200
+        u.RESPONSE["data"] = result
+        return jsonify(u.RESPONSE)
+    except Error as e:
+        u.generic_error()
+        return jsonify(u.RESPONSE)
+
+
+@app.route('/update_amount')
+def update_amount():
+    new_amount = request.args.get('new_amount')
+    email = request.args.get('email')
+    # new_amount = 10
+    # email = "taylor.smith@example.com"
+    u.reset_response()
+
+    global connection
+    init_db_connection()
+
+    if connection is None:
+        print("Errore: connessione al database non riuscita.")
+        u.generic_error()
+        return jsonify(u.RESPONSE)
+    try:
+        cursor = connection.cursor(dictionary=True)
+        query = "UPDATE user " \
+                "SET CurrencyAmount = {}" \
+                " WHERE Email = '{}';".format(new_amount, email)
+        cursor.execute(query)
+
+        # Salva le modifiche al database
+        connection.commit()
+
+        # query = "SELECT CurrencyAmount " \
+        #         "FROM user " \
+        #         "WHERE Email = '{}';".format(email)
+        # cursor.execute(query)
+        # result = cursor.fetchall()
+        # print(result)
+
+        cursor.close()
+        close_db_connection()
+
+        u.reset_response()
+        return jsonify(u.RESPONSE)
+    except Error as e:
+        u.generic_error()
+        return jsonify(u.RESPONSE)
 
 
 if __name__ == "__main__":

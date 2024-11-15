@@ -2,18 +2,9 @@ from flask import Flask, jsonify
 import requests
 import random
 
+import utils as u
+
 app = Flask(__name__)
-
-RESPONSE = {
-    "code": 200,
-    "data": []
-}
-
-
-def reset_response():
-    RESPONSE["code"] = 200
-    RESPONSE["data"] = []
-
 
 RARITY_DISTRIBUTION = {
     "Legendary": 0.05,
@@ -24,10 +15,7 @@ RARITY_DISTRIBUTION = {
 }
 
 
-@app.route('/roll', methods=['GET'])
-def roll_gacha():
-    reset_response()
-
+def random_rarity():
     roll = random.uniform(0, 100)
     cumulative = 0
     rarity = None
@@ -36,22 +24,46 @@ def roll_gacha():
         if roll <= cumulative:
             rarity = key
             break
+    return rarity
 
-    # response = requests.get('http://127.0.0.1:8005/roll', params={'rarity': 'Legendary'})
-    response = requests.get('http://db-manager:8005/roll', params={'rarity': rarity})
 
-    data = response.json()
-    set = data.get("data")
-    print(len(set))
-    random2 = random.randint(0, len(set)-1)
-    chosen = set[random2]
+@app.route('/roll', methods=['GET'])
+def roll_gacha():
+    u.reset_response()
 
-    RESPONSE["code"] = 200
-    RESPONSE["data"] = chosen
+    # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
+    email = "taylor.smith@example.com"
+    # response = requests.get('http://127.0.0.1:8005/get_amount', params={'email': email})
+    response = requests.get('http://db-manager:8005/get_amount', params={'email': email})
 
-    return jsonify(RESPONSE)
+    target_data = response.json().get("data")
+    amount = target_data[0]["CurrencyAmount"]
+    if amount < u.ROLL_COST:
+        u.RESPONSE["code"] = 500
+        u.RESPONSE["data"] = []
+        u.RESPONSE["message"] = "Insufficient Pokedollars"
+        return jsonify(u.RESPONSE)
+
+    rarity = random_rarity()
+
+    # response = requests.get('http://127.0.0.1:8005/get_gacha_by_rarity', params={'rarity': 'Legendary'})
+    response = requests.get('http://db-manager:8005/get_gacha_by_rarity', params={'rarity': rarity})
+
+    target_set = response.json().get("data")
+    random2 = random.randint(0, len(target_set) - 1)
+    chosen = target_set[random2]
+
+    # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
+    new_amount = 68
+    # response = requests.get('http://127.0.0.1:8005/update_amount', params={'email': email, 'new_amount': new_amount})
+    response = requests.get('http://db-manager:8005/update_amount',
+                            params={'email': email, 'new_amount': new_amount})
+
+    u.RESPONSE["code"] = 200
+    u.RESPONSE["data"] = chosen
+
+    return jsonify(u.RESPONSE)
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8004)
-
+    app.run(host="0.0.0.0", port=8004, debug=u.FLASK_DEBUG)

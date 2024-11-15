@@ -157,7 +157,7 @@ CREATE TABLE `user` (
   `LastName` varchar(45) DEFAULT NULL,
   `Email` varchar(45) DEFAULT NULL,
   `Password` varchar(45) DEFAULT NULL,
-  `CurrencyAmmount` varchar(45) DEFAULT NULL,
+  `CurrencyAmount` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`UserId`)
 ) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
