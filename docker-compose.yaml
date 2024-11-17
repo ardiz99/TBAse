@@ -1,14 +1,15 @@
 services:
   api-gateway:
     build:
-      context: ./src/api_gateway
-      dockerfile: Dockerfile
+      context: ./src
+      dockerfile: ./api_gateway/Dockerfile
     container_name: api-gateway
     ports:
       - "8000:8000"
     volumes:
-      - ./src/api_gateway:/app
+      - ./src/api_gateway:/app/
       - ./src/utils.py:/app/utils.py
+
     depends_on:
       - auth-service
       - currency-service
@@ -19,8 +20,8 @@ services:
 
   auth-service:
     build:
-      context: ./src/auth_service
-      dockerfile: Dockerfile
+      context: ./src
+      dockerfile: ./auth_service/Dockerfile
     container_name: auth-service
     ports:
       - "8001:8001"
@@ -33,12 +34,12 @@ services:
       - DB_HOST=db
       - DB_USER=root
       - DB_PASSWORD=root_password
-      - DB_NAME=mydatabase
+      - DB_NAME=ase
 
   gacha-service:
     build:
-      context: ./src/gacha_service
-      dockerfile: Dockerfile
+      context: ./src
+      dockerfile: ./gacha_service/Dockerfile
     container_name: gacha-service
     ports:
       - "8002:8002"
@@ -51,12 +52,12 @@ services:
       - DB_HOST=db
       - DB_USER=root
       - DB_PASSWORD=root_password
-      - DB_NAME=mydatabase
+      - DB_NAME=ase
 
   currency-service:
     build:
-      context: ./src/currency_service
-      dockerfile: Dockerfile
+      context: ./src
+      dockerfile: ./currency_service/Dockerfile
     container_name: currency-service
     ports:
       - "8004:8004"
@@ -69,12 +70,12 @@ services:
       - DB_HOST=db
       - DB_USER=root
       - DB_PASSWORD=root_password
-      - DB_NAME=mydatabase
+      - DB_NAME=ase
 
   auction-service:
     build:
-      context: ./src/auction_service
-      dockerfile: Dockerfile
+      context: ./src
+      dockerfile: ./auction_service/Dockerfile
     container_name: auction-service
     ports:
       - "8003:8003"
@@ -87,12 +88,12 @@ services:
       - DB_HOST=db
       - DB_USER=root
       - DB_PASSWORD=root_password
-      - DB_NAME=mydatabase
+      - DB_NAME=ase
 
   db-manager:
     build:
-      context: ./src/db_manager
-      dockerfile: Dockerfile
+      context: ./src
+      dockerfile: ./db_manager/Dockerfile
     container_name: db-manager
     ports:
       - "8005:8005"
@@ -105,16 +106,16 @@ services:
       - DB_HOST=db
       - DB_USER=root
       - DB_PASSWORD=root_password
-      - DB_NAME=mydatabase
+      - DB_NAME=ase
 
   db:
     image: mysql:8.0
     container_name: db
     environment:
       MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: mydatabase
+      MYSQL_DATABASE: ase
     volumes:
-      - ./mysql-data:/var/lib/mysql
+      - ./src/mysql-data:/var/lib/mysql
     networks:
       - gacha-network
 

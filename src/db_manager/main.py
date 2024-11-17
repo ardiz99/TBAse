@@ -14,19 +14,17 @@ def init_db_connection():
     global connection
     try:
         connection = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="diego",
-            database="ase"
-            # host=os.getenv('DB_HOST'),
-            # user=os.getenv('DB_USER'),
-            # password=os.getenv('DB_PASSWORD'),
-            # database=os.getenv('DB_NAME')
+            # host="localhost",
+            # user="root",
+            # password="diego",
+            # database="ase"
+            host=os.getenv('DB_HOST'),
+            user=os.getenv('DB_USER'),
+            password=os.getenv('DB_PASSWORD'),
+            database=os.getenv('DB_NAME')
         )
         if connection.is_connected():
             print("Connessione al database MySQL riuscita.")
-            print(connection.server_host)
-            print(connection.server_port)
             print(os.getenv('DB_HOST'))
             print(os.getenv('DB_USER'))
             print(os.getenv('DB_PASSWORD'))
@@ -62,6 +60,8 @@ def get_gacha_by_rarity():
         query = "SELECT * FROM gacha WHERE Rarity = '{}';".format(rarity)
         cursor.execute(query)
         result = cursor.fetchall()
+        print(query)
+        print(result)
 
         if not result:
             u.not_found()
@@ -97,6 +97,8 @@ def get_amount():
         query = "SELECT CurrencyAmount FROM user WHERE Email = '{}';".format(email)
         cursor.execute(query)
         result = cursor.fetchall()
+        print(query)
+        print(result)
 
         cursor.close()
         close_db_connection()
@@ -138,12 +140,13 @@ def update_amount():
         # Salva le modifiche al database
         connection.commit()
 
-        # query = "SELECT CurrencyAmount " \
-        #         "FROM user " \
-        #         "WHERE Email = '{}';".format(email)
-        # cursor.execute(query)
-        # result = cursor.fetchall()
-        # print(result)
+        query = "SELECT CurrencyAmount " \
+                "FROM user " \
+                "WHERE Email = '{}';".format(email)
+        cursor.execute(query)
+        result = cursor.fetchall()
+        print(query)
+        print(result)
 
         cursor.close()
         close_db_connection()

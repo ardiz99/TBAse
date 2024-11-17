@@ -1,5 +1,4 @@
 /venv/
-/mysql-data
 /src/mysql-data
 /src/db_manager/utils.py
 /src/currency_service/utils.py

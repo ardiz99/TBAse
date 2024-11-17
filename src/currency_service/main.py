@@ -54,7 +54,7 @@ def roll_gacha():
     chosen = target_set[random2]
 
     # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
-    new_amount = 68
+    new_amount = amount - 10
     # response = requests.get('http://127.0.0.1:8005/update_amount', params={'email': email, 'new_amount': new_amount})
     response = requests.get('http://db-manager:8005/update_amount',
                             params={'email': email, 'new_amount': new_amount})
