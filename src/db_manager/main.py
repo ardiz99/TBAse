@@ -96,7 +96,7 @@ def get_amount():
         cursor = connection.cursor(dictionary=True)
         query = "SELECT CurrencyAmount FROM user WHERE Email = '{}';".format(email)
         cursor.execute(query)
-        result = cursor.fetchall()
+        result = cursor.fetchone()
         print(query)
         print(result)
 
@@ -159,4 +159,4 @@ def update_amount():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8005)
+    app.run(host="0.0.0.0", port=8005, debug=u.FLASK_DEBUG)

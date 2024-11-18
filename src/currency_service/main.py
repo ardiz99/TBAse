@@ -40,7 +40,7 @@ def roll_gacha():
     response = requests.get('http://db-manager:8005/get_amount', params={'email': email})
 
     target_data = response.json().get("data")
-    amount = target_data[0]["CurrencyAmount"]
+    amount = target_data["CurrencyAmount"]
     if amount < u.ROLL_COST:
         u.RESPONSE["code"] = 500
         u.RESPONSE["data"] = []
@@ -89,7 +89,7 @@ def buy_currency():
     response = requests.get('http://db-manager:8005/get_amount', params={'email': email})
 
     target_data = response.json().get("data")
-    amount = target_data[0]["CurrencyAmount"]
+    amount = target_data["CurrencyAmount"]
 
     # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
     new_amount = amount + quantity
