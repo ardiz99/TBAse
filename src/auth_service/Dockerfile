@@ -7,6 +7,6 @@ COPY utils.py .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 8005
+EXPOSE 8001
 
 CMD ["python","-u","main.py"]

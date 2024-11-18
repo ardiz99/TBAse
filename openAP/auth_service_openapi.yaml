@@ -1,0 +1,73 @@
+openapi: 3.0.1
+info:
+  title: Authentication Service
+  version: 1.0.0
+  description: Handles user authentication and authorization for the Gacha game.
+
+paths:
+  /register:
+    post:
+      summary: Register a new user
+      description: Endpoint for registering a new user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: User registered successfully.
+        '400':
+          description: Bad request
+
+  /login:
+    post:
+      summary: Login and retrieve an access token
+      description: Endpoint to login and get a JWT access token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Access token retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: JWT token for accessing protected endpoints.
+        '401':
+          description: Unauthorized
+
+  /protected:
+    get:
+      summary: Access a protected resource
+      description: Endpoint for accessing protected resources that require a valid JWT token.
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "Bearer <your_token>"
+      responses:
+        '200':
+          description: Access granted to protected resource.
+        '401':
+          description: Invalid or expired token

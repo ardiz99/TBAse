@@ -1,0 +1,66 @@
+openapi: 3.0.1
+info:
+  title: Auction Service
+  version: 1.0.0
+  description: Manages auctions for trading gacha items.
+
+paths:
+  /auctions:
+    post:
+      summary: Create a new auction
+      description: Create an auction for a gacha item.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gacha_id:
+                  type: integer
+                starting_bid:
+                  type: number
+                  format: float
+      responses:
+        '201':
+          description: Auction created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /auctions/{auction_id}/bid:
+    post:
+      summary: Place a bid on an auction
+      description: Place a bid on a specific auction by auction ID.
+      parameters:
+        - name: auction_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bid_amount:
+                  type: number
+                  format: float
+      responses:
+        '200':
+          description: Bid placed successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Auction not found.
