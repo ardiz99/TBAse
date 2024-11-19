@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 import requests
 import utils as u
 
@@ -12,14 +12,30 @@ def index():
 
 @app.route('/roll', methods=['GET'])
 def roll_gacha():
-    response = requests.get('http://currency-service:8004/roll')
-    return jsonify(response.json())
+    response = requests.get('http://currency-service:8004/roll_info')
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return jsonify(u.RESPONSE)
+
+    data = response.json().get("data")
+    url = data["Link"]
+    response = requests.get('http://currency-service:8004/roll_img', json={"url": url})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return jsonify(u.RESPONSE)
+
+    return Response(
+        response.content,
+        content_type=response.headers['Content-Type'],
+        status=response.status_code
+    )
+
+
 
 
 @app.route('/buy_currency', methods=['PUT'])
 def buy_currency():
     data = request.get_json()
-    print(data)
     quantity = data.get('quantity')
     if quantity is None:
         u.bad_request()

@@ -127,7 +127,6 @@ def update_amount():
     init_db_connection()
 
     if connection is None:
-        print("Errore: connessione al database non riuscita.")
         u.generic_error()
         return jsonify(u.RESPONSE)
     try:
@@ -137,7 +136,6 @@ def update_amount():
                 " WHERE Email = '{}';".format(new_amount, email)
         cursor.execute(query)
 
-        # Salva le modifiche al database
         connection.commit()
 
         query = "SELECT CurrencyAmount " \
@@ -153,6 +151,50 @@ def update_amount():
 
         u.reset_response()
         return jsonify(u.RESPONSE)
+    except Error as e:
+        u.generic_error()
+        return jsonify(u.RESPONSE)
+
+
+@app.route('/new_transaction', methods=['POST'])
+def new_transaction():
+
+    data = request.get_json()
+    user_id = data.get('user_id')
+    gacha_id = data.get('gacha_id')
+    cost = data.get('cost')
+    datetime = data.get('end_date')
+
+    u.reset_response()
+
+    global connection
+    init_db_connection()
+
+    if connection is None:
+        u.generic_error()
+        return jsonify(u.RESPONSE)
+    try:
+        cursor = connection.cursor(dictionary=True)
+        query = "INSERT INTO transaction (UserOwner, GachaId, Cost, EndDate) " \
+                "VALUES (%s, %s, %s, %s)"
+        values = (user_id, gacha_id, cost, datetime)
+        cursor.execute(query, values)
+        connection.commit()
+
+        query = f"SELECT * " \
+                f"FROM transaction " \
+                f"WHERE UserOwner = '{user_id}';"
+        cursor.execute(query)
+        result = cursor.fetchall()
+        print(query)
+        print(result)
+
+        cursor.close()
+        close_db_connection()
+
+        u.reset_response()
+        return jsonify(u.RESPONSE)
+
     except Error as e:
         u.generic_error()
         return jsonify(u.RESPONSE)

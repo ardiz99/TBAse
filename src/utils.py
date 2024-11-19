@@ -2,8 +2,10 @@ FLASK_DEBUG = True  # Do not use debug mode in production
 
 ROLL_COST = 10
 
+USER_ID = None
+USER_EMAIL = None
 
-LOCAL = "127.0.0.1"
+LOCAL = False
 # vabbè questa in realtà non serve praticamente a nulla
 SERVICES = {
     "API_GATEWAY": "api-gateway",
@@ -54,3 +56,10 @@ def bad_request():
     RESPONSE["message"] = "Bad Request."
 
 
+def handle_error(code):
+    if code == 404:
+        not_found()
+    if code == 500:
+        generic_error()
+    if code == 400:
+        bad_request()

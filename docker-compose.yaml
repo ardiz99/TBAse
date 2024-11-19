@@ -14,7 +14,7 @@ services:
       - auth-service
       - currency-service
       - gacha-service
-      - auction-service
+      - market-service
     networks:
       - gacha-network
 
@@ -64,6 +64,7 @@ services:
     volumes:
       - ./src/currency_service:/app
       - ./src/utils.py:/app/utils.py
+      - ./src/img:/app/img
     networks:
       - gacha-network
     environment:
@@ -72,15 +73,15 @@ services:
       - DB_PASSWORD=root_password
       - DB_NAME=ase
 
-  auction-service:
+  market-service:
     build:
       context: ./src
-      dockerfile: ./auction_service/Dockerfile
-    container_name: auction-service
+      dockerfile: ./market_service/Dockerfile
+    container_name: market-service
     ports:
       - "8003:8003"
     volumes:
-      - ./src/auction_service:/app
+      - ./src/market_service:/app
       - ./src/utils.py:/app/utils.py
     networks:
       - gacha-network
