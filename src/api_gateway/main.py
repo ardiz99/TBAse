@@ -19,7 +19,7 @@ def roll_gacha():
 
     data = response.json().get("data")
     url = data["Link"]
-    response = requests.get('http://currency-service:8004/roll_img', json={"url": url})
+    response = requests.get('http://currency-service:8004/roll_img', params={"url": url})
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return jsonify(u.RESPONSE)
@@ -29,8 +29,6 @@ def roll_gacha():
         content_type=response.headers['Content-Type'],
         status=response.status_code
     )
-
-
 
 
 @app.route('/buy_currency', methods=['PUT'])

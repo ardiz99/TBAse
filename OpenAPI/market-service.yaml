@@ -1,0 +1,90 @@
+openapi: 3.0.3
+info:
+  title: Market Service API
+  description: |-
+    This API is part of a microservices architecture and handles transactions related to gacha items
+    and user purchases. It interacts with other services to track and update user transactions.
+    
+    
+    Some useful links:
+    - [The Pokémon Gacha repository](https://github.com/ardiz99/TBAse)
+    - [The source APIs definition for the Pokémon Gacha](https://github.com/ardiz99/TBAse/OpenAPI)
+  version: 1.0.0
+  x-microservice: market-service
+servers:
+  - url: http://market-service:8003
+    description: Market Service in Docker environment
+  - url: http://127.0.0.1:8003
+    description: Market Service on local development
+tags:
+  - name: Market Service
+    description: API operations related to handling gacha transactions and user purchases.
+paths:
+  /new_transaction:
+    post:
+      tags:
+        - Market Service
+      summary: Create a new transaction record.
+      description: Creates a new transaction for a gacha roll and updates the relevant data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                  description: ID of the user making the purchase.
+                gacha_id:
+                  type: integer
+                  description: ID of the gacha item being purchased.
+                cost:
+                  type: integer
+                  description: The cost of the gacha roll.
+                end_date:
+                  type: string
+                  format: date-time
+                  description: The timestamp when the transaction ends.
+              required:
+                - user_id
+                - gacha_id
+                - cost
+                - end_date
+      responses:
+        '200':
+          description: Transaction created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    type: array
+                    items: {}
+                  message:
+                    type: string
+        '400':
+          description: Bad request, missing required fields.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string

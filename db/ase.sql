@@ -79,39 +79,6 @@ INSERT INTO `gacha` VALUES (1,'Bulbasaur','Grass','Poison',318,45,49,49,65,65,45
 UNLOCK TABLES;
 
 --
--- Table structure for table `historic`
---
-
-DROP TABLE IF EXISTS `historic`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `historic` (
-  `UserId` int NOT NULL,
-  `GachaId` int NOT NULL,
-  `StillOwn` tinyint NOT NULL,
-  `TransactionId` int NOT NULL,
-  `Identificator` int NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY (`Identificator`),
-  UNIQUE KEY `TransactionId_UNIQUE` (`TransactionId`),
-  KEY `fk_UserId` (`UserId`),
-  KEY `fk_GachaId` (`GachaId`),
-  KEY `fk_TransactionId` (`TransactionId`),
-  CONSTRAINT `fk_GachaId` FOREIGN KEY (`GachaId`) REFERENCES `gacha` (`GachaId`),
-  CONSTRAINT `fk_TransactionId` FOREIGN KEY (`TransactionId`) REFERENCES `transaction` (`TransactionId`),
-  CONSTRAINT `fk_UserId` FOREIGN KEY (`UserId`) REFERENCES `user` (`UserId`) ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `historic`
---
-
-LOCK TABLES `historic` WRITE;
-/*!40000 ALTER TABLE `historic` DISABLE KEYS */;
-/*!40000 ALTER TABLE `historic` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `transaction`
 --
 
@@ -120,11 +87,12 @@ DROP TABLE IF EXISTS `transaction`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `transaction` (
   `TransactionId` int NOT NULL AUTO_INCREMENT,
+  `GachaId` int NOT NULL,
+  `RequestingUser` int NOT NULL,
   `UserOwner` int DEFAULT NULL,
-  `RequestingUser` int DEFAULT NULL,
-  `GachaId` int DEFAULT NULL,
-  `Cost` int DEFAULT NULL,
+  `Cost` int NOT NULL,
   `EndDate` varchar(45) DEFAULT NULL,
+  `SendedTo` int DEFAULT NULL,
   PRIMARY KEY (`TransactionId`),
   KEY `UserOwn_idx` (`UserOwner`),
   KEY `RequestingUser_idx` (`RequestingUser`),
@@ -182,4 +150,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-18 17:39:26
+-- Dump completed on 2024-11-19 22:42:55

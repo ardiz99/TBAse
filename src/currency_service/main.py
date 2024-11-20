@@ -47,10 +47,8 @@ def roll_gacha():
     target_data = response.json().get("data")
     amount = target_data["CurrencyAmount"]
     if amount < u.ROLL_COST:
-        u.RESPONSE["code"] = 500
-        u.RESPONSE["data"] = []
-        u.RESPONSE["message"] = "Insufficient Pokedollars"
-        return jsonify(u.RESPONSE)
+        u.generic_error("Insufficient Pokedollars")
+        return jsonify(u.RESPONSE), u.RESPONSE["code"]
 
     rarity = random_rarity()
 
@@ -93,19 +91,17 @@ def roll_gacha():
 
 @app.route('/roll_img', methods=['GET'])
 def roll_img():
-    data = request.get_json()
-    image_path = "." + data.get('url')
+    url = request.args.get("url")
+    image_path = "." + url
 
     return send_file(image_path, mimetype='image/png')
-
 
 
 @app.route('/buy_currency', methods=['PUT'])
 def buy_currency():
     u.reset_response()
 
-    data = request.get_json()
-    quantity = data.get('quantity')
+    quantity = int(request.args.get('quantity'))
     if quantity <= 0:
         u.generic_error("You can't add a negative quantity.")
         return jsonify(u.RESPONSE)
