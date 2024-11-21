@@ -3,6 +3,7 @@ import mysql.connector
 from mysql.connector import Error
 import os
 import utils as u
+# from src import utils as u
 
 app = Flask(__name__)
 
@@ -60,8 +61,6 @@ def get_gacha_by_rarity():
         query = "SELECT * FROM gacha WHERE Rarity = '{}';".format(rarity)
         cursor.execute(query)
         result = cursor.fetchall()
-        print(query)
-        print(result)
 
         if not result:
             u.not_found()
@@ -115,10 +114,11 @@ def get_amount():
         return jsonify(u.RESPONSE)
 
 
-@app.route('/update_amount')
+@app.route('/update_amount', methods=['PUT'])
 def update_amount():
-    new_amount = request.args.get('new_amount')
-    email = request.args.get('email')
+    data = request.get_json()
+    new_amount = data.get('new_amount')
+    email = data.get('email')
     # new_amount = 10
     # email = "taylor.smith@example.com"
     u.reset_response()
@@ -164,6 +164,10 @@ def new_transaction():
     gacha_id = data.get('gacha_id')
     cost = data.get('cost')
     datetime = data.get('end_date')
+    print(user_id)
+    print(gacha_id)
+    print(cost)
+    print(datetime)
 
     u.reset_response()
 
@@ -175,19 +179,20 @@ def new_transaction():
         return jsonify(u.RESPONSE)
     try:
         cursor = connection.cursor(dictionary=True)
-        query = "INSERT INTO transaction (UserOwner, GachaId, Cost, EndDate) " \
-                "VALUES (%s, %s, %s, %s)"
-        values = (user_id, gacha_id, cost, datetime)
-        cursor.execute(query, values)
+        query = f"INSERT INTO transaction (RequestingUser, GachaId, Cost, EndDate) " \
+                f"VALUES ({user_id}, {gacha_id}, {cost}, \"{datetime}\")"
+
+        print(query)
+        cursor.execute(query)
         connection.commit()
 
-        query = f"SELECT * " \
-                f"FROM transaction " \
-                f"WHERE UserOwner = '{user_id}';"
-        cursor.execute(query)
-        result = cursor.fetchall()
-        print(query)
-        print(result)
+        # query = f"SELECT * " \
+        #         f"FROM transaction " \
+        #         f"WHERE RequestingUser = {user_id};"
+        # cursor.execute(query)
+        # result = cursor.fetchall()
+        # print(query)
+        # print(result)
 
         cursor.close()
         close_db_connection()

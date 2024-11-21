@@ -1,10 +1,13 @@
 import requests
 from flask import Flask, request, jsonify
+
 import utils as u
+
+# from src import utils as u
 
 app = Flask(__name__)
 
-ROUTING = "http://127.0.0.1:8005/" if u.LOCAL else "http://db-manager:8005/"
+DB_MANAGER_URL = 'https://db-manager:8005' if u.LOCAL else 'https://127.0.0.1:8005'
 
 
 @app.route('/new_transaction', methods=['POST'])
@@ -18,7 +21,7 @@ def new_transaction():
         u.bad_request()
         return jsonify(u.RESPONSE)
 
-    path = ROUTING + "new_transaction"
+    path = DB_MANAGER_URL + "/new_transaction"
     response = requests.post(path, json={'user_id': user_id,
                                          'gacha_id': gacha_id,
                                          'cost': cost,
@@ -35,4 +38,6 @@ def new_transaction():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8003)
+    app.run(host="0.0.0.0",
+            port=8003,
+            debug=u.FLASK_DEBUG)

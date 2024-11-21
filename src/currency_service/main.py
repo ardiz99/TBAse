@@ -4,6 +4,7 @@ import requests
 import random
 
 import utils as u
+# from src import utils as u
 
 app = Flask(__name__)
 
@@ -65,7 +66,7 @@ def roll_gacha():
     # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
     new_amount = amount - 10
     path = ROUTING + "update_amount"
-    response = requests.get(path, params={'email': email, 'new_amount': new_amount})
+    response = requests.put(path, json={'email': email, 'new_amount': new_amount})
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return jsonify(u.RESPONSE)
@@ -73,7 +74,7 @@ def roll_gacha():
     gacha_id = chosen["GachaId"]
     current_datetime = datetime.now()
     formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-    path = "http://market-service:8003/new_transaction"
+    path = "http://127.0.0.1:8003/new_transaction"
     response = requests.post(path, json={'user_id': user_id,
                                          'gacha_id': gacha_id,
                                          'cost': u.ROLL_COST,
