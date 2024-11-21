@@ -74,7 +74,7 @@ def roll_gacha():
     gacha_id = chosen["GachaId"]
     current_datetime = datetime.now()
     formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-    path = "http://127.0.0.1:8003/new_transaction"
+    path = "http://market-service:8003/new_transaction"
     response = requests.post(path, json={'user_id': user_id,
                                          'gacha_id': gacha_id,
                                          'cost': u.ROLL_COST,
@@ -101,8 +101,8 @@ def roll_img():
 @app.route('/buy_currency', methods=['PUT'])
 def buy_currency():
     u.reset_response()
-
-    quantity = int(request.args.get('quantity'))
+    data = request.get_json()
+    quantity = data.get('quantity')
     if quantity <= 0:
         u.generic_error("You can't add a negative quantity.")
         return jsonify(u.RESPONSE)

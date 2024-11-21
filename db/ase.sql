@@ -81,6 +81,7 @@ INSERT INTO `gacha` VALUES (1,'Bulbasaur','Grass','Poison',318,45,49,49,65,65,45
 UNLOCK TABLES;
 
 --
+
 -- Table structure for table `transaction`
 --
 

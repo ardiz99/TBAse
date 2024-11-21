@@ -1,140 +1,104 @@
 from flask import Flask, jsonify, request
-import mysql.connector
+
+import requests
 import utils as u
-import os
 
 app = Flask(__name__)
 
-
-def get_db_connection():
-    return mysql.connector.connect(
-        host=os.getenv('DB_HOST'),
-        user=os.getenv('DB_USER'),
-        password=os.getenv('DB_PASSWORD'),
-        database=os.getenv('DB_NAME')
-    )
+# Configurazione della base URL per il routing
+ROUTING = "http://127.0.0.1:8005/" if u.LOCAL else "http://db-manager:8005/"
 
 
+# Funzione helper per effettuare richieste verso l'API remota
+def perform_request(method, endpoint, json_data=None):
+    url = ROUTING + endpoint
+    response = requests.request(method, url, json=json_data)
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return jsonify(u.RESPONSE), response.status_code
+    return response
+
+
+# INIZIO METODI PER VISUALIZZARE, AGGIUNGERE, AGGIORNARE E ELIMINARE GACHA
+
+
+# Endpoint per aggiungere un nuovo gacha
 @app.route('/gacha/add', methods=['POST'])
 def add_gacha():
+    u.reset_response()
     data = request.get_json()
-    conn = get_db_connection()
-    if conn is None:
-        return jsonify({'error': 'Database connection failed'}), 500
+    response = perform_request("POST", "gacha/add", data)
 
-    try:
-        cursor = conn.cursor()
-        query = "INSERT INTO gacha (Name, Type1, Type2, Total, HP, Attack, Defense, SpAtt, SpDef, Speed, Rarity, " \
-                "Link) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-        values = (
-            data['Name'], data['Type1'], data['Type2'], data['Total'], data['HP'],
-            data['Attack'], data['Defense'], data['SpAtt'], data['SpDef'],
-            data['Speed'], data['Rarity'], data['Link']
-        )
-        cursor.execute(query, values)
-        conn.commit()
-        return jsonify({'message': 'Gacha added successfully!'}), 200
-    except (KeyError, mysql.connector.Error) as err:
-        print(f"Error: {err}")
-        return jsonify({'error': 'Failed to add gacha or invalid data'}), 500
-    finally:
-        conn.close()
+    if isinstance(response, tuple):  # In caso di errore
+        return response
+
+    u.RESPONSE["code"] = 200
+    u.RESPONSE["data"] = []
+    u.RESPONSE["message"] = "Gacha added successfully!"
+    return jsonify(u.RESPONSE)
 
 
+# Endpoint per aggiornare un gacha
 @app.route('/gacha/update/<int:gacha_id>', methods=['PUT'])
 def update_gacha(gacha_id):
+    u.reset_response()
     data = request.get_json()
-    conn = get_db_connection()
-    if conn is None:
-        return jsonify({'error': 'Database connection failed'}), 500
+    response = perform_request("PUT", f"gacha/update/{gacha_id}", data)
 
-    try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM gacha WHERE GachaId = %s", (gacha_id,))
-        gacha = cursor.fetchone()
-        if not gacha:
-            return jsonify({'message': 'Gacha not found'}), 404
+    if isinstance(response, tuple):  # In caso di errore
+        return response
 
-        query = "UPDATE gacha " \
-                "SET Name = %s, Type1 = %s, Type2 = %s, Total = %s, HP = %s, Attack = %s, Defense = %s, SpAtt = %s, " \
-                "SpDef = %s, Speed = %s, Rarity = %s, Link = %s" \
-                "WHERE GachaId = %s"
-        values = (
-            data.get('Name', gacha[1]), data.get('Type1', gacha[2]), data.get('Type2', gacha[3]),
-            data.get('Total', gacha[4]), data.get('HP', gacha[5]), data.get('Attack', gacha[6]),
-            data.get('Defense', gacha[7]), data.get('SpAtt', gacha[8]), data.get('SpDef', gacha[9]),
-            data.get('Speed', gacha[10]), data.get('Rarity', gacha[11]), data.get('Link', gacha[12]),
-            gacha_id
-        )
-        cursor.execute(query, values)
-        conn.commit()
-        return jsonify({'message': 'Gacha updated successfully!'})
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
-        return jsonify({'error': 'Failed to update gacha'}), 500
-    finally:
-        conn.close()
+    u.RESPONSE["code"] = 200
+    u.RESPONSE["data"] = []
+    u.RESPONSE["message"] = "Gacha updated successfully!"
+    return jsonify(u.RESPONSE)
 
 
+# Endpoint per eliminare un gacha
 @app.route('/gacha/delete/<int:gacha_id>', methods=['DELETE'])
 def delete_gacha(gacha_id):
-    conn = get_db_connection()
-    if conn is None:
-        return jsonify({'error': 'Database connection failed'}), 500
+    u.reset_response()
+    response = perform_request("DELETE", f"gacha/delete/{gacha_id}")
 
-    try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM gacha WHERE GachaId = %s", (gacha_id,))
-        gacha = cursor.fetchone()
-        if not gacha:
-            return jsonify({'message': 'Gacha not found'}), 404
+    if isinstance(response, tuple):  # In caso di errore
+        return response
 
-        cursor.execute("DELETE FROM gacha WHERE GachaId = %s", (gacha_id,))
-        conn.commit()
-        return jsonify({'message': 'Gacha deleted successfully!'})
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
-        return jsonify({'error': 'Failed to delete gacha'}), 500
-    finally:
-        conn.close()
+    u.RESPONSE["code"] = 200
+    u.RESPONSE["data"] = []
+    u.RESPONSE["message"] = "Gacha deleted successfully!"
+    return jsonify(u.RESPONSE)
 
 
+# Endpoint per ottenere un singolo gacha
 @app.route('/gacha/<int:gacha_id>', methods=['GET'])
 def get_gacha(gacha_id):
-    conn = get_db_connection()
-    if conn is None:
-        return jsonify({'error': 'Database connection failed'}), 500
+    u.reset_response()
+    response = perform_request("GET", f"gacha/{gacha_id}")
 
-    try:
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM gacha WHERE GachaId = %s", (gacha_id,))
-        gacha = cursor.fetchone()
-        if gacha is None:
-            return jsonify({'message': 'Gacha not found'}), 404
-        return jsonify(gacha)
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
-        return jsonify({'error': 'Failed to retrieve gacha'}), 500
-    finally:
-        conn.close()
+    if isinstance(response, tuple):  # In caso di errore
+        return response
+
+    gacha = response.json().get("data")
+    u.RESPONSE["code"] = 200
+    u.RESPONSE["data"] = gacha
+    u.RESPONSE["message"] = "Gacha retrieved successfully!"
+    return jsonify(u.RESPONSE)
 
 
+# Endpoint per ottenere tutti i gachas
 @app.route('/gacha', methods=['GET'])
 def get_all_gachas():
-    conn = get_db_connection()
-    if conn is None:
-        return jsonify({'error': 'Database connection failed'}), 500
+    u.reset_response()
+    response = perform_request("GET", "gacha")
 
-    try:
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM gacha")
-        gachas = cursor.fetchall()
-        return jsonify(gachas)
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
-        return jsonify({'error': 'Failed to retrieve gachas'}), 500
-    finally:
-        conn.close()
+    if isinstance(response, tuple):  # In caso di errore
+        return response
+
+    gachas = response.json().get("data")
+    u.RESPONSE["code"] = 200
+    u.RESPONSE["data"] = gachas
+    u.RESPONSE["message"] = "All gachas retrieved successfully!"
+    return jsonify(u.RESPONSE)
 
 
 if __name__ == "__main__":

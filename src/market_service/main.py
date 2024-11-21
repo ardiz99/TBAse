@@ -30,7 +30,6 @@ def new_transaction():
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return jsonify(u.RESPONSE)
-
     else:
         u.RESPONSE["code"] = 200
         u.RESPONSE["data"] = []

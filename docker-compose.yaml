@@ -117,4 +117,3 @@ secrets:
     file: ./secrets/key.pem
 #  db_password:
 #    file: ./secrets/mongo_password.txt
-
