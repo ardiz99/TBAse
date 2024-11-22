@@ -4,8 +4,6 @@ import utils as u
 
 app = Flask(__name__)
 
-ROUTING = "http://127.0.0.1:8002/" if u.LOCAL else "http://gacha-service:8002/"
-
 
 @app.route('/')
 def index():
@@ -13,15 +11,19 @@ def index():
 
 
 @app.route('/roll', methods=['GET'])
-def roll_gacha():
-    response = requests.get('http://currency-service:8004/roll_info')
+def roll():
+    path = u.CURRENCY_SERVICE_URL + "/roll_info"
+    response = requests.get(path, verify=False)
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return jsonify(u.RESPONSE)
 
     data = response.json().get("data")
     url = data["Link"]
-    response = requests.get('http://currency-service:8004/roll_img', params={"url": url})
+    path = u.CURRENCY_SERVICE_URL + "/roll_img"
+    response = requests.get(path,
+                            verify=False,
+                            params={"url": url})
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return jsonify(u.RESPONSE)
@@ -41,12 +43,14 @@ def buy_currency():
         u.bad_request()
         return jsonify(u.RESPONSE)
 
-    response = requests.put('http://currency-service:8004/buy_currency', json={"quantity": quantity})
-    # response = requests.put('http://127.0.0.1:8004/buy_currency', json={"quantity": quantity})
+    path = u.CURRENCY_SERVICE_URL + "/buy_currency"
+    response = requests.put(path,
+                            verify=False,
+                            json={"quantity": quantity})
     return jsonify(response.json())
 
 
-# INIZIO ENDPOINT DEL GACHASERVICE ==>
+# INIZIO ENDPOINT DEL GACHASERVICE_URL ==>
 
 # Endpoint per aggiungere un nuovo gacha
 @app.route('/gacha/add', methods=['POST'])
@@ -64,10 +68,13 @@ def add_gacha():
         return jsonify(u.RESPONSE), 400
 
     # URL completo del servizio remoto
-    url = ROUTING + "gacha/add"
+    url = u.GACHA_SERVICE_URL + "gacha/add"
 
     # Effettua la richiesta POST al servizio remoto
-    response = requests.post(url, json=data, headers={"Content-Type": "application/json"})
+    response = requests.post(url,
+                             verify=False,
+                             json=data,
+                             headers={"Content-Type": "application/json"})
 
     if response.status_code != 200:
         u.handle_error(response.status_code)
@@ -95,10 +102,13 @@ def update_gacha(gacha_id):
         return jsonify(u.RESPONSE), 400
 
     # URL completo del servizio remoto
-    url = ROUTING + f"gacha/update/{gacha_id}"
+    url = u.GACHA_SERVICE_URL + f"gacha/update/{gacha_id}"
 
     # Effettua la richiesta PUT al servizio remoto
-    response = requests.put(url, json=data, headers={"Content-Type": "application/json"})
+    response = requests.put(url,
+                            verify=False,
+                            json=data,
+                            headers={"Content-Type": "application/json"})
 
     if response.status_code != 200:
         u.handle_error(response.status_code)
@@ -116,7 +126,7 @@ def delete_gacha(gacha_id):
     u.reset_response()
 
     # URL completo del servizio remoto
-    url = ROUTING + f"gacha/delete/{gacha_id}"
+    url = u.GACHA_SERVICE_URL + f"gacha/delete/{gacha_id}"
 
     # Effettua la richiesta DELETE al servizio remoto
     response = requests.delete(url)
@@ -137,10 +147,10 @@ def get_gacha(gacha_id):
     u.reset_response()
 
     # URL completo del servizio remoto
-    url = ROUTING + f"gacha/{gacha_id}"
+    url = u.GACHA_SERVICE_URL + f"/gacha/{gacha_id}"
 
     # Effettua la richiesta GET al servizio remoto
-    response = requests.get(url)
+    response = requests.get(url, verify=False)
 
     if response.status_code != 200:
         u.handle_error(response.status_code)
@@ -159,10 +169,10 @@ def get_all_gachas():
     u.reset_response()
 
     # URL completo del servizio remoto
-    url = ROUTING + "gacha"
+    url = u.GACHA_SERVICE_URL + "/gacha"
 
     # Effettua la richiesta GET al servizio remoto
-    response = requests.get(url)
+    response = requests.get(url, verify=False)
 
     if response.status_code != 200:
         u.handle_error(response.status_code)

@@ -1,9 +1,8 @@
 from flask import Flask, jsonify, request
 import mysql.connector
 from mysql.connector import Error
-import os
-import utils as u
 
+import utils as u
 # from src import utils as u
 
 app = Flask(__name__)
@@ -17,10 +16,10 @@ def init_db_connection():
     try:
         if connection is None or not connection.is_connected():
             connection = mysql.connector.connect(
-                host=os.getenv('DB_HOST'),
-                user=os.getenv('DB_USER'),
-                password=os.getenv('DB_PASSWORD'),
-                database=os.getenv('DB_NAME')
+                host=u.HOST,
+                user=u.USER,
+                password=u.PASSWORD,
+                database=u.DATABASE
             )
         if connection.is_connected():
             print("Connessione al database MySQL riuscita.")
@@ -91,41 +90,6 @@ def get_amount():
         cursor = connection.cursor(dictionary=True)
         query = "SELECT CurrencyAmount FROM user WHERE Email = '{}';".format(email)
         cursor.execute(query)
-        result = cursor.fetchall()
-
-        if not result:
-            u.not_found()
-            return jsonify(u.RESPONSE)
-
-        cursor.close()
-        close_db_connection()
-        u.RESPONSE["code"] = 200
-        u.RESPONSE["data"] = result
-        u.RESPONSE["message"] = ""
-        return jsonify(u.RESPONSE)
-    except Error as e:
-        u.generic_error()
-        return jsonify(u.RESPONSE)
-
-
-@app.route('/get_amount')
-def get_amount():
-    email = request.args.get('email')
-    # email = "taylor.smith@example.com"
-
-    u.reset_response()
-
-    global connection
-    init_db_connection()
-
-    if connection is None:
-        print("Errore: connessione al database non riuscita.")
-        u.generic_error()
-        return jsonify(u.RESPONSE)
-    try:
-        cursor = connection.cursor(dictionary=True)
-        query = "SELECT CurrencyAmount FROM user WHERE Email = '{}';".format(email)
-        cursor.execute(query)
         result = cursor.fetchone()
         print(query)
         print(result)
@@ -148,8 +112,8 @@ def get_amount():
 @app.route('/update_amount', methods=['PUT'])
 def update_amount():
     data = request.get_json()
-    new_amount = data.get('new_amount')
     email = data.get('email')
+    new_amount = data.get('new_amount')
     # new_amount = 10
     # email = "taylor.smith@example.com"
     u.reset_response()
@@ -165,6 +129,7 @@ def update_amount():
         query = "UPDATE user " \
                 "SET CurrencyAmount = {}" \
                 " WHERE Email = '{}';".format(new_amount, email)
+
         cursor.execute(query)
 
         connection.commit()

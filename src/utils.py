@@ -1,3 +1,5 @@
+import os
+
 FLASK_DEBUG = True  # Do not use debug mode in production
 
 ROLL_COST = 10
@@ -6,24 +8,16 @@ USER_ID = None
 USER_EMAIL = None
 
 LOCAL = False
-# vabbè questa in realtà non serve praticamente a nulla
-SERVICES = {
-    "API_GATEWAY": "api-gateway",
-    "AUTH_SERVICE": "auth-service",
-    "GACHA_SERVICE": "gacha-service",
-    "AUCTION_SERVICE": "auction-service",
-    "CURRENCY_SERVICE": "currency-service",
-    "DB_MANAGER": "db-manager",
-}
 
-PORTS = {
-    "API_GATEWAY": "8000",
-    "AUTH_SERVICE": "8001",
-    "GACHA_SERVICE": "8002",
-    "AUCTION_SERVICE": "8003",
-    "CURRENCY_SERVICE": "8004",
-    "DB_MANAGER": "8005",
-}
+HOST = "localhost" if LOCAL else os.getenv('DB_HOST')
+USER = "root" if LOCAL else os.getenv('DB_USER')
+PASSWORD = "diego" if LOCAL else os.getenv('DB_PASSWORD')
+DATABASE = "ase" if LOCAL else os.getenv('DB_NAME')
+
+GACHA_SERVICE_URL = "http://127.0.0.1:8002" if LOCAL else "https://gacha-service:8002"
+MARKET_SERVICE_URL = "http://127.0.0.1:8003" if LOCAL else "https://market-service:8003"
+CURRENCY_SERVICE_URL = "http://127.0.0.1:8004" if LOCAL else "https://currency-service:8004"
+DB_MANAGER_URL = "http://127.0.0.1:8005" if LOCAL else "https://db-manager:8005"
 
 RESPONSE = {
     "code": 200,

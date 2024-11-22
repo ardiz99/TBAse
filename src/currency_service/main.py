@@ -8,8 +8,6 @@ import utils as u
 
 app = Flask(__name__)
 
-ROUTING = "http://127.0.0.1:8005/" if u.LOCAL else "http://db-manager:8005/"
-
 RARITY_DISTRIBUTION = {
     "Legendary": 0.05,
     "Epic": 0.5,
@@ -32,15 +30,17 @@ def random_rarity():
 
 
 @app.route('/roll_info', methods=['GET'])
-def roll_gacha():
+def roll_info():
     u.reset_response()
 
     # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
     email = "taylor.smith@example.com"
     user_id = 1
 
-    path = ROUTING + "get_amount"
-    response = requests.get(path, params={'email': email})
+    path = u.DB_MANAGER_URL + "/get_amount"
+    response = requests.get(path,
+                            verify=False,
+                            params={'email': email})
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return jsonify(u.RESPONSE)
@@ -53,8 +53,10 @@ def roll_gacha():
 
     rarity = random_rarity()
 
-    path = ROUTING + "get_gacha_by_rarity"
-    response = requests.get(path, params={'rarity': rarity})
+    path = u.DB_MANAGER_URL + "/get_gacha_by_rarity"
+    response = requests.get(path,
+                            verify=False,
+                            params={'rarity': rarity})
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return jsonify(u.RESPONSE)
@@ -65,8 +67,10 @@ def roll_gacha():
 
     # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
     new_amount = amount - 10
-    path = ROUTING + "update_amount"
-    response = requests.put(path, json={'email': email, 'new_amount': new_amount})
+    path = u.DB_MANAGER_URL + "/update_amount"
+    response = requests.put(path,
+                            verify=False,
+                            json={'email': email, 'new_amount': new_amount})
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return jsonify(u.RESPONSE)
@@ -74,11 +78,13 @@ def roll_gacha():
     gacha_id = chosen["GachaId"]
     current_datetime = datetime.now()
     formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-    path = "http://market-service:8003/new_transaction"
-    response = requests.post(path, json={'user_id': user_id,
-                                         'gacha_id': gacha_id,
-                                         'cost': u.ROLL_COST,
-                                         'end-date': formatted_datetime})
+    path = u.MARKET_SERVICE_URL + "/new_transaction"
+    response = requests.post(path,
+                             verify=False,
+                             json={'user_id': user_id,
+                                   'gacha_id': gacha_id,
+                                   'cost': u.ROLL_COST,
+                                   'end-date': formatted_datetime})
 
     if response.status_code != 200:
         u.handle_error(response.status_code)
@@ -109,17 +115,21 @@ def buy_currency():
 
     # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
     email = "taylor.smith@example.com"
-    path = ROUTING + "get_amount"
-    response = requests.get(path, params={'email': email})
+    path = u.DB_MANAGER_URL + "/get_amount"
+    response = requests.get(path,
+                            verify=False,
+                            params={'email': email})
 
     target_data = response.json().get("data")
     amount = target_data["CurrencyAmount"]
 
     # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
     new_amount = amount + quantity
-    path = ROUTING + "update_amount"
-    response = requests.get(path,
-                            params={'email': email, 'new_amount': new_amount})
+    path = u.DB_MANAGER_URL + "/update_amount"
+    response = requests.put(path,
+                            verify=False,
+                            json={'email': email,
+                                  'new_amount': new_amount})
 
     if response.json().get("code") != 200:
         u.RESPONSE["data"] = []

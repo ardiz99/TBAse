@@ -1,12 +1,20 @@
 openapi: 3.0.3
 info:
   title: Gacha Service API
-  description: >
-    L'API Gacha Service consente di gestire oggetti "Gacha". Offre operazioni per creare, aggiornare, eliminare e visualizzare i Gacha, oltre a recuperare un elenco completo.
+  description: |-
+    This API is part of a microservices architecture and serves as the gacha management service
+    for the application. It provides operations for managing gachas and retrieving gacha infos.
+    
+    Some useful links:
+    - [The Pokémon Gacha repository](https://github.com/ardiz99/TBAse)
+    - [The source APIs definition for the Pokémon Gacha](https://github.com/ardiz99/TBAse/OpenAPI)
   version: 1.0.0
+  x-microservice: gacha-service
 servers:
+  - url: http://gacha-service:8002
+    description: Gacha Service in Docker environment
   - url: http://127.0.0.1:8002
-    description: Ambiente di sviluppo locale
+    description: Gacha Service on local development
 paths:
   /gacha/add:
     post:

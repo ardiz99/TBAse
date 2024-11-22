@@ -2,17 +2,15 @@ from flask import Flask, jsonify, request
 
 import requests
 import utils as u
+# from src import utils as u
 
 app = Flask(__name__)
-
-# Configurazione della base URL per il routing
-ROUTING = "http://127.0.0.1:8005/" if u.LOCAL else "http://db-manager:8005/"
 
 
 # Funzione helper per effettuare richieste verso l'API remota
 def perform_request(method, endpoint, json_data=None):
-    url = ROUTING + endpoint
-    response = requests.request(method, url, json=json_data)
+    url = u.DB_MANAGER_URL + endpoint
+    response = requests.request(method, url, json=json_data, verify=False)
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return jsonify(u.RESPONSE), response.status_code
@@ -27,7 +25,7 @@ def perform_request(method, endpoint, json_data=None):
 def add_gacha():
     u.reset_response()
     data = request.get_json()
-    response = perform_request("POST", "gacha/add", data)
+    response = perform_request("POST", "/gacha/add", data)
 
     if isinstance(response, tuple):  # In caso di errore
         return response
@@ -43,7 +41,7 @@ def add_gacha():
 def update_gacha(gacha_id):
     u.reset_response()
     data = request.get_json()
-    response = perform_request("PUT", f"gacha/update/{gacha_id}", data)
+    response = perform_request("PUT", f"/gacha/update/{gacha_id}", data)
 
     if isinstance(response, tuple):  # In caso di errore
         return response
@@ -58,7 +56,7 @@ def update_gacha(gacha_id):
 @app.route('/gacha/delete/<int:gacha_id>', methods=['DELETE'])
 def delete_gacha(gacha_id):
     u.reset_response()
-    response = perform_request("DELETE", f"gacha/delete/{gacha_id}")
+    response = perform_request("DELETE", f"/gacha/delete/{gacha_id}")
 
     if isinstance(response, tuple):  # In caso di errore
         return response
@@ -73,7 +71,7 @@ def delete_gacha(gacha_id):
 @app.route('/gacha/<int:gacha_id>', methods=['GET'])
 def get_gacha(gacha_id):
     u.reset_response()
-    response = perform_request("GET", f"gacha/{gacha_id}")
+    response = perform_request("GET", f"/gacha/{gacha_id}")
 
     if isinstance(response, tuple):  # In caso di errore
         return response
@@ -89,7 +87,7 @@ def get_gacha(gacha_id):
 @app.route('/gacha', methods=['GET'])
 def get_all_gachas():
     u.reset_response()
-    response = perform_request("GET", "gacha")
+    response = perform_request("GET", "/gacha")
 
     if isinstance(response, tuple):  # In caso di errore
         return response

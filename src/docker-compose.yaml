@@ -1,7 +1,7 @@
 services:
   api-gateway:
     build:
-      context: ./
+      context: .
       dockerfile: ./api_gateway/Dockerfile
     container_name: api-gateway
     ports:
@@ -35,7 +35,7 @@ services:
 
   gacha-service:
     build:
-      context: ./
+      context: .
       dockerfile: ./gacha_service/Dockerfile
     container_name: gacha-service
     ports:
@@ -50,7 +50,7 @@ services:
 
   currency-service:
     build:
-      context: ./
+      context: .
       dockerfile: ./currency_service/Dockerfile
     container_name: currency-service
     ports:
@@ -67,7 +67,7 @@ services:
 
   market-service:
     build:
-      context: ./
+      context: .
       dockerfile: ./market_service/Dockerfile
     container_name: market-service
     ports:
@@ -82,7 +82,7 @@ services:
 
   db-manager:
     build:
-      context: ./
+      context: .
       dockerfile: ./db_manager/Dockerfile
     container_name: db-manager
     ports:

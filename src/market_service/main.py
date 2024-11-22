@@ -7,8 +7,6 @@ import utils as u
 
 app = Flask(__name__)
 
-DB_MANAGER_URL = 'https://db-manager:8005' if u.LOCAL else 'https://127.0.0.1:8005'
-
 
 @app.route('/new_transaction', methods=['POST'])
 def new_transaction():
@@ -21,11 +19,13 @@ def new_transaction():
         u.bad_request()
         return jsonify(u.RESPONSE)
 
-    path = DB_MANAGER_URL + "/new_transaction"
-    response = requests.post(path, json={'user_id': user_id,
-                                         'gacha_id': gacha_id,
-                                         'cost': cost,
-                                         'end_date': datetime})
+    path = u.DB_MANAGER_URL + "/new_transaction"
+    response = requests.post(path,
+                             verify=False,
+                             json={'user_id': user_id,
+                                   'gacha_id': gacha_id,
+                                   'cost': cost,
+                                   'end_date': datetime})
 
     if response.status_code != 200:
         u.handle_error(response.status_code)
@@ -37,6 +37,4 @@ def new_transaction():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0",
-            port=8003,
-            debug=u.FLASK_DEBUG)
+    app.run(debug=u.FLASK_DEBUG)
