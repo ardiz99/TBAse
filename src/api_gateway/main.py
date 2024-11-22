@@ -2,6 +2,8 @@ from flask import Flask, jsonify, request, Response
 import requests
 import utils as u
 
+# from src import utils as u
+
 app = Flask(__name__)
 
 
@@ -183,6 +185,78 @@ def get_all_gachas():
     u.RESPONSE["data"] = gachas
     u.RESPONSE["message"] = "All gachas retrieved successfully!"
     return jsonify(u.RESPONSE)
+
+
+@app.route('/login', methods=['GET'])
+def login():
+    email = request.args.get('Email')
+    password = request.args.get('Password')
+    response = requests.get('https://auth-service:8001/login',
+                            verify=False,
+                            params={'Email': email, 'Password': password})
+    return jsonify(response.json())
+
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    first_name = data.get('FirstName')
+    last_name = data.get('LastName')
+    email = data.get('Email')
+    password = data.get('Password')
+    amount = data.get('CurrencyAmount')
+    response = requests.post('https://auth-service:8001/register',
+                             verify=False,
+                             json={'FirstName': first_name,
+                                   'LastName': last_name,
+                                   'Email': email,
+                                   'Password': password,
+                                   'CurrencyAmount': amount})
+    return jsonify(response.json())
+
+
+@app.route('/delete_user', methods=['GET'])
+def delete_user():
+    email = request.args.get('Email')
+    password = request.args.get('Password')
+    response = requests.get('https://auth-service:8001/delete_user',
+                            verify=False,
+                            params={'Email': email, 'Password': password})
+    return jsonify(response.json())
+
+
+@app.route('/delete_admin', methods=['GET'])
+def delete_admin():
+    email = request.args.get('Email')
+    password = request.args.get('Password')
+    response = requests.get('https://auth-service:8001/delete_admin',
+                            verify=False,
+                            params={'Email': email, 'Password': password})
+    return jsonify(response.json())
+
+
+@app.route('/update_user', methods=['PUT'])
+def update_user():
+    response = requests.put('https://auth-service:8001/update_user',
+                            verify=False)
+    return jsonify(response.json())
+
+
+@app.route('/check_users_profile', methods=['GET'])
+def check_users_profile():
+    response = requests.get('https://auth-service:8001/check_users_profile',
+                            verify=False)
+    return jsonify(response.json())
+
+
+@app.route('/login_admin', methods=['GET'])
+def login_admin():
+    email = request.args.get('Email')
+    password = request.args.get('Password')
+    response = requests.get('https://auth-service:8001/login_admin',
+                            verify=False,
+                            params={'Email': email, 'Password': password})
+    return jsonify(response.json())
 
 
 if __name__ == "__main__":

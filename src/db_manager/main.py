@@ -1,8 +1,8 @@
 from flask import Flask, jsonify, request
 import mysql.connector
 from mysql.connector import Error
-
 import utils as u
+
 # from src import utils as u
 
 app = Flask(__name__)
@@ -371,6 +371,239 @@ def get_all_gachas():
         print(f"Errore durante il recupero di tutti i gachas: {e}")
         u.generic_error("Errore durante il recupero di tutti i gachas.")
         return jsonify(u.RESPONSE)
+
+
+# INIZIO METODI PER USER =>
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    firstname = data.get('FirstName')
+    lastname = data.get('LastName')
+    email = data.get('Email')
+    password = data.get('Password')
+    currencyAmount = data.get('CurrencyAmount')
+
+    if not email or not password or not firstname or not lastname or not currencyAmount:
+        print(email)
+        return jsonify({"error": "all field are required"}), 400
+
+    u.reset_response()
+    global connection
+    init_db_connection()
+
+    try:
+        # Connessione al database
+        cursor = connection.cursor(dictionary=True)
+
+        query = "INSERT INTO user (FirstName, LastName, Email, Password, CurrencyAmount) VALUES ("""
+        query = query + "'{}',".format(firstname)
+        query = query + "'{}',".format(lastname)
+        query = query + "'{}',".format(email)
+        query = query + "'{}',".format(password)
+        query = query + "'{}');""".format(currencyAmount)
+        print(query)
+
+        cursor.execute(query)
+        connection.commit()
+        query = "SELECT * FROM user  WHERE Email = '{}';".format(email)
+        cursor.execute(query)
+        result = cursor.fetchall()
+
+        if result:
+            return jsonify({"message": "register successful"}), 200
+        else:
+            return jsonify({"error": "Invalid credentials"}), 400
+
+    except mysql.connector.Error as e:
+        print(query)
+        return jsonify({"error": "Database error", "details": str(e)}), 500
+
+
+@app.route('/login', methods=['GET'])
+def login():
+    email = request.args.get('Email')
+
+    if not email:
+        return jsonify({"error": "email are required"}), 400
+
+    u.reset_response()
+    global connection
+    init_db_connection()
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        query = "SELECT Password FROM user WHERE Email = '{}';".format(email)
+        print(query)
+        cursor.execute(query)
+        # result = cursor.fetchone()
+        result = cursor.fetchone()
+
+        if result:
+            return jsonify(result), 200  # Invia la password crittografata
+        else:
+            return jsonify({"error": "Invalid credentials"}), 400
+    except mysql.connector.Error as e:
+        return jsonify({"error": "Database error", "details": str(e)}), 500
+
+
+@app.route('/login_admin', methods=['GET'])
+def login_admin():
+    email = request.args.get('Email')
+
+    if not email:
+        return jsonify({"error": "email required"}), 400
+
+    u.reset_response()
+    global connection
+    init_db_connection()
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        query = "SELECT password FROM admin WHERE Email = '{}'".format(email)
+        cursor.execute(query)
+        result = cursor.fetchone()
+
+        if result:
+            return jsonify(result), 200  # Invia la password crittografata
+        else:
+            return jsonify({"error": "Invalid credentials"}), 400
+    except mysql.connector.Error as e:
+        return jsonify({"error": "Database error", "details": str(e)}), 500
+
+
+@app.route('/delete_user', methods=['GET'])
+def delete_user():
+    email = request.args.get('Email')
+    password = request.args.get('Password')
+
+    if not email or not password:
+        print(email)
+        return jsonify({"error": "email and password are required"}), 400
+
+    u.reset_response()
+    global connection
+    init_db_connection()
+
+    try:
+        # Connessione al database
+        cursor = connection.cursor(dictionary=True)
+
+        # Cancella l'utente dal database
+        query = "DELETE FROM user WHERE Email = '{}'".format(email)
+        query = query + "and Password='{}';".format(password)
+
+        cursor.execute(query)
+        connection.commit()
+        query = "SELECT * FROM user  WHERE Email = '{}';".format(email)
+        cursor.execute(query)
+        result = cursor.fetchall()
+
+        if not result:
+            return jsonify({"message": "delete successful"}), 200
+        else:
+            return jsonify({"error": "something goes wrong"}), 400
+
+    except mysql.connector.Error as e:
+        print(query)
+        return jsonify({"error": "Database error", "details": str(e)}), 500
+
+
+@app.route('/delete_admin', methods=['GET'])
+def delete_admin():
+    email = request.args.get('Email')
+    password = request.args.get('Password')
+
+    if not email or not password:
+        print(email)
+        return jsonify({"error": "email and password are required"}), 400
+
+    u.reset_response()
+    global connection
+    init_db_connection()
+
+    try:
+        # Connessione al database
+        cursor = connection.cursor(dictionary=True)
+
+        # Cancella l'utente dal database
+        query = "DELETE FROM admin WHERE Email = '{}'".format(email)
+        query = query + "and Password='{}';".format(password)
+
+        cursor.execute(query)
+        connection.commit()
+        query = "SELECT * FROM user  WHERE Email = '{}';".format(email)
+        cursor.execute(query)
+        result = cursor.fetchall()
+
+        if not result:
+            return jsonify({"message": "delete successful"}), 200
+        else:
+            return jsonify({"error": "something goes wrong"}), 400
+
+    except mysql.connector.Error as e:
+        print(query)
+        return jsonify({"error": "Database error", "details": str(e)}), 500
+
+
+@app.route('/update_user', methods=['PUT'])
+def update_user():
+    userid = ""
+    firstname = ""
+    lastname = ""
+    email = ""
+    password = ""
+    currencyAmount = ""
+
+    userid = request.args.get('UserId')
+    firstname = request.args.get('FirstName')
+    lastname = request.args.get('LastName')
+    email = request.args.get('Email')
+    password = request.args.get('Password')
+    currencyAmount = request.args.get('CurrencyAmount')
+
+    if not email and not password and not firstname and not lastname and not currencyAmount:
+        return jsonify({"error": "almost one field are required"}), 400
+
+    u.reset_response()
+    global connection
+    init_db_connection()
+
+    try:
+        # Connessione al database
+        cursor = connection.cursor(dictionary=True)
+
+        query = "UPDATE user SET "
+        if userid:
+            query = query + "UserId ='{}'".format(userid)
+        if firstname:
+            query = query + ",FirstName ='{}'".format(firstname)
+        if lastname:
+            query = query + ",LastName ='{}'".format(lastname)
+        if email:
+            query = query + ",Email ='{}'".format(email)
+        if password:
+            query = query + ",Password ='{}'".format(password)
+        if currencyAmount:
+            query = query + ",CurrencyAmount ='{}'".format(currencyAmount)
+        if userid:
+            query = query + "' WHERE UserId ='{}';".format(userid)
+
+        cursor.execute(query)
+        connection.commit()
+        query = "SELECT * FROM user WHERE UserId ='{}';".format(userid)
+        cursor.execute(query)
+        result = cursor.fetchall()
+
+        if result:
+            print(result)
+            return jsonify({"message": "update successful"}), 200
+        else:
+            return jsonify({"error": "Invalid credentials"}), 400
+
+    except mysql.connector.Error as e:
+        print(query)
+        return jsonify({"error": "Database error", "details": str(e)}), 500
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ info:
     
     Some useful links:
     - [The Pokémon Gacha repository](https://github.com/ardiz99/TBAse)
-    - [The source APIs definition for the Pokémon Gacha](https://github.com/ardiz99/TBAse/OpenAPI)
+    - [The source APIs definition for the Pokémon Gacha](https://github.com/ardiz99/TBAse/doc)
   version: 1.0.0
   x-microservice: gacha-service
 servers:

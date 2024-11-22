@@ -1,0 +1,404 @@
+openapi: 3.0.1
+info:
+  title: DB Manager API
+  description: |-
+    This API is part of a microservices architecture and handles all the queries to the database.
+    
+    
+    Some useful links:
+    - [The Pokémon Gacha repository](https://github.com/ardiz99/TBAse)
+    - [The source APIs definition for the Pokémon Gacha](https://github.com/ardiz99/TBAse/doc)
+  version: 1.0.0
+  x-microservice: db-manager
+servers:
+  - url: http://db-manager:8005
+    description: DB Manager in Docker environment
+  - url: http://127.0.0.1:8005
+    description: DB Manager on local development
+paths:
+  /get_gacha_by_rarity:
+    get:
+      summary: Get Gacha by Rarity
+      description: Retrieve gacha records by their rarity.
+      parameters:
+        - name: rarity
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  message:
+                    type: string
+        '500':
+          description: Internal server error
+  /get_amount:
+    get:
+      summary: Get User Currency Amount
+      description: Retrieve the amount of currency a user has by their email.
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    type: object
+                  message:
+                    type: string
+        '400':
+          description: Missing or invalid email parameter
+        '500':
+          description: Internal server error
+  /update_amount:
+    put:
+      summary: Update User Currency Amount
+      description: Update the currency amount for a user by their email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                new_amount:
+                  type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  message:
+                    type: string
+        '400':
+          description: Invalid request data
+        '500':
+          description: Internal server error
+  /new_transaction:
+    post:
+      summary: Create New Transaction
+      description: Add a new transaction for a user purchasing a gacha.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                gacha_id:
+                  type: integer
+                cost:
+                  type: integer
+                end_date:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Transaction added successfully
+        '500':
+          description: Internal server error
+  /gacha/add:
+    post:
+      summary: Add a New Gacha
+      description: Add a new gacha to the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Name:
+                  type: string
+                Type1:
+                  type: string
+                Type2:
+                  type: string
+                Total:
+                  type: integer
+                HP:
+                  type: integer
+                Attack:
+                  type: integer
+                Defense:
+                  type: integer
+                SpAtt:
+                  type: integer
+                SpDef:
+                  type: integer
+                Speed:
+                  type: integer
+                Rarity:
+                  type: string
+                Link:
+                  type: string
+      responses:
+        '200':
+          description: Gacha added successfully
+        '500':
+          description: Error adding gacha
+  /gacha/update/{gacha_id}:
+    put:
+      summary: Update a Gacha
+      description: Modify an existing gacha's details.
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Name:
+                  type: string
+                Type1:
+                  type: string
+                Type2:
+                  type: string
+                Total:
+                  type: integer
+                HP:
+                  type: integer
+                Attack:
+                  type: integer
+                Defense:
+                  type: integer
+                SpAtt:
+                  type: integer
+                SpDef:
+                  type: integer
+                Speed:
+                  type: integer
+                Rarity:
+                  type: string
+                Link:
+                  type: string
+      responses:
+        '200':
+          description: Gacha updated successfully
+        '404':
+          description: Gacha not found
+        '500':
+          description: Internal server error
+  /gacha/delete/{gacha_id}:
+    delete:
+      summary: Delete a Gacha
+      description: Remove a gacha from the database.
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Gacha deleted successfully
+        '404':
+          description: Gacha not found
+        '500':
+          description: Internal server error
+  /gacha/{gacha_id}:
+    get:
+      summary: Get Gacha Details
+      description: Retrieve a gacha by its ID.
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Gacha retrieved successfully
+        '404':
+          description: Gacha not found
+        '500':
+          description: Internal server error
+  /gacha:
+    get:
+      summary: Get All Gachas
+      description: Retrieve all gachas from the database.
+      responses:
+        '200':
+          description: All gachas retrieved successfully
+        '500':
+          description: Internal server error
+  /register:
+    post:
+      summary: Register User
+      description: Register a new user in the system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                FirstName:
+                  type: string
+                LastName:
+                  type: string
+                Email:
+                  type: string
+                Password:
+                  type: string
+                CurrencyAmount:
+                  type: integer
+      responses:
+        '200':
+          description: Registration successful
+        '400':
+          description: Missing or invalid fields
+        '500':
+          description: Internal server error
+  /login:
+    get:
+      summary: Login User
+      description: Log in using user email.
+      parameters:
+        - name: Email
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User found and login successful
+        '400':
+          description: Invalid credentials
+        '500':
+          description: Internal server error
+  /login_admin:
+    get:
+      summary: Login Admin
+      description: Log in as admin using email.
+      parameters:
+        - name: Email
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Admin found and login successful
+        '400':
+          description: Invalid credentials
+        '500':
+          description: Internal server error
+  /delete_user:
+    get:
+      summary: Delete User
+      description: Delete a user by their email and password.
+      parameters:
+        - name: Email
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: Password
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User deleted successfully
+        '400':
+          description: Missing fields or error during deletion
+        '500':
+          description: Internal server error
+  /delete_admin:
+    get:
+      summary: Delete Admin
+      description: Delete an admin by their email and password.
+      parameters:
+        - name: Email
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: Password
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Admin deleted successfully
+        '400':
+          description: Missing fields or error during deletion
+        '500':
+          description: Internal server error
+  /update_user:
+    put:
+      summary: Update User Details
+      description: Update the details of a user.
+      parameters:
+        - name: UserId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: FirstName
+          in: query
+          schema:
+            type: string
+        - name: LastName
+          in: query
+          schema:
+            type: string
+        - name: Email
+          in: query
+          schema:
+            type: string
+        - name: Password
+          in: query
+          schema:
+            type: string
+        - name: CurrencyAmount
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User updated successfully
+        '400':
+          description: Invalid fields or user not found
+        '500':
+          description: Internal server error

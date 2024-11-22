@@ -1,0 +1,230 @@
+openapi: 3.0.3
+info:
+  title: Auth Service API
+  version: 1.0.0
+  description: |-
+    This API is part of a microservices architecture and serves as the user management service
+    for the application. It provides operations such as register a new user or authenticate a user
+    
+    
+    Some useful links:
+    - [The Pokémon Gacha repository](https://github.com/ardiz99/TBAse)
+    - [The source APIs definition for the Pokémon Gacha](https://github.com/ardiz99/TBAse/doc)
+  x-microservice: auth-service
+servers:
+  - url: http://auth-service:8001
+    description: Authentication Service in Docker environment
+  - url: http://127.0.0.1:8001
+    description: Authentication Service on local development
+
+paths:
+  /login:
+    get:
+      summary: Login utente
+      description: Effettua il login di un utente esistente.
+      parameters:
+        - name: Email
+          in: query
+          required: true
+          schema:
+            type: string
+          description: L'indirizzo email dell'utente.
+        - name: Password
+          in: query
+          required: true
+          schema:
+            type: string
+          description: La password dell'utente.
+      responses:
+        '200':
+          description: Login avvenuto con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Login successful"
+        '400':
+          description: Credenziali non valide o parametri mancanti.
+        '500':
+          description: Errore interno del server.
+
+  /register:
+    post:
+      summary: Registra un nuovo utente
+      description: Endpoint per registrare un nuovo utente nel sistema.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                UserId:
+                  type: string
+                  example: "123"
+                FirstName:
+                  type: string
+                  example: "John"
+                LastName:
+                  type: string
+                  example: "Doe"
+                Email:
+                  type: string
+                  example: "john.doe@example.com"
+                Password:
+                  type: string
+                  example: "securepassword"
+                CurrencyAmount:
+                  type: number
+                  format: float
+                  example: 100.0
+      responses:
+        '200':
+          description: Registrazione avvenuta con successo.
+        '400':
+          description: Parametri mancanti o credenziali non valide.
+        '500':
+          description: Errore interno del server.
+
+  /update_user:
+    put:
+      summary: Aggiorna le informazioni di un utente
+      description: Modifica i dettagli di un utente esistente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                UserId:
+                  type: string
+                  example: "123"
+                FirstName:
+                  type: string
+                  example: "John"
+                LastName:
+                  type: string
+                  example: "Doe"
+                Email:
+                  type: string
+                  example: "john.doe@example.com"
+                Password:
+                  type: string
+                  example: "securepassword"
+                CurrencyAmount:
+                  type: number
+                  format: float
+                  example: 100.0
+      responses:
+        '200':
+          description: Aggiornamento avvenuto con successo.
+        '400':
+          description: Parametri mancanti o credenziali non valide.
+        '500':
+          description: Errore interno del server.
+
+  /check_users_profile:
+    get:
+      summary: Ottieni profili utenti
+      description: Endpoint per controllare i profili di tutti gli utenti registrati.
+      responses:
+        '200':
+          description: Profili utente recuperati con successo.
+        '500':
+          description: Errore interno del server.
+
+  /login_admin:
+    get:
+      summary: Login amministratore
+      description: Effettua il login di un amministratore.
+      parameters:
+        - name: Email
+          in: query
+          required: true
+          schema:
+            type: string
+          description: L'indirizzo email dell'amministratore.
+        - name: Password
+          in: query
+          required: true
+          schema:
+            type: string
+          description: La password dell'amministratore.
+      responses:
+        '200':
+          description: Login amministratore avvenuto con successo.
+        '400':
+          description: Credenziali non valide o parametri mancanti.
+        '500':
+          description: Errore interno del server.
+
+  /delete_user:
+    get:
+      summary: Cancella un utente
+      description: Cancella un utente specifico dal sistema.
+      parameters:
+        - name: Email
+          in: query
+          required: true
+          schema:
+            type: string
+          description: L'indirizzo email dell'utente.
+        - name: Password
+          in: query
+          required: true
+          schema:
+            type: string
+          description: La password dell'utente.
+      responses:
+        '200':
+          description: Utente cancellato con successo.
+        '400':
+          description: Credenziali non valide o parametri mancanti.
+        '500':
+          description: Errore interno del server.
+
+  /delete_admin:
+    get:
+      summary: Cancella un amministratore
+      description: Cancella un amministratore specifico dal sistema.
+      parameters:
+        - name: Email
+          in: query
+          required: true
+          schema:
+            type: string
+          description: L'indirizzo email dell'amministratore.
+        - name: Password
+          in: query
+          required: true
+          schema:
+            type: string
+          description: La password dell'amministratore.
+      responses:
+        '200':
+          description: Amministratore cancellato con successo.
+        '400':
+          description: Credenziali non valide o parametri mancanti.
+        '500':
+          description: Errore interno del server.
+
+  /protected:
+    get:
+      summary: Endpoint protetto
+      description: Accesso a una risorsa protetta tramite token JWT.
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "Bearer <JWT_token>"
+      responses:
+        '200':
+          description: Accesso autorizzato.
+        '401':
+          description: Token non valido o scaduto.

@@ -34,3 +34,8 @@ To install and run the application correctly, follow these steps:
    - Open Swagger Editor.
    - Go to File > Import File.
    - Select the .yaml file corresponding to the API you want to test.
+
+6. If you want you can import a set of APIs used for testing.
+   - Open Postman. (You can download it here https://www.postman.com/downloads/
+   - Click on Import > select files
+   - Navigate to TBAse/doc and select TBASE.postman_collection.json file.
