@@ -37,6 +37,34 @@ def close_db_connection():
         connection = None
 
 
+def handle_db_operation(query, values=None, fetch_one=False, fetch_all=False, commit=False):
+    result = []
+    init_db_connection()
+
+    if connection is None:
+        u.generic_error('Database connection failed')
+        return result
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(query, values)
+        if commit:
+            connection.commit()
+        else:
+            if fetch_one:
+                result = cursor.fetchone()
+            if fetch_all:
+                result = cursor.fetchall()
+            if not result:
+                u.not_found()
+            u.RESPONSE["data"] = result
+    except Error as err:
+        u.generic_error(str(err))
+    finally:
+        cursor.close()
+        close_db_connection()
+
+
 @app.route('/get_gacha_by_rarity')
 def get_gacha_by_rarity():
     rarity = request.args.get('rarity')
@@ -48,7 +76,7 @@ def get_gacha_by_rarity():
     if connection is None:
         print("Errore: connessione al database non riuscita.")
         u.generic_error()
-        return jsonify(u.RESPONSE)
+        return u.send_response()
     try:
         cursor = connection.cursor(dictionary=True)
         query = "SELECT * FROM gacha WHERE Rarity = '{}';".format(rarity)
@@ -59,17 +87,17 @@ def get_gacha_by_rarity():
 
         if not result:
             u.not_found()
-            return jsonify(u.RESPONSE)
+            return u.send_response()
 
         cursor.close()
         close_db_connection()
         u.RESPONSE["code"] = 200
         u.RESPONSE["data"] = result
         u.RESPONSE["message"] = ""
-        return jsonify(u.RESPONSE)
+        return u.send_response()
     except Error as e:
-        u.generic_error()
-        return jsonify(u.RESPONSE)
+        u.generic_error(str(e))
+        return u.send_response()
 
 
 @app.route('/get_amount')
@@ -85,7 +113,7 @@ def get_amount():
     if connection is None:
         print("Errore: connessione al database non riuscita.")
         u.generic_error()
-        return jsonify(u.RESPONSE)
+        return u.send_response()
     try:
         cursor = connection.cursor(dictionary=True)
         query = "SELECT CurrencyAmount FROM user WHERE Email = '{}';".format(email)
@@ -99,14 +127,14 @@ def get_amount():
 
         if not result:
             u.not_found()
-            return jsonify(u.RESPONSE)
+            return u.send_response()
 
         u.RESPONSE["code"] = 200
         u.RESPONSE["data"] = result
-        return jsonify(u.RESPONSE)
+        return u.send_response()
     except Error as e:
-        u.generic_error()
-        return jsonify(u.RESPONSE)
+        u.generic_error(str(e))
+        return u.send_response()
 
 
 @app.route('/update_amount', methods=['PUT'])
@@ -114,85 +142,26 @@ def update_amount():
     data = request.get_json()
     email = data.get('email')
     new_amount = data.get('new_amount')
+    if not email or not new_amount:
+        u.bad_request()
+        return u.send_response()
+
     # new_amount = 10
     # email = "taylor.smith@example.com"
     u.reset_response()
 
-    global connection
-    init_db_connection()
+    query = "UPDATE user " \
+            "SET CurrencyAmount = %s" \
+            " WHERE Email = %s;"
+    values = (new_amount, email)
+    handle_db_operation(query, values, commit=True)
 
-    if connection is None:
-        u.generic_error()
-        return jsonify(u.RESPONSE)
-    try:
-        cursor = connection.cursor(dictionary=True)
-        query = "UPDATE user " \
-                "SET CurrencyAmount = {}" \
-                " WHERE Email = '{}';".format(new_amount, email)
-
-        cursor.execute(query)
-
-        connection.commit()
-
-        query = "SELECT CurrencyAmount " \
-                "FROM user " \
-                "WHERE Email = '{}';".format(email)
-        cursor.execute(query)
-        result = cursor.fetchall()
-        print(query)
-        print(result)
-
-        cursor.close()
-        close_db_connection()
-
-        u.reset_response()
-        return jsonify(u.RESPONSE)
-    except Error as e:
-        u.generic_error()
-        return jsonify(u.RESPONSE)
-
-
-@app.route('/new_transaction', methods=['POST'])
-def new_transaction():
-    data = request.get_json()
-    user_id = data.get('user_id')
-    gacha_id = data.get('gacha_id')
-    cost = data.get('cost')
-    datetime = data.get('end_date')
-    u.reset_response()
-
-    global connection
-    init_db_connection()
-
-    if connection is None:
-        u.generic_error()
-        return jsonify(u.RESPONSE)
-    try:
-        cursor = connection.cursor(dictionary=True)
-        query = f"INSERT INTO transaction (RequestingUser, GachaId, Cost, EndDate) " \
-                f"VALUES ({user_id}, {gacha_id}, {cost}, \"{datetime}\")"
-
-        print(query)
-        cursor.execute(query)
-        connection.commit()
-
-        # query = f"SELECT * " \
-        #         f"FROM transaction " \
-        #         f"WHERE RequestingUser = {user_id};"
-        # cursor.execute(query)
-        # result = cursor.fetchall()
-        # print(query)
-        # print(result)
-
-        cursor.close()
-        close_db_connection()
-
-        u.reset_response()
-        return jsonify(u.RESPONSE)
-
-    except Error as e:
-        u.generic_error()
-        return jsonify(u.RESPONSE)
+    query = "SELECT CurrencyAmount " \
+            "FROM user " \
+            "WHERE Email = %s"
+    values = (email,)
+    handle_db_operation(query, values, fetch_one=True)
+    return u.send_response()
 
 
 # INIZIO METODI DEL DBMANGER PER ESEGUIRE LE QUERY DEL GACHASERVICE
@@ -204,7 +173,7 @@ def add_gacha():
     if connection is None:
         print("Errore: connessione al database non riuscita.")
         u.generic_error("Errore di connessione al database.")
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     try:
         cursor = connection.cursor()
@@ -227,12 +196,12 @@ def add_gacha():
         u.RESPONSE["code"] = 200
         u.RESPONSE["data"] = []
         u.RESPONSE["message"] = "Gacha added successfully!"
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     except Error as e:
         print(f"Errore durante l'inserimento nel database: {e}")
         u.generic_error("Errore durante l'inserimento nel database.")
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
 
 @app.route('/gacha/update/<int:gacha_id>', methods=['PUT'])
@@ -243,7 +212,7 @@ def update_gacha(gacha_id):
     if connection is None:
         print("Errore: connessione al database non riuscita.")
         u.generic_error("Errore di connessione al database.")
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     try:
         cursor = connection.cursor()
@@ -251,7 +220,7 @@ def update_gacha(gacha_id):
         gacha = cursor.fetchone()
         if not gacha:
             u.not_found
-            return jsonify(u.RESPONSE)
+            return u.send_response()
 
         query = "UPDATE gacha " \
                 "SET Name = %s, Type1 = %s, Type2 = %s, Total = %s, HP = %s, Attack = %s, Defense = %s, SpAtt = %s, " \
@@ -272,12 +241,12 @@ def update_gacha(gacha_id):
         u.RESPONSE["code"] = 200
         u.RESPONSE["data"] = []
         u.RESPONSE["message"] = "Gacha modified successfully!"
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     except Error as e:
         print(f"Errore durante la modifica nel database: {e}")
         u.generic_error("Errore durante la modifica nel database.")
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
 
 @app.route('/gacha/delete/<int:gacha_id>', methods=['DELETE'])
@@ -288,7 +257,7 @@ def delete_gacha(gacha_id):
     if connection is None:
         print("Errore: connessione al database non riuscita.")
         u.generic_error("Errore di connessione al database.")
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     try:
         cursor = connection.cursor()
@@ -296,7 +265,7 @@ def delete_gacha(gacha_id):
         gacha = cursor.fetchone()
         if not gacha:
             u.not_found()
-            return jsonify(u.RESPONSE)
+            return u.send_response()
 
         cursor.execute("DELETE FROM gacha WHERE GachaId = %s", (gacha_id,))
         connection.commit()
@@ -306,12 +275,12 @@ def delete_gacha(gacha_id):
 
         u.RESPONSE["code"] = 200
         u.RESPONSE["message"] = "Gacha deleted successfully!"
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     except Error as e:
         print(f"Errore durante l'eliminazione del gacha: {e}")
         u.generic_error("Errore durante l'eliminazione del gacha.")
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
 
 @app.route('/gacha/<int:gacha_id>', methods=['GET'])
@@ -322,7 +291,7 @@ def get_gacha(gacha_id):
     if connection is None:
         print("Errore: connessione al database non riuscita.")
         u.generic_error("Errore di connessione al database.")
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     try:
         cursor = connection.cursor(dictionary=True)
@@ -330,19 +299,19 @@ def get_gacha(gacha_id):
         gacha = cursor.fetchone()
         if gacha is None:
             u.not_found()
-            return jsonify(u.RESPONSE)
+            return u.send_response()
 
         u.RESPONSE["code"] = 200
         u.RESPONSE["data"] = gacha
         u.RESPONSE["message"] = "Gacha retrieved successfully!"
         cursor.close()
         close_db_connection()
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     except Error as e:
         print(f"Errore durante il recupero del gacha: {e}")
         u.generic_error("Errore durante il recupero del gacha.")
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
 
 @app.route('/gacha', methods=['GET'])
@@ -353,7 +322,7 @@ def get_all_gachas():
     if connection is None:
         print("Errore: connessione al database non riuscita.")
         u.generic_error("Errore di connessione al database.")
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     try:
         cursor = connection.cursor(dictionary=True)
@@ -365,12 +334,12 @@ def get_all_gachas():
         u.RESPONSE["message"] = "All gachas retrieved successfully!"
         cursor.close()
         close_db_connection()
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     except Error as e:
         print(f"Errore durante il recupero di tutti i gachas: {e}")
         u.generic_error("Errore durante il recupero di tutti i gachas.")
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
 
 # INIZIO METODI PER USER =>
@@ -604,6 +573,63 @@ def update_user():
     except mysql.connector.Error as e:
         print(query)
         return jsonify({"error": "Database error", "details": str(e)}), 500
+
+
+@app.route('/new_transaction', methods=['POST'])
+def new_transaction():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    gacha_id = data.get('gacha_id')
+    cost = data.get('cost')
+    datetime = data.get('end_date')
+    if not user_id or not gacha_id or not cost or not datetime:
+        u.bad_request()
+        return u.send_response()
+    u.reset_response()
+
+    query = "INSERT INTO transaction (RequestingUser, GachaId, Cost, EndDate) " \
+            "VALUES (%s, %s, %s, %s)"
+    values = (user_id, gacha_id, cost, datetime)
+    handle_db_operation(query, values, commit=True)
+
+    return u.send_response()
+
+
+@app.route('/update_transaction/<int:transaction_id>', methods=['PUT'])
+def update_transaction(transaction_id):
+    data = request.get_json()
+    sended_to = data.get('SendedTo')
+    if not sended_to:
+        u.bad_request()
+        return u.send_response()
+    u.reset_response()
+
+    query = "UPDATE transaction " \
+            "SET SendedTo = %s " \
+            "WHERE TransactionId = %s"
+    values = (sended_to, transaction_id)
+    handle_db_operation(query, values, commit=True)
+
+    return u.send_response()
+
+
+@app.route('/transaction')
+def get_all_transactions():
+    u.reset_response()
+
+    query = "SELECT * FROM transaction"
+    handle_db_operation(query, fetch_all=True)
+    return u.send_response()
+
+
+@app.route('/transaction/<int:requesting_user>')
+def get_transaction_by_user(requesting_user):
+    u.reset_response()
+
+    query = "SELECT * FROM transaction WHERE RequestingUser = %s"
+    values = (requesting_user,)
+    handle_db_operation(query, values, fetch_all=True)
+    return u.send_response()
 
 
 if __name__ == "__main__":

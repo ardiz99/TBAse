@@ -1,5 +1,7 @@
 import os
 
+from flask import jsonify
+
 FLASK_DEBUG = True  # Do not use debug mode in production
 
 ROLL_COST = 10
@@ -57,3 +59,7 @@ def handle_error(code):
         generic_error()
     if code == 400:
         bad_request()
+
+
+def send_response():
+    return jsonify(RESPONSE), RESPONSE["code"]
