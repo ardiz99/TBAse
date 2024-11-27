@@ -70,34 +70,11 @@ def get_gacha_by_rarity():
     rarity = request.args.get('rarity')
     # rarity = "Legendary"
     u.reset_response()
-    global connection
-    init_db_connection()
 
-    if connection is None:
-        print("Errore: connessione al database non riuscita.")
-        u.generic_error()
-        return u.send_response()
-    try:
-        cursor = connection.cursor(dictionary=True)
-        query = "SELECT * FROM gacha WHERE Rarity = '{}';".format(rarity)
-        cursor.execute(query)
-        result = cursor.fetchall()
-        print(query)
-        print(result)
-
-        if not result:
-            u.not_found()
-            return u.send_response()
-
-        cursor.close()
-        close_db_connection()
-        u.RESPONSE["code"] = 200
-        u.RESPONSE["data"] = result
-        u.RESPONSE["message"] = ""
-        return u.send_response()
-    except Error as e:
-        u.generic_error(str(e))
-        return u.send_response()
+    query = "SELECT * FROM gacha WHERE Rarity = %s"
+    values = (rarity,)
+    handle_db_operation(query, values, fetch_all=True)
+    return u.send_response()
 
 
 @app.route('/get_amount')
@@ -106,35 +83,9 @@ def get_amount():
     # email = "taylor.smith@example.com"
 
     u.reset_response()
-
-    global connection
-    init_db_connection()
-
-    if connection is None:
-        print("Errore: connessione al database non riuscita.")
-        u.generic_error()
-        return u.send_response()
-    try:
-        cursor = connection.cursor(dictionary=True)
-        query = "SELECT CurrencyAmount FROM user WHERE Email = '{}';".format(email)
-        cursor.execute(query)
-        result = cursor.fetchone()
-        print(query)
-        print(result)
-
-        cursor.close()
-        close_db_connection()
-
-        if not result:
-            u.not_found()
-            return u.send_response()
-
-        u.RESPONSE["code"] = 200
-        u.RESPONSE["data"] = result
-        return u.send_response()
-    except Error as e:
-        u.generic_error(str(e))
-        return u.send_response()
+    query = "SELECT CurrencyAmount FROM user WHERE Email = '{}';".format(email)
+    handle_db_operation(query, fetch_one=True)
+    return u.send_response()
 
 
 @app.route('/update_amount', methods=['PUT'])

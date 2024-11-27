@@ -5,6 +5,7 @@ from flask import jsonify
 FLASK_DEBUG = True  # Do not use debug mode in production
 
 ROLL_COST = 10
+GOLDEN_COST = 100
 
 USER_ID = None
 USER_EMAIL = None
@@ -46,10 +47,10 @@ def not_found():
     RESPONSE["message"] = "Error! Not Found."
 
 
-def bad_request():
+def bad_request(message=""):
     RESPONSE["code"] = 400
     RESPONSE["data"] = []
-    RESPONSE["message"] = "Bad Request."
+    RESPONSE["message"] = "Bad Request. " + message
 
 
 def handle_error(code):
@@ -61,5 +62,7 @@ def handle_error(code):
         bad_request()
 
 
-def send_response():
+def send_response(message=""):
+    if message:
+        RESPONSE["message"] = message
     return jsonify(RESPONSE), RESPONSE["code"]

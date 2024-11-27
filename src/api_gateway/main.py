@@ -14,11 +14,11 @@ def index():
 
 @app.route('/roll', methods=['GET'])
 def roll():
-    path = u.CURRENCY_SERVICE_URL + "/roll_info"
+    path = u.CURRENCY_SERVICE_URL + f"/roll_info/{u.ROLL_COST}"
     response = requests.get(path, verify=False)
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     data = response.json().get("data")
     url = data["Link"]
@@ -28,7 +28,32 @@ def roll():
                             params={"url": url})
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return jsonify(u.RESPONSE)
+        return u.send_response()
+
+    return Response(
+        response.content,
+        content_type=response.headers['Content-Type'],
+        status=response.status_code
+    )
+
+
+@app.route('/golden_roll', methods=['GET'])
+def golden():
+    path = u.CURRENCY_SERVICE_URL + f"/roll_info/{u.GOLDEN_COST}"
+    response = requests.get(path, verify=False)
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    data = response.json().get("data")
+    url = data["Link"]
+    path = u.CURRENCY_SERVICE_URL + "/roll_img"
+    response = requests.get(path,
+                            verify=False,
+                            params={"url": url})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
 
     return Response(
         response.content,
@@ -43,13 +68,13 @@ def buy_currency():
     quantity = data.get('quantity')
     if quantity is None:
         u.bad_request()
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     path = u.CURRENCY_SERVICE_URL + "/buy_currency"
     response = requests.put(path,
                             verify=False,
                             json={"quantity": quantity})
-    return jsonify(response.json())
+    return u.send_response()
 
 
 # INIZIO ENDPOINT DEL GACHASERVICE_URL ==>
@@ -67,7 +92,7 @@ def add_gacha():
     except Exception as e:
         u.RESPONSE["code"] = 400
         u.RESPONSE["message"] = f"Invalid request: {str(e)}"
-        return jsonify(u.RESPONSE), 400
+        return u.send_response()
 
     # URL completo del servizio remoto
     url = u.GACHA_SERVICE_URL + "gacha/add"
@@ -80,12 +105,12 @@ def add_gacha():
 
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return jsonify(u.RESPONSE), response.status_code
+        return u.send_response()
 
     u.RESPONSE["code"] = 200
     u.RESPONSE["data"] = []
     u.RESPONSE["message"] = "Gacha added successfully!"
-    return jsonify(u.RESPONSE)
+    return u.send_response()
 
 
 # Endpoint per aggiornare un gacha
@@ -101,7 +126,7 @@ def update_gacha(gacha_id):
     except Exception as e:
         u.RESPONSE["code"] = 400
         u.RESPONSE["message"] = f"Invalid request: {str(e)}"
-        return jsonify(u.RESPONSE), 400
+        return u.send_response()
 
     # URL completo del servizio remoto
     url = u.GACHA_SERVICE_URL + f"gacha/update/{gacha_id}"
@@ -114,12 +139,12 @@ def update_gacha(gacha_id):
 
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return jsonify(u.RESPONSE), response.status_code
+        return u.send_response()
 
     u.RESPONSE["code"] = 200
     u.RESPONSE["data"] = []
     u.RESPONSE["message"] = "Gacha updated successfully!"
-    return jsonify(u.RESPONSE)
+    return u.send_response()
 
 
 # Endpoint per eliminare un gacha
@@ -135,12 +160,12 @@ def delete_gacha(gacha_id):
 
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return jsonify(u.RESPONSE), response.status_code
+        return u.send_response()
 
     u.RESPONSE["code"] = 200
     u.RESPONSE["data"] = []
     u.RESPONSE["message"] = "Gacha deleted successfully!"
-    return jsonify(u.RESPONSE)
+    return u.send_response()
 
 
 # Endpoint per ottenere un singolo gacha
@@ -156,13 +181,13 @@ def get_gacha(gacha_id):
 
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return jsonify(u.RESPONSE), response.status_code
+        return u.send_response()
 
     gacha = response.json().get("data")
     u.RESPONSE["code"] = 200
     u.RESPONSE["data"] = gacha
     u.RESPONSE["message"] = "Gacha retrieved successfully!"
-    return jsonify(u.RESPONSE)
+    return u.send_response()
 
 
 # Endpoint per ottenere tutti i gachas
@@ -178,13 +203,13 @@ def get_all_gachas():
 
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return jsonify(u.RESPONSE), response.status_code
+        return u.send_response()
 
     gachas = response.json().get("data")
     u.RESPONSE["code"] = 200
     u.RESPONSE["data"] = gachas
     u.RESPONSE["message"] = "All gachas retrieved successfully!"
-    return jsonify(u.RESPONSE)
+    return u.send_response()
 
 
 @app.route('/login', methods=['GET'])

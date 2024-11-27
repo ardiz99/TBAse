@@ -17,7 +17,7 @@ def new_transaction():
     datetime = data.get('end_date')
     if user_id is None or gacha_id is None or cost is None or datetime is None:
         u.bad_request()
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     path = u.DB_MANAGER_URL + "/new_transaction"
     response = requests.post(path,
@@ -29,11 +29,11 @@ def new_transaction():
 
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return jsonify(u.RESPONSE)
+        return u.send_response()
     else:
         u.RESPONSE["code"] = 200
         u.RESPONSE["data"] = []
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
 
 if __name__ == "__main__":

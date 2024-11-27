@@ -16,12 +16,21 @@ RARITY_DISTRIBUTION = {
     "Common": 54.45
 }
 
+GOLDEN_DISTRIBUTION = {
+    "Legendary": 1,
+    "Epic": 9,
+    "Rare": 90
+}
 
-def random_rarity():
+
+def random_rarity(golden):
     roll = random.uniform(0, 100)
     cumulative = 0
     rarity = None
-    for key, chance in RARITY_DISTRIBUTION.items():
+
+    distribution = RARITY_DISTRIBUTION if not golden else GOLDEN_DISTRIBUTION
+
+    for key, chance in distribution.items():
         cumulative += chance
         if roll <= cumulative:
             rarity = key
@@ -29,9 +38,13 @@ def random_rarity():
     return rarity
 
 
-@app.route('/roll_info', methods=['GET'])
-def roll_info():
+@app.route('/roll_info/<int:cost>', methods=['GET'])
+def roll_info(cost):
     u.reset_response()
+
+    if cost != u.ROLL_COST and cost != u.GOLDEN_COST:
+        u.bad_request()
+        return u.send_response()
 
     # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
     email = "taylor.smith@example.com"
@@ -43,15 +56,15 @@ def roll_info():
                             params={'email': email})
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     target_data = response.json().get("data")
     amount = target_data["CurrencyAmount"]
-    if amount < u.ROLL_COST:
+    if amount < cost:
         u.generic_error("Insufficient Pokedollars")
-        return jsonify(u.RESPONSE), u.RESPONSE["code"]
+        return u.send_response()
 
-    rarity = random_rarity()
+    rarity = random_rarity(cost == u.GOLDEN_COST)
 
     path = u.DB_MANAGER_URL + "/get_gacha_by_rarity"
     response = requests.get(path,
@@ -59,21 +72,21 @@ def roll_info():
                             params={'rarity': rarity})
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     target_set = response.json().get("data")
     random2 = random.randint(0, len(target_set) - 1)
     chosen = target_set[random2]
 
     # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
-    new_amount = amount - 10
+    new_amount = amount - cost
     path = u.DB_MANAGER_URL + "/update_amount"
     response = requests.put(path,
                             verify=False,
                             json={'email': email, 'new_amount': new_amount})
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     gacha_id = chosen["GachaId"]
     current_datetime = datetime.now()
@@ -83,17 +96,17 @@ def roll_info():
                              verify=False,
                              json={'user_id': user_id,
                                    'gacha_id': gacha_id,
-                                   'cost': u.ROLL_COST,
-                                   'end-date': formatted_datetime})
+                                   'cost': cost,
+                                   'end_date': formatted_datetime})
 
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     else:
         u.RESPONSE["code"] = 200
         u.RESPONSE["data"] = chosen
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
 
 @app.route('/roll_img', methods=['GET'])
