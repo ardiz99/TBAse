@@ -12,6 +12,7 @@ def index():
     return {"message": "API Gateway is running"}
 
 
+
 @app.route('/roll', methods=['GET'])
 def roll():
     path = u.CURRENCY_SERVICE_URL + "/roll_info"
@@ -191,7 +192,19 @@ def get_all_gachas():
 def login():
     email = request.args.get('Email')
     password = request.args.get('Password')
+    
     response = requests.get('https://auth-service:8001/login',
+                            verify=False,
+                            params={'Email': email, 'Password': password})
+    return jsonify(response.json())
+
+
+
+@app.route('/login_admin', methods=['GET'])
+def login_admin():
+    email = request.args.get('Email')
+    password = request.args.get('Password')
+    response = requests.get('https://auth-service:8001/login_admin',
                             verify=False,
                             params={'Email': email, 'Password': password})
     return jsonify(response.json())
@@ -212,6 +225,23 @@ def register():
                                    'Email': email,
                                    'Password': password,
                                    'CurrencyAmount': amount})
+    return jsonify(response.json())
+
+
+@app.route('/register_admin', methods=['POST'])
+def register_admin():
+    data = request.get_json()
+    first_name = data.get('FirstName')
+    last_name = data.get('LastName')
+    email = data.get('Email')
+    password = data.get('Password')
+
+    response = requests.post('https://auth-service:8001/register_admin',
+                             verify=False,
+                             json={'FirstName': first_name,
+                                   'LastName': last_name,
+                                   'Email': email,
+                                   'Password': password})
     return jsonify(response.json())
 
 
@@ -237,8 +267,27 @@ def delete_admin():
 
 @app.route('/update_user', methods=['PUT'])
 def update_user():
+    #Authorization=request.args.get('Authorization')
     response = requests.put('https://auth-service:8001/update_user',
                             verify=False)
+    return jsonify(response.json())
+
+
+@app.route('/update_specific_user', methods=['PUT'])
+def update_specific_user():
+    email = request.args.get('Email')
+    password = request.args.get('Password')
+    first_name = request.args.get('FirstName')
+    last_name = request.args.get('LastName')
+    amount = request.args.get('CurrencyAmount')
+    #Authorization=request.args.get('Authorization')
+    response = requests.put('https://auth-service:8001/update_specific_user',
+                            verify=False,
+                            json={'FirstName': first_name,
+                                   'LastName': last_name,
+                                   'Email': email,
+                                   'Password': password,
+                                   'CurrencyAmount': amount})
     return jsonify(response.json())
 
 
@@ -249,14 +298,43 @@ def check_users_profile():
     return jsonify(response.json())
 
 
-@app.route('/login_admin', methods=['GET'])
-def login_admin():
-    email = request.args.get('Email')
-    password = request.args.get('Password')
-    response = requests.get('https://auth-service:8001/login_admin',
-                            verify=False,
-                            params={'Email': email, 'Password': password})
+
+
+
+@app.route('/logout', methods=['GET'])
+def logout():
+    response = requests.get('https://auth-service:8001/logout',
+                            verify=False)
     return jsonify(response.json())
+
+
+@app.route('/see_auction_market', methods=['GET'])
+def see_auction_market():
+    response = requests.get('https://auth-service:8003/see_auction_market',
+                            verify=False)
+    return jsonify(response.json())
+
+
+@app.route('/see_history_auction_market', methods=['GET'])
+def see_history_auction_market():
+    response = requests.get('https://auth-service:8003/see_history_auction_market',
+                            verify=False)
+    return jsonify(response.json())
+
+
+@app.route('/see_transaction_history', methods=['GET'])
+def see_transaction_history():
+    email = request.args.get('Email')
+    response = requests.get('https://auth-service:8003/see_transaction_history',verify=False,params={'Email': email})
+    return jsonify(response.json())
+
+
+@app.route('/see_specific_auction', methods=['GET'])
+def see_specific_auction():
+    Transaction = request.args.get('Transaction')
+    response = requests.get('https://auth-service:8003/see_specific_auction',verify=False,params={'Transaction': Transaction})
+    return jsonify(response.json())
+
 
 
 if __name__ == "__main__":
