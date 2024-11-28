@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from authlib.jose import JsonWebToken, JWTClaims, JoseError
-import requests
+import requests, time
 import re
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
@@ -13,6 +13,20 @@ import utils as u
 
 
 app = Flask(__name__)
+
+mock_save_last = None
+
+def save_last(op, args, res):
+    """Funzione per salvare l'ultima operazione effettuata."""
+    if mock_save_last:
+        mock_save_last(op, args, res)
+    else:
+        timestamp = time.time()
+        payload = {'timestamp': timestamp, 'op': op, 'args': args, 'res': res}
+        try:
+            requests.post('http://db-manager:8005/notify', json=payload)
+        except requests.exceptions.RequestException as e:
+            print(f"Error notifying db-manager: {e}")
 
 # Configure JWT with Authlib
 jwt = JsonWebToken(['HS256'])
@@ -75,14 +89,19 @@ def login():
             encrypted_password = encrypt_password(password)
             # Confronta le password
             if stored_encrypted_password == encrypted_password:
+                save_last('login', {"Email": email}, {"message": "Login successful"})
                 return jsonify({"message": "Login successful"}), 200
             else:
+                save_last('login', {"Email": email}, {"error": "Invalid password credentials"})
                 return jsonify({"error": "Invalid password credentials"}), 400
         elif response.status_code == 400:
+            save_last('login', {"Email": email}, {"error": "Invalid credentials"})
             return jsonify({"error": "Invalid credentials"}), 400
         else:
+            save_last('login', {"Email": email}, {"error": "Internal server error"})
             return jsonify({"error": "Internal server error"}), 500
     except requests.exceptions.RequestException as e:
+        save_last('login', {"Email": email}, {"error": str(e)})
         return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
 
 
@@ -110,6 +129,7 @@ def register():
 
     # pre la registrazione sono richiesti tutti i campi
     if not email or not password or not firstname or not lastname or not currencyAmount:
+        save_last('register', data, {"error": "Missing fields"})
         return jsonify({"error": "Missing fields"}), 400
     encrypted_password = encrypt_password(password)
 
@@ -125,12 +145,16 @@ def register():
             # payload = {'sub': username}
             # token = jwt.encode(header, payload, SECRET_KEY)
             # return jsonify({"access_token": token.decode('utf-8')}), 200
+            save_last('register', data, {"message": "Registrazione avvenuta con successo!"})
             return jsonify("Registrazione avvenuta con successo!"), 200
         elif response.status_code == 400:
+            save_last('register', data, {"error": "Invalid credentials"})
             return jsonify({"error": "Invalid credentials"}), 400
         else:
+            save_last('register', data, {"error": "Internal server error"})
             return jsonify({"error": "Internal server error"}), 500
     except requests.exceptions.RequestException as e:
+        save_last('register', data, {"error": str(e)})
         return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
 
 
@@ -168,6 +192,7 @@ def update_user():
     if password:
         encrypted_password = encrypt_password(password)
     if not email or not password or not firstname or not lastname or not currencyAmount:
+        save_last('update_user', {"Email": email}, {"error": "Missing fields"})
         return jsonify({"error=": "Missing fields"}), 400
 
     try:
@@ -176,12 +201,16 @@ def update_user():
                                 params={"UserId": userid, "FirstName": firstname, "LastName": lastname, "Email": email,
                                         "Password": encrypted_password, "CurrencyAmount": currencyAmount})
         if response.status_code == 200:
+            save_last('update_user', {"Email": email}, {"Aggiornamento avvenuto con successo"})
             return jsonify("Aggiornamento avvenuto con successo"), 200
         elif response.status_code == 400:
+            save_last('update_user', {"Email": email}, {"error": "Invalid credentials"})
             return jsonify({"error": "Invalid credentials"}), 400
         else:
+            save_last('update_user', {"Email": email}, {"error": "Internal server error"})
             return jsonify({"error": "Internal server error"}), 500
     except requests.exceptions.RequestException as e:
+        save_last('update_user', {"Email": email}, {"error": str(e)})
         return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
 
 
@@ -193,12 +222,16 @@ def check_users_profile():
         response = requests.get('https://db-manager:8005/check_users_profile',
                                 verify=False)
         if response.status_code == 200:
+            save_last('check_users_profile', {}, {"data": response.json()})
             return jsonify(response.json()), 200
         elif response.status_code == 400:
+            save_last('check_users_profile', {}, {"Generic error"})
             return jsonify({"Generic error"}), 400
         else:
+            save_last('check_users_profile', {}, {"error":"server error"})
             return jsonify({"error": "server error"}), 500
     except requests.exceptions.RequestException as e:
+        save_last('check_users_profile', {}, {"error":str(e)})
         return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
 
 
@@ -218,6 +251,7 @@ def login_admin():
     # password = processed_fields[1]
 
     if not email or not password:
+        save_last('login_admin', {}, {"error":"Missing email or password"})
         return jsonify(error="Missing email or password"), 400
     try:
         response = requests.get('https://db-manager:8005/login_admin',
@@ -228,14 +262,18 @@ def login_admin():
             encrypted_password = encrypt_password(password)
             # Confronta le password
             if stored_encrypted_password == encrypted_password:
+                save_last('login_admin', {}, {"message":"Missing email or password"})
                 return jsonify({"message": "Login successful"}), 200
             else:
+                save_last('login_admin', {}, {"error":"Invalid password credentials"})
                 return jsonify({"error": "Invalid password credentials"}), 400
         elif response.status_code == 400:
             return jsonify({"error": "Invalid credentials"}), 400
         else:
+            save_last('login_admin', {}, {"error":"Internal server error"})
             return jsonify({"error": "Internal server error"}), 500
     except requests.exceptions.RequestException as e:
+        save_last('login_admin', {}, {"error":str(e)})
         return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
 
 
@@ -253,6 +291,7 @@ def delete_user():
     # email = processed_fields[0]
     # password = processed_fields[1]
     if not email or not password:
+        save_last('delete_user', {"Email": email}, {"error": "Missing email or password"})
         return jsonify(error="Missing email or password"), 400
     try:
         encrypted_password = encrypt_password(password)
@@ -260,12 +299,16 @@ def delete_user():
                                 verify=False,
                                 params={"Email": email, "Password": encrypted_password})
         if response.status_code == 200:
+            save_last('delete_user', {"Email": email}, {"delete done!"})
             return jsonify("delete done!"), 200
         elif response.status_code == 400:
+            save_last('delete_user', {"Email": email}, {"error": "Invalid credentials"})
             return jsonify({"error": "Invalid credentials"}), 400
         else:
+            save_last('delete_user', {"Email": email}, {"error": "Internal error"})
             return jsonify({"error": "Internal server error"}), 500
     except requests.exceptions.RequestException as e:
+        save_last('delete_user', {"Email": email}, {"error": str(e)})
         return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
 
 
@@ -283,6 +326,7 @@ def delete_admin():
     # email = processed_fields[0]
     # password = processed_fields[1]
     if not email or not password:
+        save_last('delete_admin', {"Email": email}, {"error": "Missing email or password"})
         return jsonify(error="Missing email or password"), 400
     try:
         encrypted_password = encrypt_password(password)
@@ -290,12 +334,16 @@ def delete_admin():
                                 verify=False,
                                 params={"Email": email, "Password": encrypted_password})
         if response.status_code == 200:
+            save_last('delete_admin', {"Email": email}, {"delete done!"})
             return jsonify("delete done!"), 200
         elif response.status_code == 400:
+            save_last('delete_admin', {"Email": email}, {"error": "Invalid credentials"})
             return jsonify({"error": "Invalid credentials"}), 400
         else:
+            save_last('delete_admin', {"Email": email}, {"error": "Internal error"})
             return jsonify({"error": "Internal server error"}), 500
     except requests.exceptions.RequestException as e:
+        save_last('delete_admin', {"Email": email}, {"error": str(e)})
         return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
 
 
@@ -339,8 +387,10 @@ def protected():
     token = requests.headers.get('Authorization').split()[1]
     try:
         claims = jwt.decode(token, SECRET_KEY)
+        save_last('protected', {}, {"message": "Access granted", "user": claims['sub']})
         return jsonify(message="Access granted", user=claims['sub']), 200
     except JoseError:
+        save_last('protected', {}, {"error": "Invalid or expired token"})
         return jsonify(error="Invalid or expired token"), 401
 
 
