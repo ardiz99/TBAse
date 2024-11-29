@@ -39,6 +39,7 @@ def close_db_connection():
 
 def handle_db_operation(query, values=None, fetch_one=False, fetch_all=False, commit=False):
     result = []
+    u.reset_response()
     init_db_connection()
 
     if connection is None:
@@ -68,8 +69,6 @@ def handle_db_operation(query, values=None, fetch_one=False, fetch_all=False, co
 @app.route('/get_gacha_by_rarity')
 def get_gacha_by_rarity():
     rarity = request.args.get('rarity')
-    # rarity = "Legendary"
-    u.reset_response()
 
     query = "SELECT * FROM gacha WHERE Rarity = %s"
     values = (rarity,)
@@ -80,9 +79,6 @@ def get_gacha_by_rarity():
 @app.route('/get_amount')
 def get_amount():
     email = request.args.get('email')
-    # email = "taylor.smith@example.com"
-
-    u.reset_response()
     query = "SELECT CurrencyAmount FROM user WHERE Email = '{}';".format(email)
     handle_db_operation(query, fetch_one=True)
     return u.send_response()
@@ -97,10 +93,6 @@ def update_amount():
         u.bad_request()
         return u.send_response()
 
-    # new_amount = 10
-    # email = "taylor.smith@example.com"
-    u.reset_response()
-
     query = "UPDATE user " \
             "SET CurrencyAmount = %s" \
             " WHERE Email = %s;"
@@ -108,6 +100,17 @@ def update_amount():
     handle_db_operation(query, values, commit=True)
 
     query = "SELECT CurrencyAmount " \
+            "FROM user " \
+            "WHERE Email = %s"
+    values = (email,)
+    handle_db_operation(query, values, fetch_one=True)
+    return u.send_response()
+
+
+@app.route('/get_id_by_email')
+def get_id_by_email():
+    email = request.args.get('email')
+    query = "SELECT UserId " \
             "FROM user " \
             "WHERE Email = %s"
     values = (email,)
@@ -305,39 +308,59 @@ def register():
     currencyAmount = data.get('CurrencyAmount')
 
     if not email or not password or not firstname or not lastname or not currencyAmount:
-        print(email)
-        return jsonify({"error": "all field are required"}), 400
+        u.generic_error("All field are required")
+        return u.send_response()
 
     u.reset_response()
-    global connection
-    init_db_connection()
 
     try:
         # Connessione al database
-        cursor = connection.cursor(dictionary=True)
-
         query = "INSERT INTO user (FirstName, LastName, Email, Password, CurrencyAmount) VALUES ("""
         query = query + "'{}',".format(firstname)
         query = query + "'{}',".format(lastname)
         query = query + "'{}',".format(email)
         query = query + "'{}',".format(password)
         query = query + "'{}');""".format(currencyAmount)
-        print(query)
+        handle_db_operation(query, commit=True)
 
-        cursor.execute(query)
-        connection.commit()
         query = "SELECT * FROM user  WHERE Email = '{}';".format(email)
-        cursor.execute(query)
-        result = cursor.fetchall()
+        handle_db_operation(query, fetch_all=True)
+        return u.send_response()
+    except Error as e:
+        u.generic_error(e)
+        return u.send_response()
 
-        if result:
-            return jsonify({"message": "register successful"}), 200
-        else:
-            return jsonify({"error": "Invalid credentials"}), 400
 
-    except mysql.connector.Error as e:
-        print(query)
-        return jsonify({"error": "Database error", "details": str(e)}), 500
+@app.route('/register_admin', methods=['POST'])
+def register_admin():
+    data = request.get_json()
+    firstname = data.get('FirstName')
+    lastname = data.get('LastName')
+    email = data.get('Email')
+    password = data.get('Password')
+    # currencyAmount = data.get('CurrencyAmount')
+
+    if not email or not password or not firstname or not lastname:
+        u.generic_error("All field are required")
+        return u.send_response()
+
+    u.reset_response()
+
+    try:
+        # Connessione al database
+        query = "INSERT INTO admin (FirstName, LastName, Email, Password) VALUES ("""
+        query = query + "'{}',".format(firstname)
+        query = query + "'{}',".format(lastname)
+        query = query + "'{}',".format(email)
+        query = query + "'{}');""".format(password)
+        handle_db_operation(query, commit=True)
+
+        query = "SELECT * FROM user  WHERE Email = '{}';".format(email)
+        handle_db_operation(query, fetch_all=True)
+        return u.send_response()
+    except Error as e:
+        u.generic_error(e)
+        return u.send_response()
 
 
 @app.route('/login', methods=['GET'])
@@ -345,26 +368,30 @@ def login():
     email = request.args.get('Email')
 
     if not email:
-        return jsonify({"error": "email are required"}), 400
+        u.bad_request("email required")
+        return u.send_response()
 
     u.reset_response()
-    global connection
-    init_db_connection()
+    try:
+        query = "SELECT Password FROM user WHERE Email = '{}';".format(email)
+        handle_db_operation(query, fetch_one=True)
+        return u.send_response()
+    except Error as e:
+        u.generic_error(str(e))
+        return u.send_response()
+
+
+@app.route('/check_users_profile', methods=['GET'])
+def check_users_profile():
+    u.reset_response()
 
     try:
-        cursor = connection.cursor(dictionary=True)
-        query = "SELECT Password FROM user WHERE Email = '{}';".format(email)
-        print(query)
-        cursor.execute(query)
-        # result = cursor.fetchone()
-        result = cursor.fetchone()
-
-        if result:
-            return jsonify(result), 200  # Invia la password crittografata
-        else:
-            return jsonify({"error": "Invalid credentials"}), 400
-    except mysql.connector.Error as e:
-        return jsonify({"error": "Database error", "details": str(e)}), 500
+        query = "SELECT * FROM user"
+        handle_db_operation(query, fetch_all=True)
+        return u.send_response()
+    except Error as e:
+        u.generic_error(e)
+        return u.send_response()
 
 
 @app.route('/login_admin', methods=['GET'])
@@ -372,24 +399,18 @@ def login_admin():
     email = request.args.get('Email')
 
     if not email:
-        return jsonify({"error": "email required"}), 400
+        u.generic_error("email required")
+        return u.send_response()
 
     u.reset_response()
-    global connection
-    init_db_connection()
 
     try:
-        cursor = connection.cursor(dictionary=True)
-        query = "SELECT password FROM admin WHERE Email = '{}'".format(email)
-        cursor.execute(query)
-        result = cursor.fetchone()
-
-        if result:
-            return jsonify(result), 200  # Invia la password crittografata
-        else:
-            return jsonify({"error": "Invalid credentials"}), 400
-    except mysql.connector.Error as e:
-        return jsonify({"error": "Database error", "details": str(e)}), 500
+        query = "SELECT Password FROM admin WHERE Email = '{}'".format(email)
+        handle_db_operation(query, fetch_one=True)
+        return u.send_response()
+    except Error as e:
+        u.generic_error(e)
+        return u.send_response()
 
 
 @app.route('/delete_user', methods=['GET'])
@@ -398,35 +419,23 @@ def delete_user():
     password = request.args.get('Password')
 
     if not email or not password:
-        print(email)
-        return jsonify({"error": "email and password are required"}), 400
+        u.generic_error("email and password are required")
+        return u.send_response()
 
     u.reset_response()
-    global connection
-    init_db_connection()
-
     try:
-        # Connessione al database
-        cursor = connection.cursor(dictionary=True)
-
         # Cancella l'utente dal database
         query = "DELETE FROM user WHERE Email = '{}'".format(email)
         query = query + "and Password='{}';".format(password)
+        handle_db_operation(query, commit=True)
 
-        cursor.execute(query)
-        connection.commit()
         query = "SELECT * FROM user  WHERE Email = '{}';".format(email)
-        cursor.execute(query)
-        result = cursor.fetchall()
+        handle_db_operation(query, fetch_one=True)
+        return u.send_response()
 
-        if not result:
-            return jsonify({"message": "delete successful"}), 200
-        else:
-            return jsonify({"error": "something goes wrong"}), 400
-
-    except mysql.connector.Error as e:
-        print(query)
-        return jsonify({"error": "Database error", "details": str(e)}), 500
+    except Error as e:
+        u.generic_error(e)
+        return u.send_response()
 
 
 @app.route('/delete_admin', methods=['GET'])
@@ -435,35 +444,23 @@ def delete_admin():
     password = request.args.get('Password')
 
     if not email or not password:
-        print(email)
-        return jsonify({"error": "email and password are required"}), 400
+        u.generic_error("email and password are required")
+        return u.send_response()
 
     u.reset_response()
-    global connection
-    init_db_connection()
-
     try:
-        # Connessione al database
-        cursor = connection.cursor(dictionary=True)
-
         # Cancella l'utente dal database
         query = "DELETE FROM admin WHERE Email = '{}'".format(email)
         query = query + "and Password='{}';".format(password)
+        handle_db_operation(query, commit=True)
 
-        cursor.execute(query)
-        connection.commit()
-        query = "SELECT * FROM user  WHERE Email = '{}';".format(email)
-        cursor.execute(query)
-        result = cursor.fetchall()
+        query = "SELECT * FROM admin  WHERE Email = '{}';".format(email)
+        handle_db_operation(query, fetch_one=True)
+        return u.send_response()
 
-        if not result:
-            return jsonify({"message": "delete successful"}), 200
-        else:
-            return jsonify({"error": "something goes wrong"}), 400
-
-    except mysql.connector.Error as e:
-        print(query)
-        return jsonify({"error": "Database error", "details": str(e)}), 500
+    except Error as e:
+        u.generic_error(e)
+        return u.send_response()
 
 
 @app.route('/update_user', methods=['PUT'])
@@ -475,7 +472,6 @@ def update_user():
     password = ""
     currencyAmount = ""
 
-    userid = request.args.get('UserId')
     firstname = request.args.get('FirstName')
     lastname = request.args.get('LastName')
     email = request.args.get('Email')
@@ -483,21 +479,15 @@ def update_user():
     currencyAmount = request.args.get('CurrencyAmount')
 
     if not email and not password and not firstname and not lastname and not currencyAmount:
-        return jsonify({"error": "almost one field are required"}), 400
+        u.generic_error("almost one field are required")
+        return u.send_response()
 
     u.reset_response()
-    global connection
-    init_db_connection()
-
     try:
-        # Connessione al database
-        cursor = connection.cursor(dictionary=True)
 
         query = "UPDATE user SET "
-        if userid:
-            query = query + "UserId ='{}'".format(userid)
         if firstname:
-            query = query + ",FirstName ='{}'".format(firstname)
+            query = query + "FirstName ='{}'".format(firstname)
         if lastname:
             query = query + ",LastName ='{}'".format(lastname)
         if email:
@@ -508,22 +498,122 @@ def update_user():
             query = query + ",CurrencyAmount ='{}'".format(currencyAmount)
         if userid:
             query = query + "' WHERE UserId ='{}';".format(userid)
+        handle_db_operation(query, commit=True)
 
-        cursor.execute(query)
-        connection.commit()
         query = "SELECT * FROM user WHERE UserId ='{}';".format(userid)
-        cursor.execute(query)
-        result = cursor.fetchall()
+        handle_db_operation(query, fetch_one=True)
+        return u.send_response()
 
-        if result:
-            print(result)
-            return jsonify({"message": "update successful"}), 200
-        else:
-            return jsonify({"error": "Invalid credentials"}), 400
+    except Error as e:
+        u.generic_error(e)
+        return u.send_response()
 
-    except mysql.connector.Error as e:
-        print(query)
-        return jsonify({"error": "Database error", "details": str(e)}), 500
+
+# only for admin
+@app.route('/update_specific_user', methods=['PUT'])
+def update_specific_user():
+    userid = ""
+    firstname = ""
+    lastname = ""
+    email = ""
+    password = ""
+    currencyAmount = ""
+
+    firstname = request.args.get('FirstName')
+    lastname = request.args.get('LastName')
+    email = request.args.get('Email')
+    password = request.args.get('Password')
+    currencyAmount = request.args.get('CurrencyAmount')
+
+    if not email and not password and not firstname and not lastname and not currencyAmount:
+        u.generic_error("almost one field are required")
+        return u.send_response()
+
+    u.reset_response()
+    try:
+
+        query = "UPDATE user SET "
+        if firstname:
+            query = query + "FirstName ='{}'".format(firstname)
+        if lastname:
+            query = query + ",LastName ='{}'".format(lastname)
+        if email:
+            query = query + ",Email ='{}'".format(email)
+        if password:
+            query = query + ",Password ='{}'".format(password)
+        if currencyAmount:
+            query = query + ",CurrencyAmount ='{}'".format(currencyAmount)
+        if userid:
+            query = query + "' WHERE UserId ='{}';".format(userid)
+        handle_db_operation(query, commit=True)
+
+        query = "SELECT * FROM user WHERE UserId ='{}';".format(userid)
+        handle_db_operation(query, fetch_one=True)
+        return u.send_response()
+
+    except Error as e:
+        u.generic_error(e)
+        return u.send_response()
+
+
+# per i gatcha non venduti
+@app.route('/see_auction_market', methods=['GET'])
+def see_auction_market():
+    u.reset_response()
+
+    try:
+        query = "SELECT * FROM transaction WHERE SendedTo is NULL"
+        handle_db_operation(query, fetch_all=True)
+        return u.send_response()
+    except Error as e:
+        u.generic_error(e)
+        return u.send_response()
+
+
+# per tutti i gatcha  (solo per gli ADMIN)
+@app.route('/see_history_auction_market', methods=['GET'])
+def see_history_auction_market():
+    u.reset_response()
+
+    try:
+        query = "SELECT * FROM transaction WHERE EndDate is not NULL"
+        handle_db_operation(query, fetch_all=True)
+        return u.send_response()
+    except Error as e:
+        u.generic_error(e)
+        return u.send_response()
+
+
+@app.route('/see_specific_auction', methods=['GET'])
+def see_specific_auction():
+    u.reset_response()
+    tra_id = request.args.get('Transaction')
+    try:
+        query = "SELECT * FROM transaction WHERE TransactionId='{}'".format(tra_id)
+        handle_db_operation(query, fetch_all=True)
+        return u.send_response()
+    except Error as e:
+        u.generic_error(e)
+        return u.send_response()
+
+
+@app.route('/see_transaction_history', methods=['GET'])
+def see_transaction_history():
+    email = request.args.get('Email')
+
+    if not email:
+        u.generic_error("email are required")
+        return u.send_response()
+
+    u.reset_response()
+
+    try:
+        query = "SELECT * FROM transaction WHERE RequestingUser='{}';".format(email)
+        handle_db_operation(query, fetch_all=True)
+        return u.send_response()
+    except Error as e:
+        u.generic_error(e)
+        return u.send_response()
 
 
 @app.route('/new_transaction', methods=['POST'])

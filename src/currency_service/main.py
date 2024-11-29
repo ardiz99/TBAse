@@ -46,9 +46,10 @@ def roll_info(cost):
         u.bad_request()
         return u.send_response()
 
-    # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
-    email = "taylor.smith@example.com"
-    user_id = 1
+    email = request.args.get("email")
+    if not email:
+        u.generic_error()
+        return u.send_response()
 
     path = u.DB_MANAGER_URL + "/get_amount"
     response = requests.get(path,
@@ -77,8 +78,8 @@ def roll_info(cost):
     target_set = response.json().get("data")
     random2 = random.randint(0, len(target_set) - 1)
     chosen = target_set[random2]
+    gacha_id = chosen["GachaId"]
 
-    # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
     new_amount = amount - cost
     path = u.DB_MANAGER_URL + "/update_amount"
     response = requests.put(path,
@@ -88,7 +89,15 @@ def roll_info(cost):
         u.handle_error(response.status_code)
         return u.send_response()
 
-    gacha_id = chosen["GachaId"]
+    path = u.DB_MANAGER_URL + "/get_id_by_email"
+    response = requests.get(path,
+                            verify=False,
+                            params={'email': email})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    user_id = response.json().get("data").get("UserId")
     current_datetime = datetime.now()
     formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
     path = u.MARKET_SERVICE_URL + "/new_transaction"

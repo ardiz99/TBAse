@@ -14,8 +14,15 @@ def index():
 
 @app.route('/roll', methods=['GET'])
 def roll():
+    if u.AUTH_TOKEN is None:
+        u.forbidden()
+        return u.send_response()
+
+    token = u.validate_token(u.AUTH_TOKEN)
+    email = token.get("sub")
+
     path = u.CURRENCY_SERVICE_URL + f"/roll_info/{u.ROLL_COST}"
-    response = requests.get(path, verify=False)
+    response = requests.get(path, verify=False, params={"email": email})
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()
@@ -39,8 +46,17 @@ def roll():
 
 @app.route('/golden_roll', methods=['GET'])
 def golden():
+    if u.AUTH_TOKEN is None:
+        u.forbidden()
+        return u.send_response()
+
+    token = u.validate_token(u.AUTH_TOKEN)
+    email = token.get("sub")
+
     path = u.CURRENCY_SERVICE_URL + f"/roll_info/{u.GOLDEN_COST}"
-    response = requests.get(path, verify=False)
+    response = requests.get(path,
+                            verify=False,
+                            params={"email": email})
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()
@@ -219,7 +235,13 @@ def login():
     response = requests.get('https://auth-service:8001/login',
                             verify=False,
                             params={'Email': email, 'Password': password})
-    return jsonify(response.json())
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    token = response.json().get("data")
+    u.set_auth_token(token)
+    return jsonify(response.json()), 200
 
 
 @app.route('/register', methods=['POST'])
