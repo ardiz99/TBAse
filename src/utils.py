@@ -3,7 +3,7 @@ import jwt
 import datetime
 from flask import jsonify
 
-FLASK_DEBUG = True  # Do not use debug mode in production
+FLASK_DEBUG = False  # Do not use debug mode in production
 
 ROLL_COST = 10
 GOLDEN_COST = 100
@@ -22,6 +22,7 @@ GACHA_SERVICE_URL = "http://127.0.0.1:8002" if LOCAL else "https://gacha-service
 MARKET_SERVICE_URL = "http://127.0.0.1:8003" if LOCAL else "https://market-service:8003"
 CURRENCY_SERVICE_URL = "http://127.0.0.1:8004" if LOCAL else "https://currency-service:8004"
 DB_MANAGER_URL = "http://127.0.0.1:8005" if LOCAL else "https://db-manager:8005"
+AUCTION_SERVICE_URL = "http://127.0.0.1:8006" if LOCAL else "https://auction-service:8006"
 
 RESPONSE = {
     "code": 200,
@@ -80,14 +81,13 @@ def handle_error(code):
 
 
 def send_response(message=""):
-    if message:
-        RESPONSE["message"] = message
+    RESPONSE["message"] = RESPONSE["message"] + " / " + message
     return jsonify(RESPONSE), RESPONSE["code"]
 
 
 # Secret keys and configurations
 SECRET_KEY = "your-super-secret-key"  # Change to a secure value
-JWT_EXPIRATION_TIME = 36000  # 1 hour in seconds
+JWT_EXPIRATION_TIME = 3600  # 1 hour in seconds
 ALGORITHM = "HS256"  # JWT signing algorithm
 
 # Placeholder for user roles
@@ -133,11 +133,4 @@ def validate_token(token):
         return {"error": "Invalid token"}
 
 
-# def get_token_field(field):
-#     if AUTH_TOKEN is None:
-#         unauthorized()
-#         return None
-#
-#     token_data = validate_token(AUTH_TOKEN)
-#     to_ret = token_data.get(field)
-#     return to_ret
+BID_EXPIRATION_TIME = 86400  # 24 hour in seconds

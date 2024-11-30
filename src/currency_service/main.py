@@ -17,9 +17,8 @@ RARITY_DISTRIBUTION = {
 }
 
 GOLDEN_DISTRIBUTION = {
-    "Legendary": 1,
-    "Epic": 9,
-    "Rare": 90
+    "Legendary": 10,
+    "Epic": 90,
 }
 
 
@@ -40,8 +39,6 @@ def random_rarity(golden):
 
 @app.route('/roll_info/<int:cost>', methods=['GET'])
 def roll_info(cost):
-    u.reset_response()
-
     if cost != u.ROLL_COST and cost != u.GOLDEN_COST:
         u.bad_request()
         return u.send_response()
@@ -128,15 +125,14 @@ def roll_img():
 
 @app.route('/buy_currency', methods=['PUT'])
 def buy_currency():
-    u.reset_response()
     data = request.get_json()
     quantity = data.get('quantity')
+    email = data.get('email')
+
     if quantity <= 0:
         u.generic_error("You can't add a negative quantity.")
         return jsonify(u.RESPONSE)
 
-    # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
-    email = "taylor.smith@example.com"
     path = u.DB_MANAGER_URL + "/get_amount"
     response = requests.get(path,
                             verify=False,
@@ -145,7 +141,6 @@ def buy_currency():
     target_data = response.json().get("data")
     amount = target_data["CurrencyAmount"]
 
-    # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
     new_amount = amount + quantity
     path = u.DB_MANAGER_URL + "/update_amount"
     response = requests.put(path,

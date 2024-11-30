@@ -2,7 +2,6 @@ from flask import Flask, jsonify, request
 import mysql.connector
 from mysql.connector import Error
 import utils as u
-
 # from src import utils as u
 
 app = Flask(__name__)
@@ -626,7 +625,6 @@ def new_transaction():
     if not user_id or not gacha_id or not cost or not datetime:
         u.bad_request()
         return u.send_response()
-    u.reset_response()
 
     query = "INSERT INTO transaction (RequestingUser, GachaId, Cost, EndDate) " \
             "VALUES (%s, %s, %s, %s)"
@@ -643,7 +641,6 @@ def update_transaction(transaction_id):
     if not sended_to:
         u.bad_request()
         return u.send_response()
-    u.reset_response()
 
     query = "UPDATE transaction " \
             "SET SendedTo = %s " \
@@ -656,8 +653,6 @@ def update_transaction(transaction_id):
 
 @app.route('/transaction')
 def get_all_transactions():
-    u.reset_response()
-
     query = "SELECT * FROM transaction"
     handle_db_operation(query, fetch_all=True)
     return u.send_response()
@@ -665,11 +660,64 @@ def get_all_transactions():
 
 @app.route('/transaction/<int:requesting_user>')
 def get_transaction_by_user(requesting_user):
-    u.reset_response()
 
     query = "SELECT * FROM transaction WHERE RequestingUser = %s"
     values = (requesting_user,)
     handle_db_operation(query, values, fetch_all=True)
+    return u.send_response()
+
+
+# =======> AUCTION METHODS
+
+
+@app.route('/new_auction', methods=['POST'])
+def new_auction():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    gacha_id = data.get('gacha_id')
+    starting_price = data.get('starting_price')
+    datetime = data.get('starting_datetime')
+    if not user_id or not gacha_id or not starting_price or not datetime:
+        u.bad_request()
+        return u.send_response()
+
+    query = "INSERT INTO auction (UserOwner, Gacha, StartingPrice, ActualPrice, StartingDate) " \
+            "VALUES (%s, %s, %s, %s, %s)"
+    values = (user_id, gacha_id, starting_price, starting_price, datetime)
+    handle_db_operation(query, values, commit=True)
+
+    return u.send_response()
+
+
+@app.route('/auction')
+def get_all_auctions():
+    query = "SELECT * FROM auction"
+    handle_db_operation(query, fetch_all=True)
+    return u.send_response()
+
+
+@app.route('/auction/<int:gacha>')
+def get_auction_by_user(gacha):
+    query = "SELECT * FROM auction WHERE Gacha = %s"
+    values = (gacha,)
+    handle_db_operation(query, values, fetch_all=True)
+    return u.send_response()
+
+
+@app.route('/auction/<int:auction_id>/get_bid')
+def get_actual_price(auction_id):
+    query = "SELECT ActualPrice, StartingDate FROM auction WHERE AuctionId = %s"
+    values = (auction_id,)
+    handle_db_operation(query, values, fetch_one=True)
+    return u.send_response()
+
+
+@app.route('/auction/<int:auction_id>/update_actual_price', methods=['PUT'])
+def update_actual_price(auction_id):
+    bid = request.get_json().get("bid")
+    query = "UPDATE auction SET ActualPrice = %s WHERE AuctionId = %s"
+    values = (bid, auction_id)
+    handle_db_operation(query, values, commit=True)
     return u.send_response()
 
 

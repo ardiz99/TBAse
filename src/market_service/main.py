@@ -36,5 +36,32 @@ def new_transaction():
         return u.send_response()
 
 
+@app.route('/transaction', methods=['GET'])
+def transaction():
+    email = request.args.get('email')
+    if email is None:
+        u.bad_request()
+        return u.send_response()
+
+    path = u.DB_MANAGER_URL + "/get_id_by_email"
+    response = requests.get(path,
+                            verify=False,
+                            params={'email': email})
+
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    user_id = response.json().get("data").get("UserId")
+
+    path = u.DB_MANAGER_URL + f"/transaction/{user_id}"
+    response = requests.get(path,
+                            verify=False)
+
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+
 if __name__ == "__main__":
     app.run(debug=u.FLASK_DEBUG)

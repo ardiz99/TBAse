@@ -80,6 +80,13 @@ def golden():
 
 @app.route('/buy_currency', methods=['PUT'])
 def buy_currency():
+    if u.AUTH_TOKEN is None:
+        u.forbidden()
+        return u.send_response()
+
+    token = u.validate_token(u.AUTH_TOKEN)
+    email = token.get("sub")
+
     data = request.get_json()
     quantity = data.get('quantity')
     if quantity is None:
@@ -89,7 +96,10 @@ def buy_currency():
     path = u.CURRENCY_SERVICE_URL + "/buy_currency"
     response = requests.put(path,
                             verify=False,
-                            json={"quantity": quantity})
+                            json={"quantity": quantity, "email": email})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+
     return u.send_response()
 
 
@@ -304,6 +314,22 @@ def login_admin():
                             verify=False,
                             params={'Email': email, 'Password': password})
     return jsonify(response.json())
+
+
+# Endpoint per ottenere tutti i gachas
+@app.route('/auction', methods=['GET'])
+def get_all_auctions():
+    u.reset_response()
+
+    # URL completo del servizio remoto
+    url = u.AUCTION_SERVICE_URL + "/auction"
+
+    # Effettua la richiesta GET al servizio remoto
+    response = requests.get(url, verify=False)
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+
+    return u.send_response()
 
 
 if __name__ == "__main__":
