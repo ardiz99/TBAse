@@ -13,7 +13,6 @@ services:
       - currency-service
       - gacha-service
       - market-service
-      - auction-service
       - db-manager
     secrets:
       - certificate
@@ -73,21 +72,6 @@ services:
     container_name: market-service
     ports:
       - "8003:8003"
-    volumes:
-      - ./src/utils.py:/app/utils.py
-    depends_on:
-      - db-manager
-    secrets:
-      - certificate
-      - key
-
-  auction-service:
-    build:
-      context: src
-      dockerfile: ./auction_service/Dockerfile
-    container_name: auction-service
-    ports:
-      - "8006:8006"
     volumes:
       - ./src/utils.py:/app/utils.py
     depends_on:

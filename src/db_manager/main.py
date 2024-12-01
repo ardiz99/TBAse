@@ -1,8 +1,9 @@
 from flask import Flask, jsonify, request
 import mysql.connector
 from mysql.connector import Error
-import utils as u
 # from src import utils as u
+import utils as u
+
 
 app = Flask(__name__)
 
@@ -106,13 +107,23 @@ def update_amount():
     return u.send_response()
 
 
-@app.route('/get_id_by_email')
-def get_id_by_email():
+@app.route('/user/get_by_email')
+def get_by_email():
     email = request.args.get('email')
-    query = "SELECT UserId " \
+    query = "SELECT * " \
             "FROM user " \
             "WHERE Email = %s"
     values = (email,)
+    handle_db_operation(query, values, fetch_one=True)
+    return u.send_response()
+
+
+@app.route('/user/get_by_id/<int:user_id>')
+def get_by_id(user_id):
+    query = "SELECT * " \
+            "FROM user " \
+            "WHERE UserId = %s"
+    values = (user_id,)
     handle_db_operation(query, values, fetch_one=True)
     return u.send_response()
 
@@ -555,68 +566,18 @@ def update_specific_user():
         return u.send_response()
 
 
-# per i gatcha non venduti
-@app.route('/see_auction_market', methods=['GET'])
-def see_auction_market():
+@app.route('/user', methods=['GET'])
+def get_all_user():
     u.reset_response()
-
-    try:
-        query = "SELECT * FROM transaction WHERE SendedTo is NULL"
-        handle_db_operation(query, fetch_all=True)
-        return u.send_response()
-    except Error as e:
-        u.generic_error(e)
-        return u.send_response()
+    query = "SELECT * FROM user"
+    handle_db_operation(query, fetch_all=True)
+    return u.send_response()
 
 
-# per tutti i gatcha  (solo per gli ADMIN)
-@app.route('/see_history_auction_market', methods=['GET'])
-def see_history_auction_market():
-    u.reset_response()
+# TRANSACTION ===>
 
-    try:
-        query = "SELECT * FROM transaction WHERE EndDate is not NULL"
-        handle_db_operation(query, fetch_all=True)
-        return u.send_response()
-    except Error as e:
-        u.generic_error(e)
-        return u.send_response()
-
-
-@app.route('/see_specific_auction', methods=['GET'])
-def see_specific_auction():
-    u.reset_response()
-    tra_id = request.args.get('Transaction')
-    try:
-        query = "SELECT * FROM transaction WHERE TransactionId='{}'".format(tra_id)
-        handle_db_operation(query, fetch_all=True)
-        return u.send_response()
-    except Error as e:
-        u.generic_error(e)
-        return u.send_response()
-
-
-@app.route('/see_transaction_history', methods=['GET'])
-def see_transaction_history():
-    email = request.args.get('Email')
-
-    if not email:
-        u.generic_error("email are required")
-        return u.send_response()
-
-    u.reset_response()
-
-    try:
-        query = "SELECT * FROM transaction WHERE RequestingUser='{}';".format(email)
-        handle_db_operation(query, fetch_all=True)
-        return u.send_response()
-    except Error as e:
-        u.generic_error(e)
-        return u.send_response()
-
-
-@app.route('/new_transaction', methods=['POST'])
-def new_transaction():
+@app.route('/roll', methods=['POST'])
+def roll():
     data = request.get_json()
     user_id = data.get('user_id')
     gacha_id = data.get('gacha_id')
@@ -626,18 +587,18 @@ def new_transaction():
         u.bad_request()
         return u.send_response()
 
-    query = "INSERT INTO transaction (RequestingUser, GachaId, Cost, EndDate) " \
-            "VALUES (%s, %s, %s, %s)"
-    values = (user_id, gacha_id, cost, datetime)
+    query = "INSERT INTO transaction (RequestingUser, GachaId, StartingPrice, ActualPrice, EndDate) " \
+            "VALUES (%s, %s, %s, %s, %s)"
+    values = (user_id, gacha_id, cost, cost, datetime)
     handle_db_operation(query, values, commit=True)
 
     return u.send_response()
 
 
-@app.route('/update_transaction/<int:transaction_id>', methods=['PUT'])
+@app.route('/transaction/<int:transaction_id>/sended_to', methods=['PUT'])
 def update_transaction(transaction_id):
     data = request.get_json()
-    sended_to = data.get('SendedTo')
+    sended_to = data.get('sended_to')
     if not sended_to:
         u.bad_request()
         return u.send_response()
@@ -651,6 +612,20 @@ def update_transaction(transaction_id):
     return u.send_response()
 
 
+@app.route('/transaction/<int:gacha_id>/<int:requesting_user>', methods=['GET'])
+def get_old_transaction(gacha_id, requesting_user):
+    query = "SELECT TransactionId " \
+            "FROM transaction " \
+            "WHERE RequestingUser = %s " \
+            "   AND GachaId = %s " \
+            "   AND SendedTo IS NULL " \
+            "   AND STR_TO_DATE(EndDate, '%Y-%m-%d %H:%i:%s') < NOW()"
+    values = (requesting_user, gacha_id)
+    handle_db_operation(query, values, fetch_one=True)
+
+    return u.send_response()
+
+
 @app.route('/transaction')
 def get_all_transactions():
     query = "SELECT * FROM transaction"
@@ -658,9 +633,8 @@ def get_all_transactions():
     return u.send_response()
 
 
-@app.route('/transaction/<int:requesting_user>')
+@app.route('/transaction/requesting_user/<int:requesting_user>')
 def get_transaction_by_user(requesting_user):
-
     query = "SELECT * FROM transaction WHERE RequestingUser = %s"
     values = (requesting_user,)
     handle_db_operation(query, values, fetch_all=True)
@@ -673,17 +647,17 @@ def get_transaction_by_user(requesting_user):
 @app.route('/new_auction', methods=['POST'])
 def new_auction():
     data = request.get_json()
-    user_id = data.get('user_id')
+    user_owner = data.get('user_owner')
     gacha_id = data.get('gacha_id')
     starting_price = data.get('starting_price')
-    datetime = data.get('starting_datetime')
-    if not user_id or not gacha_id or not starting_price or not datetime:
+    end_date = data.get('end_date')
+    if not user_owner or not gacha_id or not starting_price or not end_date:
         u.bad_request()
         return u.send_response()
 
-    query = "INSERT INTO auction (UserOwner, Gacha, StartingPrice, ActualPrice, StartingDate) " \
+    query = "INSERT INTO transaction (UserOwner, GachaId, StartingPrice, ActualPrice, EndDate) " \
             "VALUES (%s, %s, %s, %s, %s)"
-    values = (user_id, gacha_id, starting_price, starting_price, datetime)
+    values = (user_owner, gacha_id, starting_price, starting_price, end_date)
     handle_db_operation(query, values, commit=True)
 
     return u.send_response()
@@ -691,32 +665,37 @@ def new_auction():
 
 @app.route('/auction')
 def get_all_auctions():
-    query = "SELECT * FROM auction"
+    query = "SELECT * FROM transaction WHERE UserOwner IS NOT NULL"
     handle_db_operation(query, fetch_all=True)
     return u.send_response()
 
 
 @app.route('/auction/<int:gacha>')
 def get_auction_by_user(gacha):
-    query = "SELECT * FROM auction WHERE Gacha = %s"
+    query = "SELECT * FROM transaction WHERE Gacha = %s AND UserOwner IS NOT NULL"
     values = (gacha,)
     handle_db_operation(query, values, fetch_all=True)
     return u.send_response()
 
 
-@app.route('/auction/<int:auction_id>/get_bid')
-def get_actual_price(auction_id):
-    query = "SELECT ActualPrice, StartingDate FROM auction WHERE AuctionId = %s"
-    values = (auction_id,)
+@app.route('/auction/<int:transaction_id>/get_bid')
+def get_actual_price(transaction_id):
+    query = "SELECT * " \
+            "FROM transaction " \
+            "WHERE TransactionId = %s AND UserOwner IS NOT NULL"
+    values = (transaction_id,)
     handle_db_operation(query, values, fetch_one=True)
     return u.send_response()
 
 
-@app.route('/auction/<int:auction_id>/update_actual_price', methods=['PUT'])
-def update_actual_price(auction_id):
+@app.route('/auction/<int:transaction_id>/update_actual_price', methods=['PUT'])
+def update_actual_price(transaction_id):
     bid = request.get_json().get("bid")
-    query = "UPDATE auction SET ActualPrice = %s WHERE AuctionId = %s"
-    values = (bid, auction_id)
+    requesting_user = request.get_json().get("requesting_user")
+    query = "UPDATE transaction " \
+            "SET ActualPrice = %s, RequestingUser = %s " \
+            "WHERE TransactionId = %s"
+    values = (bid, requesting_user, transaction_id)
     handle_db_operation(query, values, commit=True)
     return u.send_response()
 

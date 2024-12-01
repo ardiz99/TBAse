@@ -45,7 +45,7 @@ def roll_info(cost):
 
     email = request.args.get("email")
     if not email:
-        u.generic_error()
+        u.bad_request()
         return u.send_response()
 
     path = u.DB_MANAGER_URL + "/get_amount"
@@ -56,8 +56,7 @@ def roll_info(cost):
         u.handle_error(response.status_code)
         return u.send_response()
 
-    target_data = response.json().get("data")
-    amount = target_data["CurrencyAmount"]
+    amount = response.json().get("data").get("CurrencyAmount")
     if amount < cost:
         u.generic_error("Insufficient Pokedollars")
         return u.send_response()
@@ -97,7 +96,7 @@ def roll_info(cost):
     user_id = response.json().get("data").get("UserId")
     current_datetime = datetime.now()
     formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-    path = u.MARKET_SERVICE_URL + "/new_transaction"
+    path = u.MARKET_SERVICE_URL + "/roll"
     response = requests.post(path,
                              verify=False,
                              json={'user_id': user_id,
@@ -138,8 +137,7 @@ def buy_currency():
                             verify=False,
                             params={'email': email})
 
-    target_data = response.json().get("data")
-    amount = target_data["CurrencyAmount"]
+    amount = response.json().get("data").get("CurrencyAmount")
 
     new_amount = amount + quantity
     path = u.DB_MANAGER_URL + "/update_amount"
