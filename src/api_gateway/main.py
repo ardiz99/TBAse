@@ -14,11 +14,12 @@ def index():
 
 @app.route('/roll', methods=['GET'])
 def roll():
-    if u.AUTH_TOKEN is None:
+    enc_token = request.headers.get("token")
+    if enc_token is None:
         u.forbidden()
         return u.send_response()
 
-    token = u.validate_token(u.AUTH_TOKEN)
+    token = u.validate_token(enc_token)
     email = token.get("sub")
 
     path = u.CURRENCY_SERVICE_URL + f"/roll_info/{u.ROLL_COST}"
@@ -46,11 +47,12 @@ def roll():
 
 @app.route('/golden_roll', methods=['GET'])
 def golden():
-    if u.AUTH_TOKEN is None:
+    enc_token = request.headers.get("token")
+    if enc_token is None:
         u.forbidden()
         return u.send_response()
 
-    token = u.validate_token(u.AUTH_TOKEN)
+    token = u.validate_token(enc_token)
     email = token.get("sub")
 
     path = u.CURRENCY_SERVICE_URL + f"/roll_info/{u.GOLDEN_COST}"
@@ -80,11 +82,12 @@ def golden():
 
 @app.route('/buy_currency', methods=['PUT'])
 def buy_currency():
-    if u.AUTH_TOKEN is None:
+    enc_token = request.headers.get("token")
+    if enc_token is None:
         u.forbidden()
         return u.send_response()
 
-    token = u.validate_token(u.AUTH_TOKEN)
+    token = u.validate_token(enc_token)
     email = token.get("sub")
 
     data = request.get_json()
@@ -135,8 +138,6 @@ def login():
         u.handle_error(response.status_code)
         return u.send_response()
 
-    token = response.json().get("data")
-    u.set_auth_token(token)
     return jsonify(response.json()), 200
 
 

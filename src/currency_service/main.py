@@ -85,7 +85,7 @@ def roll_info(cost):
         u.handle_error(response.status_code)
         return u.send_response()
 
-    path = u.DB_MANAGER_URL + "/get_id_by_email"
+    path = u.DB_MANAGER_URL + "/user/get_by_email"
     response = requests.get(path,
                             verify=False,
                             params={'email': email})

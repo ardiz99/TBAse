@@ -115,7 +115,7 @@ def set_auth_token(token):
 # Helper: Generate JWT
 def generate_token(email, role):
     payload = {
-        "sub_email": email,
+        "sub": email,
         "role": role,
         "iat": datetime.datetime.now(datetime.timezone.utc),
         "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=JWT_EXPIRATION_TIME)

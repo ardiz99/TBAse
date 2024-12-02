@@ -127,184 +127,6 @@ def get_by_id(user_id):
     return u.send_response()
 
 
-# INIZIO METODI DEL DBMANGER PER ESEGUIRE LE QUERY DEL GACHASERVICE
-@app.route('/gacha/add', methods=['POST'])
-def add_gacha():
-    data = request.get_json()
-    u.reset_response()
-    init_db_connection()
-    if connection is None:
-        print("Errore: connessione al database non riuscita.")
-        u.generic_error("Errore di connessione al database.")
-        return u.send_response()
-
-    try:
-        cursor = connection.cursor()
-        query = """
-            INSERT INTO gacha (Name, Type1, Type2, Total, HP, Attack, Defense, SpAtt, SpDef, Speed, Rarity, Link) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        values = (
-            data['Name'], data['Type1'], data['Type2'], data['Total'], data['HP'],
-            data['Attack'], data['Defense'], data['SpAtt'], data['SpDef'],
-            data['Speed'], data['Rarity'], data['Link']
-        )
-        cursor.execute(query, values)
-        connection.commit()  # Conferma le modifiche nel database
-        print(f"Query eseguita: {query}")
-
-        cursor.close()
-        close_db_connection()
-
-        u.RESPONSE["code"] = 200
-        u.RESPONSE["data"] = []
-        u.RESPONSE["message"] = "Gacha added successfully!"
-        return u.send_response()
-
-    except Error as e:
-        print(f"Errore durante l'inserimento nel database: {e}")
-        u.generic_error("Errore durante l'inserimento nel database.")
-        return u.send_response()
-
-
-@app.route('/gacha/update/<int:gacha_id>', methods=['PUT'])
-def update_gacha(gacha_id):
-    data = request.get_json()
-    u.reset_response()
-    init_db_connection()
-    if connection is None:
-        print("Errore: connessione al database non riuscita.")
-        u.generic_error("Errore di connessione al database.")
-        return u.send_response()
-
-    try:
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM gacha WHERE GachaId = %s", (gacha_id,))
-        gacha = cursor.fetchone()
-        if not gacha:
-            u.not_found
-            return u.send_response()
-
-        query = "UPDATE gacha " \
-                "SET Name = %s, Type1 = %s, Type2 = %s, Total = %s, HP = %s, Attack = %s, Defense = %s, SpAtt = %s, " \
-                "SpDef = %s, Speed = %s, Rarity = %s, Link = %s" \
-                "WHERE GachaId = %s"
-        values = (
-            data.get('Name', gacha[1]), data.get('Type1', gacha[2]), data.get('Type2', gacha[3]),
-            data.get('Total', gacha[4]), data.get('HP', gacha[5]), data.get('Attack', gacha[6]),
-            data.get('Defense', gacha[7]), data.get('SpAtt', gacha[8]), data.get('SpDef', gacha[9]),
-            data.get('Speed', gacha[10]), data.get('Rarity', gacha[11]), data.get('Link', gacha[12]),
-            gacha_id
-        )
-        cursor.execute(query, values)
-        connection.commit()
-        print(f"Query eseguita: {query}")
-        cursor.close()
-        close_db_connection()
-        u.RESPONSE["code"] = 200
-        u.RESPONSE["data"] = []
-        u.RESPONSE["message"] = "Gacha modified successfully!"
-        return u.send_response()
-
-    except Error as e:
-        print(f"Errore durante la modifica nel database: {e}")
-        u.generic_error("Errore durante la modifica nel database.")
-        return u.send_response()
-
-
-@app.route('/gacha/delete/<int:gacha_id>', methods=['DELETE'])
-def delete_gacha(gacha_id):
-    u.reset_response()
-    init_db_connection()
-
-    if connection is None:
-        print("Errore: connessione al database non riuscita.")
-        u.generic_error("Errore di connessione al database.")
-        return u.send_response()
-
-    try:
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM gacha WHERE GachaId = %s", (gacha_id,))
-        gacha = cursor.fetchone()
-        if not gacha:
-            u.not_found()
-            return u.send_response()
-
-        cursor.execute("DELETE FROM gacha WHERE GachaId = %s", (gacha_id,))
-        connection.commit()
-        print(f"Gacha con ID {gacha_id} eliminato correttamente.")
-        cursor.close()
-        close_db_connection()
-
-        u.RESPONSE["code"] = 200
-        u.RESPONSE["message"] = "Gacha deleted successfully!"
-        return u.send_response()
-
-    except Error as e:
-        print(f"Errore durante l'eliminazione del gacha: {e}")
-        u.generic_error("Errore durante l'eliminazione del gacha.")
-        return u.send_response()
-
-
-@app.route('/gacha/<int:gacha_id>', methods=['GET'])
-def get_gacha(gacha_id):
-    u.reset_response()
-    init_db_connection()
-
-    if connection is None:
-        print("Errore: connessione al database non riuscita.")
-        u.generic_error("Errore di connessione al database.")
-        return u.send_response()
-
-    try:
-        cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM gacha WHERE GachaId = %s", (gacha_id,))
-        gacha = cursor.fetchone()
-        if gacha is None:
-            u.not_found()
-            return u.send_response()
-
-        u.RESPONSE["code"] = 200
-        u.RESPONSE["data"] = gacha
-        u.RESPONSE["message"] = "Gacha retrieved successfully!"
-        cursor.close()
-        close_db_connection()
-        return u.send_response()
-
-    except Error as e:
-        print(f"Errore durante il recupero del gacha: {e}")
-        u.generic_error("Errore durante il recupero del gacha.")
-        return u.send_response()
-
-
-@app.route('/gacha', methods=['GET'])
-def get_all_gachas():
-    u.reset_response()
-    init_db_connection()
-
-    if connection is None:
-        print("Errore: connessione al database non riuscita.")
-        u.generic_error("Errore di connessione al database.")
-        return u.send_response()
-
-    try:
-        cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM gacha")
-        gachas = cursor.fetchall()
-
-        u.RESPONSE["code"] = 200
-        u.RESPONSE["data"] = gachas
-        u.RESPONSE["message"] = "All gachas retrieved successfully!"
-        cursor.close()
-        close_db_connection()
-        return u.send_response()
-
-    except Error as e:
-        print(f"Errore durante il recupero di tutti i gachas: {e}")
-        u.generic_error("Errore durante il recupero di tutti i gachas.")
-        return u.send_response()
-
-
 # INIZIO METODI PER USER =>
 
 @app.route('/register', methods=['POST'])
@@ -434,16 +256,15 @@ def delete_user():
     u.reset_response()
     try:
         # Cancella l'utente dal database
-        query = "DELETE FROM user WHERE Email = '{}'".format(email)
-        query = query + "and Password='{}';".format(password)
-        handle_db_operation(query, commit=True)
-
-        query = "SELECT * FROM user  WHERE Email = '{}';".format(email)
-        handle_db_operation(query, fetch_one=True)
+        query = "DELETE FROM user " \
+                "WHERE Email = %s " \
+                "AND Password = %s "
+        values = (email, password)
+        handle_db_operation(query, values, commit=True)
         return u.send_response()
 
     except Error as e:
-        u.generic_error(e)
+        u.generic_error(str(e))
         return u.send_response()
 
 
