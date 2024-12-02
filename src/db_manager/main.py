@@ -4,7 +4,6 @@ from mysql.connector import Error
 # from src import utils as u
 import utils as u
 
-
 app = Flask(__name__)
 
 connection = None
@@ -733,6 +732,286 @@ def close_auction(transaction_id):
             f"WHERE TransactionId = {transaction_id}"
     handle_db_operation(query, commit=True)
     return u.send_response()
+
+
+# INIZIO METODI DEL DBMANGER PER ESEGUIRE LE QUERY DEL GACHASERVICE
+@app.route('/get_gacha_of_user/<int:user_id>', methods=['GET'])
+def get_expired_gacha_ids(user_id):
+    u.reset_response()
+    global connection
+    init_db_connection()
+
+    if connection is None:
+        u.generic_error("Errore di connessione al database.")
+        return jsonify(u.RESPONSE)
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        query = """
+            SELECT GachaId
+            FROM transaction
+            WHERE RequestingUser = """ + str(user_id) + """
+              AND STR_TO_DATE(EndDate, '%Y-%m-%d %H:%i:%s') < NOW()
+              AND SendedTo IS NULL
+        """
+        print(f"Query eseguita: {query}")  # Stampa la query per il debug
+        cursor.execute(query)
+        result = cursor.fetchall()
+
+        if not result:
+            u.not_found()
+            return jsonify(u.RESPONSE)
+
+        cursor.close()
+        close_db_connection()
+
+        # Estrai solo gli GachaId dalla query e invia come risposta
+        u.RESPONSE["code"] = 200
+        u.RESPONSE["data"] = [row['GachaId'] for row in result]
+        u.RESPONSE["message"] = "Expired gacha IDs retrieved successfully!"
+        return jsonify(u.RESPONSE)
+
+    except Error as e:
+        u.generic_error("Errore durante il recupero dei gacha IDs: " + str(e))
+        return jsonify(u.RESPONSE)
+
+
+# INIZIO METODI DEL DBMANGER PER ESEGUIRE LE QUERY DEL ADMINGACHASERVICE
+@app.route('/admin_gacha/add', methods=['POST'])
+def add_gacha():
+    data = request.get_json()
+    u.reset_response()
+    init_db_connection()
+    if connection is None:
+        print("Errore: connessione al database non riuscita.")
+        u.generic_error("Errore di connessione al database.")
+        return jsonify(u.RESPONSE)
+
+    try:
+        cursor = connection.cursor()
+        query = """
+            INSERT INTO gacha (Name, Type1, Type2, Total, HP, Attack, Defense, SpAtt, SpDef, Speed, Rarity, Link) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        values = (
+            data['Name'], data['Type1'], data['Type2'], data['Total'], data['HP'],
+            data['Attack'], data['Defense'], data['SpAtt'], data['SpDef'],
+            data['Speed'], data['Rarity'], data['Link']
+        )
+        cursor.execute(query, values)
+        connection.commit()  # Conferma le modifiche nel database
+        print(f"Query eseguita: {query}")
+
+        cursor.close()
+        close_db_connection()
+
+        u.RESPONSE["code"] = 200
+        u.RESPONSE["data"] = []
+        u.RESPONSE["message"] = "Gacha added successfully!"
+        return jsonify(u.RESPONSE)
+
+    except Error as e:
+        print(f"Errore durante l'inserimento nel database: {e}")
+        u.generic_error("Errore durante l'inserimento nel database.")
+        return jsonify(u.RESPONSE)
+
+
+@app.route('/admin_gacha/update/<int:gacha_id>', methods=['PUT'])
+def update_gacha(gacha_id):
+    data = request.get_json()
+    u.reset_response()
+    init_db_connection()
+    if connection is None:
+        print("Errore: connessione al database non riuscita.")
+        u.generic_error("Errore di connessione al database.")
+        return jsonify(u.RESPONSE)
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM gacha WHERE GachaId = %s", (gacha_id,))
+        gacha = cursor.fetchone()
+        if not gacha:
+            u.not_found
+            return jsonify(u.RESPONSE)
+
+        query = "UPDATE gacha " \
+                "SET Name = %s, Type1 = %s, Type2 = %s, Total = %s, HP = %s, Attack = %s, Defense = %s, SpAtt = %s, " \
+                "SpDef = %s, Speed = %s, Rarity = %s, Link = %s" \
+                "WHERE GachaId = %s"
+        values = (
+            data.get('Name', gacha[1]), data.get('Type1', gacha[2]), data.get('Type2', gacha[3]),
+            data.get('Total', gacha[4]), data.get('HP', gacha[5]), data.get('Attack', gacha[6]),
+            data.get('Defense', gacha[7]), data.get('SpAtt', gacha[8]), data.get('SpDef', gacha[9]),
+            data.get('Speed', gacha[10]), data.get('Rarity', gacha[11]), data.get('Link', gacha[12]),
+            gacha_id
+        )
+        cursor.execute(query, values)
+        connection.commit()
+        print(f"Query eseguita: {query}")
+        cursor.close()
+        close_db_connection()
+        u.RESPONSE["code"] = 200
+        u.RESPONSE["data"] = []
+        u.RESPONSE["message"] = "Gacha modified successfully!"
+        return jsonify(u.RESPONSE)
+
+    except Error as e:
+        print(f"Errore durante la modifica nel database: {e}")
+        u.generic_error("Errore durante la modifica nel database.")
+        return jsonify(u.RESPONSE)
+
+
+@app.route('/admin_gacha/delete/<int:gacha_id>', methods=['DELETE'])
+def delete_gacha(gacha_id):
+    u.reset_response()
+    init_db_connection()
+
+    if connection is None:
+        print("Errore: connessione al database non riuscita.")
+        u.generic_error("Errore di connessione al database.")
+        return jsonify(u.RESPONSE)
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM gacha WHERE GachaId = %s", (gacha_id,))
+        gacha = cursor.fetchone()
+        if not gacha:
+            u.not_found()
+            return jsonify(u.RESPONSE)
+
+        cursor.execute("DELETE FROM gacha WHERE GachaId = %s", (gacha_id,))
+        connection.commit()
+        print(f"Gacha con ID {gacha_id} eliminato correttamente.")
+        cursor.close()
+        close_db_connection()
+
+        u.RESPONSE["code"] = 200
+        u.RESPONSE["message"] = "Gacha deleted successfully!"
+        return jsonify(u.RESPONSE)
+
+    except Error as e:
+        print(f"Errore durante l'eliminazione del gacha: {e}")
+        u.generic_error("Errore durante l'eliminazione del gacha.")
+        return jsonify(u.RESPONSE)
+
+
+@app.route('/admin_gacha/get/<int:gacha_id>', methods=['GET'])
+def get_gacha(gacha_id):
+    u.reset_response()
+    init_db_connection()
+
+    if connection is None:
+        print("Errore: connessione al database non riuscita.")
+        u.generic_error("Errore di connessione al database.")
+        return jsonify(u.RESPONSE)
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM gacha WHERE GachaId = %s", (gacha_id,))
+        gacha = cursor.fetchone()
+        if gacha is None:
+            u.not_found()
+            return jsonify(u.RESPONSE)
+
+        u.RESPONSE["code"] = 200
+        u.RESPONSE["data"] = gacha
+        u.RESPONSE["message"] = "Gacha retrieved successfully!"
+        cursor.close()
+        close_db_connection()
+        return jsonify(u.RESPONSE)
+
+    except Error as e:
+        print(f"Errore durante il recupero del gacha: {e}")
+        u.generic_error("Errore durante il recupero del gacha.")
+        return jsonify(u.RESPONSE)
+
+
+@app.route('/admin_gacha/get', methods=['GET'])
+def get_all_gachas():
+    u.reset_response()
+    init_db_connection()
+
+    if connection is None:
+        print("Errore: connessione al database non riuscita.")
+        u.generic_error("Errore di connessione al database.")
+        return jsonify(u.RESPONSE)
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM gacha")
+        gachas = cursor.fetchall()
+
+        u.RESPONSE["code"] = 200
+        u.RESPONSE["data"] = gachas
+        u.RESPONSE["message"] = "All gachas retrieved successfully!"
+        cursor.close()
+        close_db_connection()
+        return jsonify(u.RESPONSE)
+
+    except Error as e:
+        print(f"Errore durante il recupero di tutti i gachas: {e}")
+        u.generic_error("Errore durante il recupero di tutti i gachas.")
+        return jsonify(u.RESPONSE)
+
+
+# FUNZIONI DI TEST SU TRANSACTION
+@app.route('/transaction', methods=['GET'])
+def view_transaction():
+    u.reset_response()
+
+    global connection
+    init_db_connection()
+
+    if connection is None:
+        u.generic_error()
+        return jsonify(u.RESPONSE)
+    try:
+        cursor = connection.cursor(dictionary=True)
+        query = f"SELECT * FROM transaction"
+        cursor.execute(query)
+        result = cursor.fetchall()
+
+        u.RESPONSE["code"] = 200
+        u.RESPONSE["data"] = result
+        u.RESPONSE["message"] = "All gachas retrieved successfully!"
+        cursor.close()
+        close_db_connection()
+        return jsonify(u.RESPONSE)
+
+    except Error as e:
+        print(f"Errore durante il recupero di tutti i gachas: {e}")
+        u.generic_error("Errore durante il recupero di tutti i gachas.")
+        return jsonify(u.RESPONSE)
+
+
+@app.route('/transaction/<int:user_id>', methods=['GET'])
+def view_transaction_user(user_id):
+    u.reset_response()
+
+    global connection
+    init_db_connection()
+
+    if connection is None:
+        u.generic_error()
+        return jsonify(u.RESPONSE)
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM transaction WHERE RequestingUser = %s", (user_id,))
+        result = cursor.fetchall()
+        if result is None:
+            u.not_found()
+            return jsonify(u.RESPONSE)
+        u.RESPONSE["code"] = 200
+        u.RESPONSE["data"] = result
+        u.RESPONSE["message"] = "Transaction retrieved successfully!"
+        cursor.close()
+        close_db_connection()
+        return jsonify(u.RESPONSE)
+
+    except Error as e:
+        print(f"Errore durante il recupero del gacha: {e}")
+        u.generic_error("Errore durante il recupero del gacha.")
+        return jsonify(u.RESPONSE)
 
 
 if __name__ == "__main__":
