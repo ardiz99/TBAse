@@ -1,8 +1,7 @@
 from flask import Flask, jsonify, request
 from authlib.jose import JoseError
-import jwt
+import string
 import bcrypt
-import datetime
 import os
 import requests
 import re
@@ -155,23 +154,23 @@ def logout():
         auth_token=u.get_auth_token()
     except Exception as e:
         return jsonify({"error": "no token found. PLs log in first"}), 400
-    if  u.BLACKLIST(auth_token):
-        return jsonify({"error": "Logout alredy done"}), 400
-    
-    if not auth_token:
-        return jsonify({"error": "Authorization header is required"}), 400
-
     try:
-        token = u.validate_token(auth_token)#rigenera i campi originali dal token cifrato
-        if "error" in token:
-            return jsonify({"error": token["error"],"token":token,"auth_token":auth_token}), 400
-
-        # Aggiungi il token alla blacklist
-        u.BLACKLIST.append(token)
-        return jsonify({"message": "Logout successful"}), 200
+            #return jsonify({"error": "Logout alredy done"}), 400
+            u.BLACKLIST.append(auth_token)
+            u.set_auth_token(None)
+            return jsonify({"message": "Logout successful"}), 200
 
     except Exception as e:
-        return jsonify({"error": f"Unexpected error: {str(e)}","token":token,"auth_token":auth_token}), 500
+            return jsonify({"error": str(e)}), 400
+    # try:
+    #     token = u.validate_token(auth_token)#rigenera i campi originali dal token cifrato
+    #     if "error" in token:
+    #         return jsonify({"error": token["error"],"token":token,"auth_token":auth_token}), 400
+
+    #     # Aggiungi il token alla blacklist
+
+    # except Exception as e:
+    #     return jsonify({"error": f"Unexpected error: {str(e)}","token":token,"auth_token":auth_token}), 500
 
 
 
@@ -266,38 +265,115 @@ def register_admin():
 
 
 
+
+
 @app.route('/update_user', methods=['PUT'])
 def update_user():
-
-    # Verifica l'intestazione Authorization
+    # Recupera il token di autenticazione
     try:
-        token=u.get_auth_token()
+        auth_token = u.get_auth_token()
     except Exception as e:
-        return jsonify({"error": "no token found. PLs log in first"}), 400
-    if not token:
-        return jsonify({"error": "Authorization header is required"}), 401
+        return jsonify({"error": "No token found. Please log in first"}), 400
 
-    # token = auth_header.split()[1]
-    #token_data = u.validate_token(token)
-    # if "error" in token_data:
-    #     return jsonify({"error": token_data["error"]}), 401
-    
-    # prelevo le informazioni richieste dall'utente da aggiornare
-    token_data = u.validate_token(token)#rigenera i campi originali dal token cifrato
-    get_role=token_data.get('sub')#restituisce il ruolo corretto
+    if not auth_token:
+        return jsonify({"error": "Authorization header is required"}), 400
+
+    # Valida il token e controlla il ruolo
+    token_data = u.validate_token(auth_token)
+    role = token_data.get('role')
+    # if role == "admin" or role == "user":
+    #     return jsonify({"error": "Unauthorized. Role required","role":role,"token_data":token_data}), 403
+
+    # Estrai i dati dal corpo della richiesta
     data = request.get_json()
-    firstname = ""
-    lastname = ""
-    email = ""
-    password = ""
-    currencyAmount = ""
+    if not data:
+        return jsonify({"error": "Missing fields"}), 400
 
     if data.get('FirstName'):
         firstname = data.get('FirstName')
     if  data.get('LastName'):
         lastname = data.get('LastName')
-    if get_role:
-        email = get_role
+    if role=="user":
+        email = token_data.get('sub')
+    if data.get('Password'):
+        password = data.get('Password')
+    if data.get('CurrencyAmount'):
+        currencyAmount = data.get('CurrencyAmount')
+
+    # inserisco i campi appena presi nelvettore di sanificazione
+    fields_to_process = [firstname, lastname, password,email, currencyAmount]
+    processed_fields = process_fields(fields_to_process)
+    
+    # prelevo i campi sanificati
+    firstname = processed_fields[0]
+    lastname = processed_fields[1]
+    password = processed_fields[2]
+    email =processed_fields[3]
+    currencyAmount = processed_fields[4]
+
+
+    if not email or not any([firstname, lastname, password, currencyAmount]):
+        return jsonify({"error": "At least one field is required"}), 400
+
+    if password:
+        encrypted_password = encrypt_password(password)
+
+    # Invio della richiesta al db-manager
+    try:
+        response = requests.put(
+            'https://db-manager:8005/update_user',
+            verify=False,
+            json={
+                "FirstName": firstname,
+                "LastName": lastname,
+                "Email": email,
+                "Password": encrypted_password if password else None,
+                "CurrencyAmount": currencyAmount
+            }
+        )
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
+
+
+
+
+
+
+#only for admin
+@app.route('/update_specific_user', methods=['PUT'])
+def update_specific_user():
+    # Recupera il token di autenticazione
+    try:
+        auth_token = u.get_auth_token()
+    except Exception as e:
+        return jsonify({"error": "No token found. Please log in first"}), 400
+
+    if not auth_token:
+        return jsonify({"error": "Authorization header is required"}), 400
+
+    # Valida il token e controlla il ruolo
+    token_data = u.validate_token(auth_token)
+    role = token_data.get('role')
+    if role != "admin":
+        return jsonify({"error": "Unauthorized. Admin role required"}), 400
+
+    # Estrai i dati dal corpo della richiesta
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Missing fields"}), 400
+
+    # firstname = data.get('FirstName')
+    # lastname = data.get('LastName')
+    # email = data.get('Email')
+    # password = data.get('Password')
+    # currency_amount = data.get('CurrencyAmount')
+    if data.get('FirstName'):
+        firstname = data.get('FirstName')
+    if  data.get('LastName'):
+        lastname = data.get('LastName')
+    if data.get('Email'):
+        email = data.get('Email')
     if data.get('Password'):
         password = data.get('Password')
     if data.get('CurrencyAmount'):
@@ -314,97 +390,105 @@ def update_user():
     password = processed_fields[2]
     currencyAmount = processed_fields[3]
 
+    if not email or not any([firstname, lastname, password, currencyAmount]):
+        return jsonify({"error": "At least one field is required"}), 400
+
     if password:
         encrypted_password = encrypt_password(password)
-    if not email or not password or not firstname or not lastname or not currencyAmount:
-        return jsonify({"error=": "Missing fields"}), 400
 
+    # Invio della richiesta al db-manager
     try:
-        
-        response = requests.put('https://db-manager:8005/update_user',
-                                verify=False,
-                                params={"FirstName": firstname, "LastName": lastname, "Email": email,
-                                        "Password": encrypted_password, "CurrencyAmount": currencyAmount})
-        if response.status_code == 200:
-            return jsonify("Aggiornamento avvenuto con successo"), 200
-        elif response.status_code == 400:
-            return jsonify({"error": "Invalid credentials"}), 400
-        else:
-            return jsonify({"error": "Internal server error"}), 500
+        response = requests.put(
+            'https://db-manager:8005/update_specific_user',
+            verify=False,
+            json={
+                "FirstName": firstname,
+                "LastName": lastname,
+                "Email": email,
+                "Password": encrypted_password if password else None,
+                "CurrencyAmount": currencyAmount
+            }
+        )
+        return jsonify(response.json()), response.status_code
     except requests.exceptions.RequestException as e:
         return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
-    
+
+
 
 
 
 #only for admin
-@app.route('/update_specific_user', methods=['PUT'])
-def update_specific_user():
-
+@app.route('/update_admin', methods=['PUT'])
+def update_admin():
+    # Recupera il token di autenticazione
     try:
-        auth_token=u.get_auth_token()
+        auth_token = u.get_auth_token()
     except Exception as e:
-        return jsonify({"error": "no token found. PLs log in first"}), 400
-    
-    token_data = u.validate_token(auth_token)#rigenera i campi originali dal token cifrato
-    role=token_data.get('role')#restituisce il ruolo corretto
+        return jsonify({"error": "No token found. Please log in first"}), 400
+
     if not auth_token:
-        return jsonify({"error": "Authorization header is required"}), 401
+        return jsonify({"error": "Authorization header is required"}), 400
+
+    # Valida il token e controlla il ruolo
+    token_data = u.validate_token(auth_token)
+    role = token_data.get('role')
+    if role != "admin":
+        return jsonify({"error": "Unauthorized. Admin role required"}), 403
+
+    # Estrai i dati dal corpo della richiesta
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Missing fields"}), 400
+
+    if data.get('FirstName'):
+        firstname = data.get('FirstName')
+    if  data.get('LastName'):
+        lastname = data.get('LastName')
+    if data.get('Email'):
+        email = data.get('Email')
+    if not data.get("email"):
+        email = token_data.get('role')
+    if data.get('Password'):
+        password = data.get('Password')
+    if data.get('CurrencyAmount'):
+        currencyAmount = data.get('CurrencyAmount')
 
 
-    if role == "admin":
+    # inserisco i campi appena presi nelvettore di sanificazione
+    fields_to_process = [firstname, lastname, password, currencyAmount]
+    processed_fields = process_fields(fields_to_process)
+    
+    # prelevo i campi sanificati
+    firstname = processed_fields[0]
+    lastname = processed_fields[1]
+    password = processed_fields[2]
+    currencyAmount = processed_fields[3]
 
-        data = request.get_json()
-        firstname = ""
-        lastname = ""
-        email = ""
-        password = ""
-        currencyAmount = ""
+    if not email or not any([firstname, lastname, password, currencyAmount]):
+        return jsonify({"error": "At least one field is required"}), 400
 
-        if data.get('FirstName'):
-            firstname = data.get('FirstName')
-        if  data.get('LastName'):
-            lastname = data.get('LastName')
-        if token_data.get('sub'):
-            email = token_data.get('sub')
-        if data.get('Password'):
-            password = data.get('Password')
-        if data.get('CurrencyAmount'):
-            currencyAmount = data.get('CurrencyAmount')
+    if password:
+        encrypted_password = encrypt_password(password)
+
+    # Invio della richiesta al db-manager
+    try:
+        response = requests.put(
+            'https://db-manager:8005/update_admin',
+            verify=False,
+            json={
+                "FirstName": firstname,
+                "LastName": lastname,
+                "Email": email,
+                "Password": encrypted_password if password else None,
+                "CurrencyAmount": currencyAmount
+            }
+        )
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
 
 
-        # inserisco i campi appena presi nelvettore di sanificazione
-        fields_to_process = [firstname, lastname, password, currencyAmount]
-        processed_fields = process_fields(fields_to_process)
-        
-        # prelevo i campi sanificati
-        firstname = processed_fields[0]
-        lastname = processed_fields[1]
-        password = processed_fields[2]
-        currencyAmount = processed_fields[3]
 
-        if password:
-            encrypted_password = encrypt_password(password)
-        if not email or not password or not firstname or not lastname or not currencyAmount:
-            return jsonify({"error=": "Missing fields"}), 400
-
-        try:
-            
-            response = requests.put('https://db-manager:8005/update_specific_user',
-                                    verify=False,
-                                    params={"FirstName": firstname, "LastName": lastname, "Email": email,
-                                            "Password": encrypted_password, "CurrencyAmount": currencyAmount})
-            if response.status_code == 200:
-                return jsonify("Aggiornamento avvenuto con successo"), 200
-            elif response.status_code == 400:
-                return jsonify({"error": "Invalid credentials"}), 400
-            else:
-                return jsonify({"error": "Internal server error","response":response}), 500
-        except requests.exceptions.RequestException as e:
-            return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
-
-    else:
-        return jsonify({"error=": "authorization required"}), 400
 
 
 
@@ -422,113 +506,84 @@ def check_users_profile():
         return jsonify({"error": "Authorization header is required"}), 400
     # token_data = u.validate_token(auth_token)#rigenera i campi originali dal token cifrato
     get_role=token_data.get('role')#restituisce il ruolo corretto
-
-    if get_role=="admin":
-        try:
-            response = requests.get('https://db-manager:8005/check_users_profile',
-                                    verify=False)
-            if response.status_code == 200:
-                return jsonify(response.json()), 200
-            elif response.status_code == 400:
-                return jsonify({"Generic error"}), 400
-            else:
-                return jsonify({"error": "server error","response":response}), 500
-        except requests.exceptions.RequestException as e:
-            return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
-    else:
-        return jsonify({"Insufficent permission"}), 400
+    try:
+        if get_role=="admin":
+            try:
+                response = requests.get('https://db-manager:8005/check_users_profile',
+                                        verify=False)
+                if response.status_code == 200:
+                    return jsonify(response.json()), 200
+                elif response.status_code == 400:
+                    return jsonify({"Generic error"}), 400
+                else:
+                    return jsonify({"error": "server error","response":response}), 500
+            except requests.exceptions.RequestException as e:
+                return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
+    except Exception as e:
+            return jsonify({"Insufficent permission"}), 400
     # da effettuare il controllo sul JWT TOKEN
 
 
 
-
-# User delete route
-@app.route('/delete_user', methods=['GET'])
+@app.route('/delete_user', methods=['DELETE'])
 def delete_user():
-    # inserire il get param
-    try:
-        auth_token=u.get_auth_token()
-    except Exception as e:
-        return jsonify({"error": "no token found. PLs log in first"}), 400
-    
-    token_data = u.validate_token(auth_token)#rigenera i campi originali dal token cifrato
+    # Recupera i dati dal corpo della richiesta
+    data = request.get_json()
+    email = data.get('Email')
+    password = data.get('Password')
 
-    if not auth_token:
-        return jsonify({"error": "Authorization header is required"}), 401
-
-    email=token_data.get('sub')#restituisce il ruolo corretto
-    #valid_token=u.validate_token(token)
-    
-    password = request.args.get('Password')
-    # inserisco i campi appena presi nelvettore di sanificazione
-    # fields_to_process = [email, password]
-    # processed_fields = process_fields(fields_to_process)
-    #
-    # # prelevo i campi sanificati
-    # email = processed_fields[0]
-    # password = processed_fields[1]
+    # Verifica che i campi richiesti siano presenti
     if not email or not password:
-        return jsonify(error="Missing email or password"), 400
+        return jsonify({"error": "Email and Password are required"}), 400
+
     try:
-        encrypted_password = encrypt_password(password)
-        response = requests.get('https://db-manager:8005/delete_user',
-                                verify=False,
-                                params={"Email": email, "Password": encrypted_password})
-        if response.status_code == 200:
-            return jsonify("delete done!"), 200
-        elif response.status_code == 400:
-            return jsonify({"error": "Invalid credentials"}), 400
-        else:
-            return jsonify({"error": "Internal server error","response":response}), 500
+        # Invia una richiesta DELETE al db-manager
+        response = requests.delete(
+            'https://db-manager:8005/delete_user',
+            verify=False,
+            json={"Email": email, "Password": encrypt_password(password)}
+        )
+        return jsonify(response.json()), response.status_code
     except requests.exceptions.RequestException as e:
-        return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
+        return jsonify({"error": "Failed to connect to db_manager", "details": str(e)}), 500
 
 
-# User delete route
-@app.route('/delete_admin', methods=['GET'])
+@app.route('/delete_admin', methods=['DELETE'])
 def delete_admin():
+    # Verifica il token di autenticazione
     try:
-        auth_token=u.get_auth_token()
+        auth_token = u.get_auth_token()
     except Exception as e:
-        return jsonify({"error": "no token found. PLs log in first"}), 400
-    
-    token_data = u.validate_token(auth_token)#rigenera i campi originali dal token cifrato
+        return jsonify({"error": "No token found. Please log in first"}), 400
 
     if not auth_token:
-        return jsonify({"error": "Authorization header is required"}), 401
-    
+        return jsonify({"error": "Authorization header is required"}), 400
 
-    get_role=token_data.get('role')#restituisce il ruolo corretto 
+    # Valida il token e controlla il ruolo
+    token_data = u.validate_token(auth_token)
+    role = token_data.get('role')
+    if role != "admin":
+        return jsonify({"error": "Unauthorized. Admin role required"}), 403
 
-    if get_role=="admin":
-        # inserire il get param
-        email = request.args.get('Email')
-        password = request.args.get('Password')
-        # inserisco i campi appena presi nelvettore di sanificazione
-        # fields_to_process = [email, password]
-        # processed_fields = process_fields(fields_to_process)
-        #
-        # # prelevo i campi sanificati
-        # email = processed_fields[0]
-        # password = processed_fields[1]
-        if not email or not password:
-            return jsonify(error="Missing email or password"), 400
-        try:
-            encrypted_password = encrypt_password(password)
-            response = requests.get('https://db-manager:8005/delete_admin',
-                                    verify=False,
-                                    params={"Email": email, "Password": encrypted_password})
-            if response.status_code == 200:
-                return jsonify("delete done!"), 200
-            elif response.status_code == 400:
-                return jsonify({"error": "Invalid credentials"}), 400
-            else:
-                return jsonify({"error": "Internal server error"}), 500
-        except requests.exceptions.RequestException as e:
-            return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
-    
-    else:
-        return jsonify({"error": "Insufficent authorization"}), 400
+    # Recupera i dati dal corpo della richiesta
+    data = request.get_json()
+    email = data.get('Email')
+    password = data.get('Password')
+
+    if not email or not password:
+        return jsonify({"error": "Email and Password are required"}), 400
+
+    try:
+        # Invia una richiesta DELETE al db-manager
+        response = requests.delete(
+            'https://db-manager:8005/delete_admin',
+            verify=False,
+            json={"Email": email, "Password": encrypt_password(password)}
+        )
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": "Failed to connect to db_manager", "details": str(e)}), 500
+
 
 
 def process_fields(fields):

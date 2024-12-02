@@ -563,149 +563,205 @@ def login_admin():
 
 
 
-@app.route('/delete_user', methods=['GET'])
+@app.route('/delete_user', methods=['DELETE'])
 def delete_user():
-    email = request.args.get('Email')
-    password = request.args.get('Password')
+    # Recupera i dati dal corpo della richiesta
+    data = request.get_json()
+    email = data.get('Email')
+    password = data.get('Password')
 
     if not email or not password:
-        u.generic_error("email and password are required")
+        u.generic_error("Email and Password are required")
         return u.send_response()
-    
+
     u.reset_response()
     try:
-        # Cancella l'utente dal database
-        query = "DELETE FROM user WHERE Email = '{}'".format(email)
-        query = query + "and Password='{}';".format(password)
-        handle_db_operation(query, commit=True)
+        # Costruisci la query SQL per eliminare l'utente
+        query = "DELETE FROM user WHERE Email = %s AND Password = %s"
+        handle_db_operation(query, values=(email, password), commit=True)
 
-        query = "SELECT * FROM user  WHERE Email = '{}';".format(email)
-        handle_db_operation(query, fetch_one=True)
+        # Verifica se l'utente è stato eliminato
+        query = "SELECT * FROM user WHERE Email = %s"
+        handle_db_operation(query, values=(email,), fetch_one=True)
+
+        if u.RESPONSE["data"]:
+            u.generic_error("Failed to delete user")
+        else:
+            u.RESPONSE["message"] = "User deleted successfully"
         return u.send_response()
-
     except Error as e:
-        u.generic_error(e)
+        u.generic_error(str(e))
         return u.send_response()
 
 
-
-@app.route('/delete_admin', methods=['GET'])
+@app.route('/delete_admin', methods=['DELETE'])
 def delete_admin():
-    email = request.args.get('Email')
-    password = request.args.get('Password')
+    # Recupera i dati dal corpo della richiesta
+    data = request.get_json()
+    email = data.get('Email')
+    password = data.get('Password')
 
     if not email or not password:
-        u.generic_error("email and password are required")
+        u.generic_error("Email and Password are required")
         return u.send_response()
-    
+
     u.reset_response()
     try:
-        # Cancella l'utente dal database
-        query = "DELETE FROM admin WHERE Email = '{}'".format(email)
-        query = query + "and Password='{}';".format(password)
-        handle_db_operation(query, commit=True)
+        # Costruisci la query SQL per eliminare l'amministratore
+        query = "DELETE FROM admin WHERE Email = %s AND Password = %s"
+        handle_db_operation(query, values=(email, password), commit=True)
 
-        query = "SELECT * FROM admin  WHERE Email = '{}';".format(email)
-        handle_db_operation(query, fetch_one=True)
+        # Verifica se l'amministratore è stato eliminato
+        query = "SELECT * FROM admin WHERE Email = %s"
+        handle_db_operation(query, values=(email,), fetch_one=True)
+
+        if u.RESPONSE["data"]:
+            u.generic_error("Failed to delete admin")
+        else:
+            u.RESPONSE["message"] = "Admin deleted successfully"
         return u.send_response()
-
     except Error as e:
-        u.generic_error(e)
+        u.generic_error(str(e))
         return u.send_response()
+
+
 
 
 
 @app.route('/update_user', methods=['PUT'])
 def update_user():
-    userid = ""
-    firstname = ""
-    lastname = ""
-    email = ""
-    password = ""
-    currencyAmount = ""
-
-    firstname = request.args.get('FirstName')
-    lastname = request.args.get('LastName')
-    email = request.args.get('Email')
-    password = request.args.get('Password')
-    currencyAmount = request.args.get('CurrencyAmount')
-
-    if not email and not password and not firstname and not lastname and not currencyAmount:
-        u.generic_error("almost one field are required")
+    # Estrai i dati dalla richiesta
+    data = request.get_json()
+    if not data:
+        u.generic_error("Missing fields")
         return u.send_response()
+
+    firstname = data.get('FirstName')
+    lastname = data.get('LastName')
+    email = data.get('Email')
+    password = data.get('Password')
+    currency_amount = data.get('CurrencyAmount')
 
     u.reset_response()
     try:
-
-        query = "UPDATE user SET "
+        # Costruisci dinamicamente la query SQL
+        updates = []
         if firstname:
-            query = query + "FirstName ='{}'".format(firstname)
+            updates.append(f"FirstName = '{firstname}'")
         if lastname:
-            query = query + ",LastName ='{}'".format(lastname)
-        if email:
-            query = query + ",Email ='{}'".format(email)
+            updates.append(f"LastName = '{lastname}'")
         if password:
-            query = query + ",Password ='{}'".format(password)
-        if currencyAmount:
-            query = query + ",CurrencyAmount ='{}'".format(currencyAmount)
-        if userid:
-            query = query + "' WHERE UserId ='{}';".format(userid)
+            updates.append(f"Password = '{password}'")
+        if currency_amount:
+            updates.append(f"CurrencyAmount = '{currency_amount}'")
+
+        if not updates:
+            u.generic_error("No fields to update")
+            return u.send_response()
+
+        query = f"UPDATE user SET {', '.join(updates)} WHERE Email = '{email}';"
         handle_db_operation(query, commit=True)
 
-        query = "SELECT * FROM user WHERE UserId ='{}';".format(userid)
+        query = f"SELECT * FROM user WHERE Email = '{email}';"
         handle_db_operation(query, fetch_one=True)
         return u.send_response()
-
     except Error as e:
-        u.generic_error(e)
+        u.generic_error(str(e))
+        return u.send_response()
+
+
+@app.route('/update_admin', methods=['PUT'])
+def update_admin():
+    #fare il controllo in caso di cambio di email
+    # Estrai i dati dalla richiesta
+    data = request.get_json()
+    if not data:
+        u.generic_error("Missing fields")
+        return u.send_response()
+
+    firstname = data.get('FirstName')
+    lastname = data.get('LastName')
+    email = data.get('Email')
+    password = data.get('Password')
+    currency_amount = data.get('CurrencyAmount')
+
+    u.reset_response()
+    try:
+        # Costruisci dinamicamente la query SQL
+        updates = []
+        if firstname:
+            updates.append(f"FirstName = '{firstname}'")
+        if lastname:
+            updates.append(f"LastName = '{lastname}'")
+        if password:
+            updates.append(f"Password = '{password}'")
+        if currency_amount:
+            updates.append(f"CurrencyAmount = '{currency_amount}'")
+
+        if not updates:
+            u.generic_error("No fields to update")
+            return u.send_response()
+
+        query = f"UPDATE user SET {', '.join(updates)} WHERE Email = '{email}';"
+        handle_db_operation(query, commit=True)
+
+        query = f"SELECT * FROM admin WHERE Email = '{email}';"
+        handle_db_operation(query, fetch_one=True)
+        return u.send_response()
+    except Error as e:
+        u.generic_error(str(e))
         return u.send_response()
     
 
-#only for admin
+
+
 @app.route('/update_specific_user', methods=['PUT'])
 def update_specific_user():
-    userid = ""
-    firstname = ""
-    lastname = ""
-    email = ""
-    password = ""
-    currencyAmount = ""
+    # Estrai i dati dalla richiesta
+    data = request.get_json()
+    if not data:
+        u.generic_error("Missing fields")
+        return u.send_response()
 
-    firstname = request.args.get('FirstName')
-    lastname = request.args.get('LastName')
-    email = request.args.get('Email')
-    password = request.args.get('Password')
-    currencyAmount = request.args.get('CurrencyAmount')
+    firstname = data.get('FirstName')
+    lastname = data.get('LastName')
+    email = data.get('Email')
+    password = data.get('Password')
+    currency_amount = data.get('CurrencyAmount')
 
-    if not email and not password and not firstname and not lastname and not currencyAmount:
-        u.generic_error("almost one field are required")
+    if not email or not any([firstname, lastname, password, currency_amount]):
+        u.generic_error("At least one field is required")
         return u.send_response()
 
     u.reset_response()
     try:
-
-        query = "UPDATE user SET "
+        # Costruisci dinamicamente la query SQL
+        updates = []
         if firstname:
-            query = query + "FirstName ='{}'".format(firstname)
+            updates.append(f"FirstName = '{firstname}'")
         if lastname:
-            query = query + ",LastName ='{}'".format(lastname)
-        if email:
-            query = query + ",Email ='{}'".format(email)
+            updates.append(f"LastName = '{lastname}'")
         if password:
-            query = query + ",Password ='{}'".format(password)
-        if currencyAmount:
-            query = query + ",CurrencyAmount ='{}'".format(currencyAmount)
-        if userid:
-            query = query + "' WHERE UserId ='{}';".format(userid)
+            updates.append(f"Password = '{password}'")
+        if currency_amount:
+            updates.append(f"CurrencyAmount = '{currency_amount}'")
+
+        if not updates:
+            u.generic_error("No fields to update")
+            return u.send_response()
+
+        query = f"UPDATE user SET {', '.join(updates)} WHERE Email = '{email}';"
         handle_db_operation(query, commit=True)
 
-        query = "SELECT * FROM user WHERE UserId ='{}';".format(userid)
+        query = f"SELECT * FROM user WHERE Email = '{email}';"
         handle_db_operation(query, fetch_one=True)
         return u.send_response()
-
     except Error as e:
-        u.generic_error(e)
+        u.generic_error(str(e))
         return u.send_response()
+
+
+
 
 #per i gatcha non venduti 
 @app.route('/see_auction_market', methods=['GET'])
@@ -729,6 +785,7 @@ def see_history_auction_market():
 
     try:
         query = "SELECT * FROM transaction WHERE EndDate is not NULL"
+        #query = "SELECT * FROM transaction"
         handle_db_operation(query, fetch_all=True)
         return u.send_response()
     except Error as e:

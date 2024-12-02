@@ -245,50 +245,159 @@ def register_admin():
     return jsonify(response.json())
 
 
-@app.route('/delete_user', methods=['GET'])
+
+@app.route('/delete_user', methods=['DELETE'])
 def delete_user():
-    email = request.args.get('Email')
-    password = request.args.get('Password')
-    response = requests.get('https://auth-service:8001/delete_user',
-                            verify=False,
-                            params={'Email': email, 'Password': password})
-    return jsonify(response.json())
+    # Recupera i parametri dalla richiesta
+    data = request.get_json()
+
+    email = data.get('Email')
+    password = data.get('Password')
+    
+    # Verifica che i parametri siano forniti
+    if not email or not password:
+        return jsonify({"error": "Email and Password are required"}), 400
+
+    try:
+        # Invia una richiesta DELETE all'auth-service
+        response = requests.delete(
+            'https://auth-service:8001/delete_user',
+            verify=False,
+            json={"Email": email, "Password": password}
+        )
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": "Failed to connect to auth-service", "details": str(e)}), 500
 
 
-@app.route('/delete_admin', methods=['GET'])
+@app.route('/delete_admin', methods=['DELETE'])
 def delete_admin():
-    email = request.args.get('Email')
-    password = request.args.get('Password')
-    response = requests.get('https://auth-service:8001/delete_admin',
-                            verify=False,
-                            params={'Email': email, 'Password': password})
-    return jsonify(response.json())
+    data = request.get_json()
+    
+    # Recupera i parametri dalla richiesta
+    email = data.get('Email')
+    password = data.get('Password')
+
+    # Verifica che i parametri siano forniti
+    if not email or not password:
+        return jsonify({"error": "Email and Password are required"}), 400
+
+    try:
+        # Invia una richiesta DELETE all'auth-service
+        response = requests.delete(
+            'https://auth-service:8001/delete_admin',
+            verify=False,
+            json={"Email": email, "Password": password}
+        )
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": "Failed to connect to auth-service", "details": str(e)}), 500
+
+
+
+
+
+@app.route('/update_admin', methods=['PUT'])
+def update_admin():
+    # Estrai i dati dalla richiesta
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Missing fields"}), 400
+
+    # Estrai i campi dal corpo della richiesta
+    email = data.get('Email')
+    password = data.get('Password')
+    first_name = data.get('FirstName')
+    last_name = data.get('LastName')
+    amount = data.get('CurrencyAmount')
+
+    # Invio della richiesta PUT all'auth-service
+    try:
+        response = requests.put(
+            'https://auth-service:8001/update_admin',
+            verify=False,
+            json={
+                'FirstName': first_name,
+                'LastName': last_name,
+                'Email': email,
+                'Password': password,
+                'CurrencyAmount': amount
+            }
+        )
+        return jsonify(response.json()), response.status_code
+    except Exception as e:
+        return jsonify({"error": "Failed to connect to auth-service", "details": str(e)}), 500
+
+
 
 
 @app.route('/update_user', methods=['PUT'])
 def update_user():
-    #Authorization=request.args.get('Authorization')
-    response = requests.put('https://auth-service:8001/update_user',
-                            verify=False)
-    return jsonify(response.json())
+    # Estrai i dati dalla richiesta
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Missing fields"}), 400
+
+    # Estrai i campi dal corpo della richiesta
+    email = data.get('Email')
+    password = data.get('Password')
+    first_name = data.get('FirstName')
+    last_name = data.get('LastName')
+    amount = data.get('CurrencyAmount')
+
+    # Invio della richiesta PUT all'auth-service
+    try:
+        response = requests.put(
+            'https://auth-service:8001/update_user',
+            verify=False,
+            json={
+                'FirstName': first_name,
+                'LastName': last_name,
+                'Email': email,
+                'Password': password,
+                'CurrencyAmount': amount
+            }
+        )
+        return jsonify(response.json()), response.status_code
+    except Exception as e:
+        return jsonify({"error": "Failed to connect to auth-service", "details": str(e)}), 500
+
+
 
 
 @app.route('/update_specific_user', methods=['PUT'])
 def update_specific_user():
-    email = request.args.get('Email')
-    password = request.args.get('Password')
-    first_name = request.args.get('FirstName')
-    last_name = request.args.get('LastName')
-    amount = request.args.get('CurrencyAmount')
-    #Authorization=request.args.get('Authorization')
-    response = requests.put('https://auth-service:8001/update_specific_user',
-                            verify=False,
-                            json={'FirstName': first_name,
-                                   'LastName': last_name,
-                                   'Email': email,
-                                   'Password': password,
-                                   'CurrencyAmount': amount})
-    return jsonify(response.json())
+    # Estrai i dati dalla richiesta
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Missing fields"}), 400
+
+    # Estrai i campi dal corpo della richiesta
+    email = data.get('Email')
+    password = data.get('Password')
+    first_name = data.get('FirstName')
+    last_name = data.get('LastName')
+    amount = data.get('CurrencyAmount')
+
+    # Invio della richiesta PUT all'auth-service
+    try:
+        response = requests.put(
+            'https://auth-service:8001/update_specific_user',
+            verify=False,
+            json={
+                'FirstName': first_name,
+                'LastName': last_name,
+                'Email': email,
+                'Password': password,
+                'CurrencyAmount': amount
+            }
+        )
+        return jsonify(response.json()), response.status_code
+    except Exception as e:
+        return jsonify({"error": "Failed to connect to auth-service", "details": str(e)}), 500
+
+
+
 
 
 @app.route('/check_users_profile', methods=['GET'])
@@ -296,8 +405,6 @@ def check_users_profile():
     response = requests.get('https://auth-service:8001/check_users_profile',
                             verify=False)
     return jsonify(response.json())
-
-
 
 
 
@@ -310,14 +417,14 @@ def logout():
 
 @app.route('/see_auction_market', methods=['GET'])
 def see_auction_market():
-    response = requests.get('https://auth-service:8003/see_auction_market',
+    response = requests.get('https://market-service:8003/see_auction_market',
                             verify=False)
     return jsonify(response.json())
 
 
 @app.route('/see_history_auction_market', methods=['GET'])
 def see_history_auction_market():
-    response = requests.get('https://auth-service:8003/see_history_auction_market',
+    response = requests.get('https://market-service:8003/see_history_auction_market',
                             verify=False)
     return jsonify(response.json())
 
@@ -325,14 +432,14 @@ def see_history_auction_market():
 @app.route('/see_transaction_history', methods=['GET'])
 def see_transaction_history():
     email = request.args.get('Email')
-    response = requests.get('https://auth-service:8003/see_transaction_history',verify=False,params={'Email': email})
+    response = requests.get('https://market-service:8003/see_transaction_history',verify=False,params={'Email': email})
     return jsonify(response.json())
 
 
 @app.route('/see_specific_auction', methods=['GET'])
 def see_specific_auction():
     Transaction = request.args.get('Transaction')
-    response = requests.get('https://auth-service:8003/see_specific_auction',verify=False,params={'Transaction': Transaction})
+    response = requests.get('https://market-service:8003/see_specific_auction',verify=False,params={'Transaction': Transaction})
     return jsonify(response.json())
 
 
