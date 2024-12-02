@@ -59,10 +59,10 @@ def handle_db_operation(query, values=None, fetch_one=False, fetch_all=False, co
             if not result:
                 u.not_found()
             u.RESPONSE["data"] = result
+        cursor.close()
     except Error as err:
         u.generic_error(str(err))
     finally:
-        cursor.close()
         close_db_connection()
 
 
@@ -616,12 +616,12 @@ def update_transaction(transaction_id):
 def get_old_transaction(gacha_id, requesting_user):
     query = "SELECT TransactionId " \
             "FROM transaction " \
-            "WHERE RequestingUser = %s " \
-            "   AND GachaId = %s " \
+            f"WHERE RequestingUser = {requesting_user} " \
+            f"   AND GachaId = {gacha_id} " \
             "   AND SendedTo IS NULL " \
-            "   AND STR_TO_DATE(EndDate, '%Y-%m-%d %H:%i:%s') < NOW()"
-    values = (requesting_user, gacha_id)
-    handle_db_operation(query, values, fetch_one=True)
+            "   AND STR_TO_DATE(EndDate, '%Y-%m-%d %H:%i:%s') < NOW() " \
+            "LIMIT 1"
+    handle_db_operation(query, fetch_one=True)
 
     return u.send_response()
 
