@@ -14,10 +14,11 @@ USER = "root" if LOCAL else os.getenv('DB_USER')
 PASSWORD = "diego" if LOCAL else os.getenv('DB_PASSWORD')
 DATABASE = "ase" if LOCAL else os.getenv('DB_NAME')
 
-GACHA_SERVICE_URL = "http://127.0.0.1:8002" if LOCAL else "https://gacha-service:8002"
-MARKET_SERVICE_URL = "http://127.0.0.1:8003" if LOCAL else "https://market-service:8003"
-CURRENCY_SERVICE_URL = "http://127.0.0.1:8004" if LOCAL else "https://currency-service:8004"
-DB_MANAGER_URL = "http://127.0.0.1:8005" if LOCAL else "https://db-manager:8005"
+ADMIN_GACHA_SERVICE_URL = "https://127.0.0.1:8006" if LOCAL else "https://admin-gacha-service:8006"
+GACHA_SERVICE_URL = "https://127.0.0.1:8002" if LOCAL else "https://gacha-service:8002"
+MARKET_SERVICE_URL = "https://127.0.0.1:8003" if LOCAL else "https://market-service:8003"
+CURRENCY_SERVICE_URL = "https://127.0.0.1:8004" if LOCAL else "https://currency-service:8004"
+DB_MANAGER_URL = "https://127.0.0.1:8005" if LOCAL else "https://db-manager:8005"
 
 RESPONSE = {
     "code": 200,
