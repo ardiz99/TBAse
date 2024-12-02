@@ -32,7 +32,7 @@ services:
     secrets:
       - certificate
       - key
-
+  
   gacha-service:
     build:
       context: src

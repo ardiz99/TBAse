@@ -202,10 +202,11 @@ def login_admin():
                             params={'Email': email, 'Password': password})
     return jsonify(response.json())
 
+
 # INIZIO ENDPOINT DEL ADMIN_GACHASERVICE_URL ==>
 
 # Endpoint per aggiungere un nuovo gacha
-@app.route('/admin_gacha/add', methods=['POST'])
+@app.route('/gacha/add', methods=['POST'])
 def add_gacha():
     u.reset_response()
     # Recupera i dati JSON dalla richiesta
@@ -219,7 +220,7 @@ def add_gacha():
         return jsonify(u.RESPONSE), 400
 
     # URL completo del servizio remoto
-    url = u.ADMIN_GACHA_SERVICE_URL + "/add"
+    url = u.GACHA_SERVICE_URL + "/add"
 
     # Effettua la richiesta POST al servizio remoto
     response = requests.post(url,
@@ -238,7 +239,7 @@ def add_gacha():
 
 
 # Endpoint per aggiornare un gacha
-@app.route('/admin_gacha/update/<int:gacha_id>', methods=['PUT'])
+@app.route('/gacha/update/<int:gacha_id>', methods=['PUT'])
 def update_gacha(gacha_id):
     u.reset_response()
 
@@ -253,7 +254,7 @@ def update_gacha(gacha_id):
         return jsonify(u.RESPONSE), 400
 
     # URL completo del servizio remoto
-    url = u.ADMIN_GACHA_SERVICE_URL + f"/update/{gacha_id}"
+    url = u.GACHA_SERVICE_URL + f"/update/{gacha_id}"
 
     # Effettua la richiesta PUT al servizio remoto
     response = requests.put(url,
@@ -272,15 +273,15 @@ def update_gacha(gacha_id):
 
 
 # Endpoint per eliminare un gacha
-@app.route('/admin_gacha/delete/<int:gacha_id>', methods=['DELETE'])
+@app.route('/gacha/delete/<int:gacha_id>', methods=['DELETE'])
 def delete_gacha(gacha_id):
     u.reset_response()
 
     # URL completo del servizio remoto
-    url = u.ADMIN_GACHA_SERVICE_URL + f"/delete/{gacha_id}"
+    url = u.GACHA_SERVICE_URL + f"/delete/{gacha_id}"
 
     # Effettua la richiesta DELETE al servizio remoto
-    response = requests.delete(url)
+    response = requests.delete(url, verify=False)
 
     if response.status_code != 200:
         u.handle_error(response.status_code)
@@ -293,11 +294,29 @@ def delete_gacha(gacha_id):
 
 
 # Endpoint per ottenere un singolo gacha
-@app.route('/admin_gacha/get/<int:gacha_id>', methods=['GET'])
+@app.route('/gacha/get/<int:gacha_id>', methods=['GET'])
 def get_gacha(gacha_id):
     u.reset_response()
     # URL completo del servizio remoto
-    url = u.ADMIN_GACHA_SERVICE_URL + f"/get/{gacha_id}"
+    url = u.GACHA_SERVICE_URL + f"/get/{gacha_id}"
+    # Effettua la richiesta GET al servizio remoto
+    response = requests.get(url, verify=False)
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return jsonify(u.RESPONSE), response.status_code
+    gacha = response.json().get("data")
+    u.RESPONSE["code"] = 200
+    u.RESPONSE["data"] = gacha
+    u.RESPONSE["message"] = "Gacha retrieved successfully!"
+    return jsonify(u.RESPONSE)
+
+
+# Endpoint per ottenere un singolo gacha per nome
+@app.route('/gacha/getName/<string:gacha_name>', methods=['GET'])
+def get_gacha_by_name(gacha_name):
+    u.reset_response()
+    # URL completo del servizio remoto
+    url = u.GACHA_SERVICE_URL + f"/getName/{gacha_name}"
     # Effettua la richiesta GET al servizio remoto
     response = requests.get(url, verify=False)
     if response.status_code != 200:
@@ -310,13 +329,14 @@ def get_gacha(gacha_id):
     u.RESPONSE["message"] = "Gacha retrieved successfully!"
     return u.send_response()
 
+
 # Endpoint per ottenere tutti i gachas
-@app.route('/admin_gacha/get', methods=['GET'])
+@app.route('/gacha/get', methods=['GET'])
 def get_all_gachas():
     u.reset_response()
 
     # URL completo del servizio remoto
-    url = u.ADMIN_GACHA_SERVICE_URL + "/get"
+    url = u.GACHA_SERVICE_URL + "/get"
 
     # Effettua la richiesta GET al servizio remoto
     response = requests.get(url, verify=False)
@@ -330,6 +350,7 @@ def get_all_gachas():
     u.RESPONSE["data"] = gachas
     u.RESPONSE["message"] = "All gachas retrieved successfully!"
     return jsonify(u.RESPONSE)
+
 
 @app.route('/gacha/mygacha/<int:gacha_id>', methods=['GET'])
 def get_mygacha(gacha_id):
