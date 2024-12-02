@@ -429,7 +429,7 @@ def update_user():
 
 
 ####### INIZIO METODI DEL DBMANGER PER ESEGUIRE LE QUERY DEL GACHASERVICE
-@app.route('/get_gacha_of_user/<int:user_id>', methods=['GET'])
+@app.route('/gacha/get_gacha_of_user/<int:user_id>', methods=['GET'])
 def get_expired_gacha_ids(user_id):
     u.reset_response()
     global connection
@@ -471,34 +471,54 @@ def get_expired_gacha_ids(user_id):
 
 
 ####################### INIZIO METODI DEL DBMANGER PER ESEGUIRE LE QUERY DEL ADMINGACHASERVICE
-@app.route('/admin_gacha/add', methods=['POST'])
+#Il metodo add richiede di inserire anche l'id: Creare la chiave autoincrement, e andare a prendere dal db NEXTVAL(GachaId)+1, e fare la insert
+@app.route('/gacha/add', methods=['POST'])
 def add_gacha():
     data = request.get_json()
+    
+    # Inizializza la risposta
     u.reset_response()
+    
+    # Inizializza la connessione al database
     init_db_connection()
+    
     if connection is None:
         print("Errore: connessione al database non riuscita.")
         u.generic_error("Errore di connessione al database.")
         return jsonify(u.RESPONSE)
 
     try:
+        # Verifica che tutti i dati necessari siano presenti nel corpo della richiesta
+        required_fields = ['GachaId', 'Name', 'Type1', 'Type2', 'Total', 'HP', 'Attack', 'Defense', 'SpAtt', 'SpDef', 'Speed', 'Rarity', 'Link']
+        for field in required_fields:
+            if field not in data:
+                print(f"Errore: campo mancante {field}")
+                u.generic_error(f"Campo mancante: {field}")
+                return jsonify(u.RESPONSE)
+        
+        # Esegui l'inserimento dei dati nel database
         cursor = connection.cursor()
         query = """
-            INSERT INTO gacha (Name, Type1, Type2, Total, HP, Attack, Defense, SpAtt, SpDef, Speed, Rarity, Link) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO gacha (GachaId, Name, Type1, Type2, Total, HP, Attack, Defense, SpAtt, SpDef, Speed, Rarity, Link) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         values = (
-            data['Name'], data['Type1'], data['Type2'], data['Total'], data['HP'],
+            data['GachaId'], data['Name'], data['Type1'], data['Type2'], data['Total'], data['HP'],
             data['Attack'], data['Defense'], data['SpAtt'], data['SpDef'],
             data['Speed'], data['Rarity'], data['Link']
         )
+        
+        # Esegui la query
         cursor.execute(query, values)
         connection.commit()  # Conferma le modifiche nel database
         print(f"Query eseguita: {query}")
 
         cursor.close()
+
+        # Chiudi la connessione
         close_db_connection()
 
+        # Imposta la risposta di successo
         u.RESPONSE["code"] = 200
         u.RESPONSE["data"] = []
         u.RESPONSE["message"] = "Gacha added successfully!"
@@ -507,10 +527,11 @@ def add_gacha():
     except Error as e:
         print(f"Errore durante l'inserimento nel database: {e}")
         u.generic_error("Errore durante l'inserimento nel database.")
+        close_db_connection()  # Assicurati di chiudere la connessione anche in caso di errore
         return jsonify(u.RESPONSE)
 
 
-@app.route('/admin_gacha/update/<int:gacha_id>', methods=['PUT'])
+@app.route('/gacha/update/<int:gacha_id>', methods=['PUT'])
 def update_gacha(gacha_id):
     data = request.get_json()
     u.reset_response()
@@ -555,7 +576,7 @@ def update_gacha(gacha_id):
         return jsonify(u.RESPONSE)
 
 
-@app.route('/admin_gacha/delete/<int:gacha_id>', methods=['DELETE'])
+@app.route('/gacha/delete/<int:gacha_id>', methods=['DELETE'])
 def delete_gacha(gacha_id):
     u.reset_response()
     init_db_connection()
@@ -589,7 +610,7 @@ def delete_gacha(gacha_id):
         return jsonify(u.RESPONSE)
 
 
-@app.route('/admin_gacha/get/<int:gacha_id>', methods=['GET'])
+@app.route('/gacha/get/<int:gacha_id>', methods=['GET'])
 def get_gacha(gacha_id):
     u.reset_response()
     init_db_connection()
@@ -618,9 +639,43 @@ def get_gacha(gacha_id):
         print(f"Errore durante il recupero del gacha: {e}")
         u.generic_error("Errore durante il recupero del gacha.")
         return jsonify(u.RESPONSE)
+    
 
 
-@app.route('/admin_gacha/get', methods=['GET'])
+@app.route('/gacha/getName/<string:gacha_name>', methods=['GET'])
+def get_gacha_by_name(gacha_name):
+    u.reset_response()
+    init_db_connection()
+
+    if connection is None:
+        print("Errore: connessione al database non riuscita.")
+        u.generic_error("Errore di connessione al database.")
+        return jsonify(u.RESPONSE)
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM gacha WHERE Name = %s", (gacha_name,))
+        gacha = cursor.fetchone()
+
+        if gacha is None:
+            u.not_found()
+            return jsonify(u.RESPONSE)
+
+        u.RESPONSE["code"] = 200
+        u.RESPONSE["data"] = gacha
+        u.RESPONSE["message"] = f"Gacha with name '{gacha_name}' retrieved successfully!"
+        cursor.close()
+        close_db_connection()
+        return jsonify(u.RESPONSE)
+
+    except Error as e:
+        print(f"Errore durante il recupero del gacha: {e}")
+        u.generic_error("Errore durante il recupero del gacha.")
+        return jsonify(u.RESPONSE)
+  
+
+
+@app.route('/gacha/get', methods=['GET'])
 def get_all_gachas():
     u.reset_response()
     init_db_connection()

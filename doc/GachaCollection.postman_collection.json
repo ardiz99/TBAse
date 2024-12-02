@@ -1,0 +1,206 @@
+{
+	"info": {
+		"_postman_id": "fd66222b-6fbc-40d5-b931-47f039a5fc72",
+		"name": "GachaCollection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40150543"
+	},
+	"item": [
+		{
+			"name": "api_gateway",
+			"item": [
+				{
+					"name": "get",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/get",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"get"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get/id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/get/1",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"get",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mygacha",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/mygacha",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"mygacha"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mygacha/id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/mygacha/1",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"mygacha",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"GachaId\": 1047,\r\n    \"Name\": \"Marco\",\r\n    \"Type1\": \"Dragon\",\r\n    \"Type2\": \"\",\r\n    \"Total\": 300,\r\n    \"HP\": 41,\r\n    \"Attack\": 64,\r\n    \"Defense\": 45,\r\n    \"SpAtt\": 50,\r\n    \"SpDef\": 50,\r\n    \"Speed\": 50,\r\n    \"Rarity\": \"Rare\",\r\n    \"Link\": \"/img/dratini.png\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/add",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"add"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Name\": \"Giuliano\",\r\n    \"Type1\": \"Dragon\",\r\n    \"Type2\": \"\",\r\n    \"Total\": 300,\r\n    \"HP\": 41,\r\n    \"Attack\": 64,\r\n    \"Defense\": 45,\r\n    \"SpAtt\": 50,\r\n    \"SpDef\": 50,\r\n    \"Speed\": 50,\r\n    \"Rarity\": \"Rare\",\r\n    \"Link\": \"/img/dratini.png\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/update/1048",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"update",
+								"1048"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getName",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/getName/Giuliano",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"getName",
+								"Giuliano"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

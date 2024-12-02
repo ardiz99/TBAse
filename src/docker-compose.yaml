@@ -12,7 +12,6 @@ services:
       - auth-service
       - currency-service
       - gacha-service
-      - admin-gacha-service
       - market-service
       - db-manager
     secrets:
@@ -33,7 +32,7 @@ services:
     secrets:
       - certificate
       - key
-
+  
   gacha-service:
     build:
       context: .
@@ -41,21 +40,6 @@ services:
     container_name: gacha-service
     ports:
       - "8002:8002"
-    volumes:
-      - ./utils.py:/app/utils.py
-    depends_on:
-      - db-manager
-    secrets:
-      - certificate
-      - key
-  
-  admin-gacha-service:
-    build:
-      context: .
-      dockerfile: ./admin_gacha_service/Dockerfile
-    container_name: admin-gacha-service
-    ports:
-      - "8006:8006"
     volumes:
       - ./utils.py:/app/utils.py
     depends_on:
