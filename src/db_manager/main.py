@@ -633,6 +633,14 @@ def get_all_transactions():
     return u.send_response()
 
 
+@app.route('/transaction_history/<int:user_id>', methods=['GET'])
+def transaction_history(user_id):
+    query = "SELECT * FROM transaction WHERE RequestingUser = %s OR UserOwner = %s"
+    values = (user_id, user_id)
+    handle_db_operation(query, values, fetch_all=True)
+    return u.send_response()
+
+
 @app.route('/transaction/requesting_user/<int:requesting_user>')
 def get_transaction_by_user(requesting_user):
     query = "SELECT * FROM transaction WHERE RequestingUser = %s"
@@ -670,11 +678,29 @@ def get_all_auctions():
     return u.send_response()
 
 
-@app.route('/auction/<int:gacha>')
+@app.route('/active_auction')
+def get_all_active_auction():
+    query = "SELECT * " \
+            "FROM transaction " \
+            "WHERE UserOwner IS NOT NULL " \
+            "   AND STR_TO_DATE(EndDate, '%Y-%m-%d %H:%i:%s') > NOW()"
+    handle_db_operation(query, fetch_all=True)
+    return u.send_response()
+
+
+@app.route('/auction/gacha/<int:gacha>')
 def get_auction_by_user(gacha):
-    query = "SELECT * FROM transaction WHERE Gacha = %s AND UserOwner IS NOT NULL"
+    query = "SELECT * FROM transaction WHERE GachaId = %s AND UserOwner IS NOT NULL"
     values = (gacha,)
     handle_db_operation(query, values, fetch_all=True)
+    return u.send_response()
+
+
+@app.route('/auction/<int:transaction_id>')
+def get_specific_auction(transaction_id):
+    query = "SELECT * FROM transaction WHERE TransactionId = %s AND UserOwner IS NOT NULL"
+    values = (transaction_id,)
+    handle_db_operation(query, values, fetch_one=True)
     return u.send_response()
 
 
@@ -697,6 +723,15 @@ def update_actual_price(transaction_id):
             "WHERE TransactionId = %s"
     values = (bid, requesting_user, transaction_id)
     handle_db_operation(query, values, commit=True)
+    return u.send_response()
+
+
+@app.route('/auction/<int:transaction_id>/close_auction', methods=['PUT'])
+def close_auction(transaction_id):
+    query = "UPDATE transaction " \
+            "SET EndDate = DATE_FORMAT(NOW(), \'%Y-%m-%d %H:%i:%s\') " \
+            f"WHERE TransactionId = {transaction_id}"
+    handle_db_operation(query, commit=True)
     return u.send_response()
 
 

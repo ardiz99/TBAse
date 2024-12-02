@@ -157,46 +157,33 @@ def logout():
 @app.route('/register', methods=['POST'])
 def register():
     # prelevo le informazioni da inserire
-    data = request.get_json()
-    firstname = data.get('FirstName')
-    lastname = data.get('LastName')
-    email = data.get('Email')
-    password = data.get('Password')
-    currencyAmount = data.get('CurrencyAmount')
-
-    # inserisco i campi appena presi nelvettore di sanificazione
-    # fields_to_process = [firstname, lastname, email, password, currencyAmount]
-    # processed_fields = process_fields(fields_to_process)
-    #
-    # # prelevo i campi sanificati
-    # firstname = processed_fields[0]
-    # lastname = processed_fields[1]
-    # email = processed_fields[2]
-    # password = processed_fields[3]
-    # currencyAmount = processed_fields[4]
+    firstname = request.get_json().get('FirstName')
+    lastname = request.get_json().get('LastName')
+    email = request.get_json().get('Email')
+    password = request.get_json().get('Password')
+    currencyAmount = request.get_json().get('CurrencyAmount')
 
     # pre la registrazione sono richiesti tutti i campi
     if not email or not password or not firstname or not lastname or not currencyAmount:
-        return jsonify({"error": "Missing fields"}), 400
+        u.bad_request()
+        return u.send_response()
+
     encrypted_password = encrypt_password(password)
 
-    try:
-        response = requests.post('https://db-manager:8005/register',
-                                 verify=False,
-                                 json={"FirstName": firstname, "LastName": lastname, "Email": email,
-                                       "Password": encrypted_password, "CurrencyAmount": currencyAmount})
-        if response.status_code == 200:  # dal da-manager abbiamo in riscontro positivo
+    path = u.DB_MANAGER_URL + '/register'
+    response = requests.post(path,
+                             verify=False,
+                             json={"FirstName": firstname, "LastName": lastname, "Email": email,
+                                   "Password": encrypted_password, "CurrencyAmount": currencyAmount})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
 
-            token = u.generate_token(email, "user")
-            u.set_auth_token(token)
-            return jsonify({"ok": "Registrazione avvenuta con successo!", "encrypted_password": encrypted_password,
-                            "password": password}), 200
-        elif response.status_code == 400:
-            return jsonify({"error": "Invalid credentials"}), 400
-        else:
-            return jsonify({"error": "Internal server error"}), 500
-    except requests.exceptions.RequestException as e:
-        return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
+    token = u.generate_token(email, "user")
+
+    u.RESPONSE["data"] = token
+    u.RESPONSE["message"] = "Subscription successful"
+    return u.send_response()
 
 
 # User registration route

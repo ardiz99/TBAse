@@ -3,6 +3,7 @@ import jwt
 import datetime
 from flask import jsonify
 
+
 FLASK_DEBUG = False  # Do not use debug mode in production
 
 ROLL_COST = 10
@@ -80,6 +81,11 @@ def handle_error(code):
         bad_request()
 
 
+def set_response(response):
+    RESPONSE["code"] = response.status_code
+    RESPONSE["data"] = response.json().get("data")
+
+
 def send_response(message=""):
     RESPONSE["message"] = RESPONSE["message"] + " / " + message
     return jsonify(RESPONSE), RESPONSE["code"]
@@ -109,7 +115,7 @@ def set_auth_token(token):
 # Helper: Generate JWT
 def generate_token(email, role):
     payload = {
-        "sub": email,
+        "sub_email": email,
         "role": role,
         "iat": datetime.datetime.now(datetime.timezone.utc),
         "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=JWT_EXPIRATION_TIME)
@@ -133,4 +139,3 @@ def validate_token(token):
         return {"error": "Invalid token"}
 
 
-BID_EXPIRATION_TIME = 86400  # 24 hour in seconds

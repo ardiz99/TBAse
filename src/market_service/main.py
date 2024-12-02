@@ -9,6 +9,7 @@ app = Flask(__name__)
 
 @app.route('/roll', methods=['POST'])
 def roll():
+    u.reset_response()
     data = request.get_json()
     user_id = data.get('user_id')
     gacha_id = data.get('gacha_id')
@@ -29,37 +30,37 @@ def roll():
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()
-    else:
-        u.RESPONSE["code"] = 200
-        u.RESPONSE["data"] = []
-        return u.send_response()
+
+    u.set_response(response)
+    return u.send_response("Roll transaction created successfully.")
 
 
 @app.route('/transaction', methods=['GET'])
-def transaction():
-    email = request.args.get('email')
-    if email is None:
-        u.bad_request()
-        return u.send_response()
-
-    path = u.DB_MANAGER_URL + "/user/get_by_email"
-    response = requests.get(path,
-                            verify=False,
-                            params={'email': email})
-
-    if response.status_code != 200:
-        u.handle_error(response.status_code)
-        return u.send_response()
-
-    user_id = response.json().get("data").get("UserId")
-
-    path = u.DB_MANAGER_URL + f"/transaction/{user_id}"
+def get_all_transaction():
+    path = u.DB_MANAGER_URL + "/transaction"
     response = requests.get(path,
                             verify=False)
 
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()
+
+    u.set_response(response)
+    return u.send_response()
+
+
+@app.route('/auction/<int:transaction_id>')
+def get_specific_auction(transaction_id):
+    u.reset_response()
+    path = u.DB_MANAGER_URL + f"/auction/{transaction_id}"
+    response = requests.get(path,
+                            verify=False)
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    u.set_response(response)
+    return u.send_response()
 
 
 @app.route('/auction')
@@ -72,7 +73,21 @@ def get_all_auctions():
         u.handle_error(response.status_code)
         return u.send_response()
 
-    u.RESPONSE["data"] = response.json().get("data")
+    u.set_response(response)
+    return u.send_response()
+
+
+@app.route('/active_auction')
+def get_all_active_auction():
+    u.reset_response()
+    path = u.DB_MANAGER_URL + "/active_auction"
+    response = requests.get(path,
+                            verify=False)
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    u.set_response(response)
     return u.send_response()
 
 
@@ -113,7 +128,10 @@ def new_auction():
                                    'end_date': end_date})
     if response.status_code != 200:
         u.handle_error(response.status_code)
-    return u.send_response()
+        return u.send_response()
+
+    u.set_response(response)
+    return u.send_response("Auction created successfully.")
 
 
 @app.route('/bid/<transaction_id>', methods=["PUT"])
@@ -231,15 +249,14 @@ def new_bid(transaction_id):
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()
-
-    u.RESPONSE["code"] = 200
-    u.RESPONSE["data"] = []
-    u.RESPONSE["message"] = "Bid inserted successfully"
-    return u.send_response()
+    
+    u.set_response(response)
+    return u.send_response("Bid inserted successfully.")
 
 
 @app.route('/end_auction/<int:transaction_id>', methods=['PUT'])
 def end_auction(transaction_id):
+    u.reset_response()
     path = u.DB_MANAGER_URL + f"/auction/{transaction_id}/get_bid"
     response = requests.get(path, verify=False)
     if response.status_code != 200:
@@ -276,11 +293,35 @@ def end_auction(transaction_id):
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()
+    
+    u.set_response(response)
+    return u.send_response("Auction closed successfully.")
 
-    u.RESPONSE["code"] = 200
-    u.RESPONSE["data"] = []
-    u.RESPONSE["message"] = "Auction closed successfully."
+
+@app.route('/transaction_history/<int:user_id>', methods=['GET'])
+def transaction_history(user_id):
+    u.reset_response()
+    path = u.DB_MANAGER_URL + f"/transaction_history/{user_id}"
+    response = requests.get(path, verify=False)
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+    
+    u.set_response(response)
     return u.send_response()
+
+
+@app.route('/close_auction/<int:transaction_id>', methods=['PUT'])
+def close_auction(transaction_id):
+    u.reset_response()
+    path = u.DB_MANAGER_URL + f"/auction/{transaction_id}/close_auction"
+    response = requests.put(path, verify=False)
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    u.set_response(response)
+    return u.send_response("Auction closed successfully")
 
 
 if __name__ == "__main__":
