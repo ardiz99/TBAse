@@ -19,18 +19,22 @@ def perform_request(method, endpoint, json_data=None):
 
 
 # INIZIO METODI PER VISUALIZZARE, AGGIUNGERE, AGGIORNARE E ELIMINARE GACHA
-
-
+    
 # Endpoint per aggiungere un nuovo gacha
 @app.route('/add', methods=['POST'])
 def add_gacha():
     u.reset_response()
     data = request.get_json()
     response = perform_request("POST", "/add", data)
-
     if isinstance(response, tuple):  # In caso di errore
         return response
-
+    status_code = response.status_code
+    if status_code == 404:
+        u.not_found("Gacha not found")
+        return u.send_response()
+    if status_code == 500:
+        u.generic_error("Server error occurred")
+        return u.send_response()
     u.RESPONSE["code"] = 200
     u.RESPONSE["data"] = []
     u.RESPONSE["message"] = "Gacha added successfully!"
@@ -43,13 +47,18 @@ def update_gacha(gacha_id):
     u.reset_response()
     data = request.get_json()
     response = perform_request("PUT", f"/update/{gacha_id}", data)
-
     if isinstance(response, tuple):  # In caso di errore
         return response
-
+    status_code = response.status_code
+    if status_code == 404:
+        u.not_found("Gacha not found")
+        return u.send_response()
+    if status_code == 500:
+        u.generic_error("Server error occurred")
+        return u.send_response()
     u.RESPONSE["code"] = 200
     u.RESPONSE["data"] = []
-    u.RESPONSE["message"] = "Gacha updated successfully!"
+    u.RESPONSE["message"] = "Gacha modified successfully!"
     return jsonify(u.RESPONSE)
 
 
@@ -58,10 +67,15 @@ def update_gacha(gacha_id):
 def delete_gacha(gacha_id):
     u.reset_response()
     response = perform_request("DELETE", f"/delete/{gacha_id}")
-
     if isinstance(response, tuple):  # In caso di errore
         return response
-
+    status_code = response.status_code
+    if status_code == 404:
+        u.not_found("Gacha not found")
+        return u.send_response()
+    if status_code == 500:
+        u.generic_error("Server error occurred")
+        return u.send_response()
     u.RESPONSE["code"] = 200
     u.RESPONSE["data"] = []
     u.RESPONSE["message"] = "Gacha deleted successfully!"
@@ -76,29 +90,40 @@ def get_gacha(gacha_id):
 
     if isinstance(response, tuple):  # In caso di errore
         return response
-
+    status_code = response.status_code
+    if status_code == 404:
+        u.not_found("Gacha not found")
+        return u.send_response()
+    if status_code == 500:
+        u.generic_error("Server error occurred")
+        return u.send_response()
     gacha = response.json().get("data")
     u.RESPONSE["code"] = 200
     u.RESPONSE["data"] = gacha
-    u.RESPONSE["message"] = "Gacha retrieved successfully!"
+    u.RESPONSE["message"] = "Gacha retrivied successfully!"
     return jsonify(u.RESPONSE)
 
 
 
-# Endpoint per ottenere un singolo gacha per nome
 @app.route('/getName/<string:gacha_name>', methods=['GET'])
 def get_gacha_by_name(gacha_name):
     u.reset_response()
     response = perform_request("GET", f"/getName/{gacha_name}")
-
-    if isinstance(response, tuple):  # In caso di errore
+    if isinstance(response, tuple):  
         return response
-
+    status_code = response.status_code
+    if status_code == 404:
+        u.not_found("Gacha not found")
+        return u.send_response()
+    if status_code == 500:
+        u.generic_error("Server error occurred")
+        return u.send_response()
     gacha = response.json().get("data")
     u.RESPONSE["code"] = 200
     u.RESPONSE["data"] = gacha
-    u.RESPONSE["message"] = f"Gacha with name '{gacha_name}' retrieved successfully!"
+    u.RESPONSE["message"] = "Gacha retrivied successfully!"
     return jsonify(u.RESPONSE)
+
 
 
 
@@ -110,20 +135,35 @@ def get_all_gachas():
 
     if isinstance(response, tuple):  # In caso di errore
         return response
-
-    gachas = response.json().get("data")
+    status_code = response.status_code
+    if status_code == 404:
+        u.not_found("Gacha not found")
+        return u.send_response()
+    if status_code == 500:
+        u.generic_error("Server error occurred")
+        return u.send_response()
+    gacha = response.json().get("data")
     u.RESPONSE["code"] = 200
-    u.RESPONSE["data"] = gachas
-    u.RESPONSE["message"] = "All gachas retrieved successfully!"
+    u.RESPONSE["data"] = gacha
+    u.RESPONSE["message"] = "Gacha retrivied successfully!"
     return jsonify(u.RESPONSE)
 
 
 
 # Endpoint per ottenere un singolo gacha dell'utente loggato
-@app.route('/mygacha/<int:gacha_id>', methods=['GET'])
-def get_mygacha(gacha_id):
-    u.reset_response()
-    user_id = 2  # Passiamo l'user_id come 2 per testing
+@app.route('/mygacha/<string:email>/<int:gacha_id>', methods=['GET'])
+def get_mygacha(email, gacha_id):
+    u.reset_response() 
+    response = perform_request("GET", f"/UserId_by_email/{email}")
+    if isinstance(response, tuple):  # In caso di errore
+        return response
+    user_id = response.json().get("data")
+    if not user_id:
+        u.RESPONSE["code"] = 500
+        u.RESPONSE["data"] = []
+        u.RESPONSE["message"] = "Error"
+        return jsonify(u.RESPONSE)
+    
     response = perform_request("GET", f"/get_gacha_of_user/{user_id}")
     if isinstance(response, tuple):  # In caso di errore
         return response
@@ -139,9 +179,9 @@ def get_mygacha(gacha_id):
         if isinstance(response, tuple):  # In caso di errore
             return response
         gacha = response.json().get("data")
-        u.RESPONSE["code"] = 200
         u.RESPONSE["data"] = gacha
-        u.RESPONSE["message"] = "Gacha retrieved successfully!"
+        u.RESPONSE["code"] = 200
+        u.RESPONSE["message"] = "Gacha retrivied succesfully"
         return jsonify(u.RESPONSE)
     else:
         u.RESPONSE["code"] = 404
@@ -150,10 +190,18 @@ def get_mygacha(gacha_id):
 
 
 # Endpoint per ottenere tutti i gacha dell'utente loggato
-@app.route('/mygacha', methods=['GET'])
-def get_allmygacha():
+@app.route('/mygacha/<string:email>', methods=['GET'])
+def get_allmygacha(email):
     u.reset_response()
-    user_id = 2  # Passiamo l'user_id come 0 per testing
+    response = perform_request("GET", f"/UserId_by_email/{email}")
+    if isinstance(response, tuple):  # In caso di errore
+        return response
+    user_id = response.json().get("data")
+    if not user_id:
+        u.RESPONSE["code"] = 500
+        u.RESPONSE["data"] = []
+        u.RESPONSE["message"] = "Error"
+        return jsonify(u.RESPONSE)
     response = perform_request("GET", f"/get_gacha_of_user/{user_id}")
     if isinstance(response, tuple):  # In caso di errore
         return response
@@ -170,9 +218,9 @@ def get_allmygacha():
             return response
         gacha = response.json().get("data")
         result.append(gacha)
-    u.RESPONSE["code"] = 200
     u.RESPONSE["data"] = result
-    u.RESPONSE["message"] = "Gacha retrieved successfully!"
+    u.RESPONSE["code"] = 200
+    u.RESPONSE["message"] = "Gachas retrivied succesfully"   
     return jsonify(u.RESPONSE) 
 
 if __name__ == "__main__":
