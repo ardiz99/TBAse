@@ -136,9 +136,12 @@ def register():
     lastname = data.get('LastName')
     email = data.get('Email')
     password = data.get('Password')
+    salt = data.get('Salt')
     currencyAmount = data.get('CurrencyAmount')
 
     if not email or not password or not firstname or not lastname or not currencyAmount:
+        # if 0==0:
+        # u.generic_error(data)
         u.generic_error("All field are required")
         return u.send_response()
 
@@ -146,20 +149,21 @@ def register():
 
     try:
         # Connessione al database
-        query = "INSERT INTO user (FirstName, LastName, Email, Password, CurrencyAmount) VALUES ("""
+        query = "INSERT INTO user (FirstName, LastName, Email, Password, CurrencyAmount, Salt) VALUES ("""
         query = query + "'{}',".format(firstname)
         query = query + "'{}',".format(lastname)
         query = query + "'{}',".format(email)
         query = query + "'{}',".format(password)
-        query = query + "'{}');""".format(currencyAmount)
+        query = query + "'{}',".format(currencyAmount)
+        query = query + "'{}');""".format(salt)
         handle_db_operation(query, commit=True)
 
         query = "SELECT * FROM user  WHERE Email = '{}';".format(email)
         handle_db_operation(query, fetch_all=True)
         return u.send_response()
     except Error as e:
-        u.generic_error(e)
-        return u.send_response()
+        u.generic_error(str(e))
+        return u.send_response(str(e))
 
 
 @app.route('/register_admin', methods=['POST'])
@@ -169,6 +173,7 @@ def register_admin():
     lastname = data.get('LastName')
     email = data.get('Email')
     password = data.get('Password')
+    salt = data.get('Salt')
     # currencyAmount = data.get('CurrencyAmount')
 
     if not email or not password or not firstname or not lastname:
@@ -178,20 +183,22 @@ def register_admin():
     u.reset_response()
 
     try:
+        # query = f"INSERT INTO admin (FirstName, LastName, Email, Password) VALUES ({firstname})
         # Connessione al database
-        query = "INSERT INTO admin (FirstName, LastName, Email, Password) VALUES ("""
+        query = "INSERT INTO admin (FirstName, LastName, Email, Password, Salt) VALUES ("""
         query = query + "'{}',".format(firstname)
         query = query + "'{}',".format(lastname)
         query = query + "'{}',".format(email)
-        query = query + "'{}');""".format(password)
+        query = query + "'{}',".format(password)
+        query = query + "'{}');""".format(salt)
         handle_db_operation(query, commit=True)
 
-        query = "SELECT * FROM user  WHERE Email = '{}';".format(email)
+        query = "SELECT * FROM admin  WHERE Email = '{}';".format(email)
         handle_db_operation(query, fetch_all=True)
         return u.send_response()
     except Error as e:
-        u.generic_error(e)
-        return u.send_response()
+        u.generic_error(str(e))
+        return u.send_response(str(e))
 
 
 @app.route('/login', methods=['GET'])
@@ -199,16 +206,17 @@ def login():
     email = request.args.get('Email')
 
     if not email:
-        u.bad_request("email required")
+        u.generic_error("email required")
         return u.send_response()
 
     u.reset_response()
     try:
-        query = "SELECT Password FROM user WHERE Email = '{}';".format(email)
-        handle_db_operation(query, fetch_one=True)
+        query = "SELECT Password, Salt FROM user WHERE Email = '{}'".format(email)
+        query = query + " LIMIT 1;"
+        handle_db_operation(query, fetch_all=True)
         return u.send_response()
     except Error as e:
-        u.generic_error(str(e))
+        u.generic_error(e)
         return u.send_response()
 
 
@@ -236,153 +244,205 @@ def login_admin():
     u.reset_response()
 
     try:
-        query = "SELECT Password FROM admin WHERE Email = '{}'".format(email)
-        handle_db_operation(query, fetch_one=True)
+        query = "SELECT Password, Salt FROM admin WHERE Email = '{}'".format(email)
+        query = query + " LIMIT 1;"
+        handle_db_operation(query, fetch_all=True)
         return u.send_response()
     except Error as e:
         u.generic_error(e)
         return u.send_response()
 
 
-@app.route('/delete_user', methods=['GET'])
+@app.route('/delete_user', methods=['DELETE'])
 def delete_user():
-    email = request.args.get('Email')
-    password = request.args.get('Password')
+    # Recupera i dati dal corpo della richiesta
+    data = request.get_json()
+    email = data.get('Email')
+    password = data.get('Password')
 
     if not email or not password:
-        u.generic_error("email and password are required")
+        u.generic_error("Email and Password are required")
         return u.send_response()
 
     u.reset_response()
     try:
-        # Cancella l'utente dal database
-        query = "DELETE FROM user " \
-                "WHERE Email = %s " \
-                "AND Password = %s "
-        values = (email, password)
-        handle_db_operation(query, values, commit=True)
-        return u.send_response()
+        # Costruisci la query SQL per eliminare l'utente
+        query = "DELETE FROM user WHERE Email = %s AND Password = %s"
+        handle_db_operation(query, values=(email, password), commit=True)
 
+        # Verifica se l'utente è stato eliminato
+        query = "SELECT * FROM user WHERE Email = %s"
+        handle_db_operation(query, values=(email,), fetch_one=True)
+
+        if u.RESPONSE["data"]:
+            u.generic_error("Failed to delete user")
+        else:
+            u.RESPONSE["message"] = "User deleted successfully"
+        return u.send_response()
     except Error as e:
         u.generic_error(str(e))
         return u.send_response()
 
 
-@app.route('/delete_admin', methods=['GET'])
+@app.route('/delete_admin', methods=['DELETE'])
 def delete_admin():
-    email = request.args.get('Email')
-    password = request.args.get('Password')
+    # Recupera i dati dal corpo della richiesta
+    data = request.get_json()
+    email = data.get('Email')
+    password = data.get('Password')
 
     if not email or not password:
-        u.generic_error("email and password are required")
+        u.generic_error("Email and Password are required")
         return u.send_response()
 
     u.reset_response()
     try:
-        # Cancella l'utente dal database
-        query = "DELETE FROM admin WHERE Email = '{}'".format(email)
-        query = query + "and Password='{}';".format(password)
-        handle_db_operation(query, commit=True)
+        # Costruisci la query SQL per eliminare l'amministratore
+        query = "DELETE FROM admin WHERE Email = %s AND Password = %s"
+        handle_db_operation(query, values=(email, password), commit=True)
 
-        query = "SELECT * FROM admin  WHERE Email = '{}';".format(email)
-        handle_db_operation(query, fetch_one=True)
+        # Verifica se l'amministratore è stato eliminato
+        query = "SELECT * FROM admin WHERE Email = %s"
+        handle_db_operation(query, values=(email,), fetch_one=True)
+
+        if u.RESPONSE["data"]:
+            u.generic_error("Failed to delete admin")
+        else:
+            u.RESPONSE["message"] = "Admin deleted successfully"
         return u.send_response()
-
     except Error as e:
-        u.generic_error(e)
+        u.generic_error(str(e))
         return u.send_response()
 
 
 @app.route('/update_user', methods=['PUT'])
 def update_user():
-    userid = ""
-    firstname = ""
-    lastname = ""
-    email = ""
-    password = ""
-    currencyAmount = ""
-
-    firstname = request.args.get('FirstName')
-    lastname = request.args.get('LastName')
-    email = request.args.get('Email')
-    password = request.args.get('Password')
-    currencyAmount = request.args.get('CurrencyAmount')
-
-    if not email and not password and not firstname and not lastname and not currencyAmount:
-        u.generic_error("almost one field are required")
+    # Estrai i dati dalla richiesta
+    data = request.get_json()
+    if not data:
+        u.generic_error("Missing fields")
         return u.send_response()
+
+    firstname = data.get('FirstName')
+    lastname = data.get('LastName')
+    email = data.get('Email')
+    password = data.get('Password')
+    currency_amount = data.get('CurrencyAmount')
 
     u.reset_response()
     try:
-
-        query = "UPDATE user SET "
+        # Costruisci dinamicamente la query SQL
+        updates = []
         if firstname:
-            query = query + "FirstName ='{}'".format(firstname)
+            updates.append(f"FirstName = '{firstname}'")
         if lastname:
-            query = query + ",LastName ='{}'".format(lastname)
-        if email:
-            query = query + ",Email ='{}'".format(email)
+            updates.append(f"LastName = '{lastname}'")
         if password:
-            query = query + ",Password ='{}'".format(password)
-        if currencyAmount:
-            query = query + ",CurrencyAmount ='{}'".format(currencyAmount)
-        if userid:
-            query = query + "' WHERE UserId ='{}';".format(userid)
+            updates.append(f"Password = '{password}'")
+        if currency_amount:
+            updates.append(f"CurrencyAmount = '{currency_amount}'")
+
+        if not updates:
+            u.generic_error("No fields to update")
+            return u.send_response()
+
+        query = f"UPDATE user SET {', '.join(updates)} WHERE Email = '{email}';"
         handle_db_operation(query, commit=True)
 
-        query = "SELECT * FROM user WHERE UserId ='{}';".format(userid)
+        query = f"SELECT * FROM user WHERE Email = '{email}';"
         handle_db_operation(query, fetch_one=True)
         return u.send_response()
-
     except Error as e:
-        u.generic_error(e)
+        u.generic_error(str(e))
         return u.send_response()
 
 
-# only for admin
+@app.route('/update_admin', methods=['PUT'])
+def update_admin():
+    # fare il controllo in caso di cambio di email
+    # Estrai i dati dalla richiesta
+    data = request.get_json()
+    if not data:
+        u.generic_error("Missing fields")
+        return u.send_response()
+
+    firstname = data.get('FirstName')
+    lastname = data.get('LastName')
+    email = data.get('Email')
+    password = data.get('Password')
+    currency_amount = data.get('CurrencyAmount')
+
+    u.reset_response()
+    try:
+        # Costruisci dinamicamente la query SQL
+        updates = []
+        if firstname:
+            updates.append(f"FirstName = '{firstname}'")
+        if lastname:
+            updates.append(f"LastName = '{lastname}'")
+        if password:
+            updates.append(f"Password = '{password}'")
+        if currency_amount:
+            updates.append(f"CurrencyAmount = '{currency_amount}'")
+
+        if not updates:
+            u.generic_error("No fields to update")
+            return u.send_response()
+
+        query = f"UPDATE user SET {', '.join(updates)} WHERE Email = '{email}';"
+        handle_db_operation(query, commit=True)
+
+        query = f"SELECT * FROM admin WHERE Email = '{email}';"
+        handle_db_operation(query, fetch_one=True)
+        return u.send_response()
+    except Error as e:
+        u.generic_error(str(e))
+        return u.send_response()
+
+
 @app.route('/update_specific_user', methods=['PUT'])
 def update_specific_user():
-    userid = ""
-    firstname = ""
-    lastname = ""
-    email = ""
-    password = ""
-    currencyAmount = ""
+    # Estrai i dati dalla richiesta
+    data = request.get_json()
+    if not data:
+        u.generic_error("Missing fields")
+        return u.send_response()
 
-    firstname = request.args.get('FirstName')
-    lastname = request.args.get('LastName')
-    email = request.args.get('Email')
-    password = request.args.get('Password')
-    currencyAmount = request.args.get('CurrencyAmount')
+    firstname = data.get('FirstName')
+    lastname = data.get('LastName')
+    email = data.get('Email')
+    password = data.get('Password')
+    currency_amount = data.get('CurrencyAmount')
 
-    if not email and not password and not firstname and not lastname and not currencyAmount:
-        u.generic_error("almost one field are required")
+    if not email or not any([firstname, lastname, password, currency_amount]):
+        u.generic_error("At least one field is required")
         return u.send_response()
 
     u.reset_response()
     try:
-
-        query = "UPDATE user SET "
+        # Costruisci dinamicamente la query SQL
+        updates = []
         if firstname:
-            query = query + "FirstName ='{}'".format(firstname)
+            updates.append(f"FirstName = '{firstname}'")
         if lastname:
-            query = query + ",LastName ='{}'".format(lastname)
-        if email:
-            query = query + ",Email ='{}'".format(email)
+            updates.append(f"LastName = '{lastname}'")
         if password:
-            query = query + ",Password ='{}'".format(password)
-        if currencyAmount:
-            query = query + ",CurrencyAmount ='{}'".format(currencyAmount)
-        if userid:
-            query = query + "' WHERE UserId ='{}';".format(userid)
+            updates.append(f"Password = '{password}'")
+        if currency_amount:
+            updates.append(f"CurrencyAmount = '{currency_amount}'")
+
+        if not updates:
+            u.generic_error("No fields to update")
+            return u.send_response()
+
+        query = f"UPDATE user SET {', '.join(updates)} WHERE Email = '{email}';"
         handle_db_operation(query, commit=True)
 
-        query = "SELECT * FROM user WHERE UserId ='{}';".format(userid)
+        query = f"SELECT * FROM user WHERE Email = '{email}';"
         handle_db_operation(query, fetch_one=True)
         return u.send_response()
-
     except Error as e:
-        u.generic_error(e)
+        u.generic_error(str(e))
         return u.send_response()
 
 
@@ -428,20 +488,6 @@ def update_transaction(transaction_id):
             "WHERE TransactionId = %s"
     values = (sended_to, transaction_id)
     handle_db_operation(query, values, commit=True)
-
-    return u.send_response()
-
-
-@app.route('/transaction/<int:gacha_id>/<int:requesting_user>', methods=['GET'])
-def get_old_transaction(gacha_id, requesting_user):
-    query = "SELECT TransactionId " \
-            "FROM transaction " \
-            f"WHERE RequestingUser = {requesting_user} " \
-            f"   AND GachaId = {gacha_id} " \
-            "   AND SendedTo IS NULL " \
-            "   AND STR_TO_DATE(EndDate, '%Y-%m-%d %H:%i:%s') < NOW() " \
-            "LIMIT 1"
-    handle_db_operation(query, fetch_one=True)
 
     return u.send_response()
 
@@ -555,7 +601,18 @@ def close_auction(transaction_id):
     return u.send_response()
 
 
-####### INIZIO METODI DEL DBMANGER PER ESEGUIRE LE QUERY DEL GACHASERVICE
+@app.route('/auction/history>', methods=['GET'])
+def get_old_transaction():
+    query = "SELECT * " \
+            "FROM transaction " \
+            "WHERE RequestingUser IS NOT NULL " \
+            "   AND STR_TO_DATE(EndDate, '%Y-%m-%d %H:%i:%s') < NOW() "
+    handle_db_operation(query, fetch_all=True)
+
+    return u.send_response()
+
+
+# INIZIO METODI DEL DBMANGER PER ESEGUIRE LE QUERY DEL GACHASERVICE
 @app.route('/gacha/get_gacha_of_user/<int:user_id>', methods=['GET'])
 def get_expired_gacha_ids(user_id):
     u.reset_response()
@@ -597,18 +654,19 @@ def get_expired_gacha_ids(user_id):
         return jsonify(u.RESPONSE)
 
 
-####################### INIZIO METODI DEL DBMANGER PER ESEGUIRE LE QUERY DEL ADMINGACHASERVICE
-#Il metodo add richiede di inserire anche l'id: Creare la chiave autoincrement, e andare a prendere dal db NEXTVAL(GachaId)+1, e fare la insert
+# INIZIO METODI DEL DBMANGER PER ESEGUIRE LE QUERY DEL ADMINGACHASERVICE
+# Il metodo add richiede di inserire anche
+# l'id: Creare la chiave autoincrement, e andare a prendere dal db NEXTVAL(GachaId)+1, e fare la insert
 @app.route('/gacha/add', methods=['POST'])
 def add_gacha():
     data = request.get_json()
-    
+
     # Inizializza la risposta
     u.reset_response()
-    
+
     # Inizializza la connessione al database
     init_db_connection()
-    
+
     if connection is None:
         print("Errore: connessione al database non riuscita.")
         u.generic_error("Errore di connessione al database.")
@@ -616,13 +674,14 @@ def add_gacha():
 
     try:
         # Verifica che tutti i dati necessari siano presenti nel corpo della richiesta
-        required_fields = ['GachaId', 'Name', 'Type1', 'Type2', 'Total', 'HP', 'Attack', 'Defense', 'SpAtt', 'SpDef', 'Speed', 'Rarity', 'Link']
+        required_fields = ['GachaId', 'Name', 'Type1', 'Type2', 'Total', 'HP', 'Attack', 'Defense', 'SpAtt', 'SpDef',
+                           'Speed', 'Rarity', 'Link']
         for field in required_fields:
             if field not in data:
                 print(f"Errore: campo mancante {field}")
                 u.generic_error(f"Campo mancante: {field}")
                 return jsonify(u.RESPONSE)
-        
+
         # Esegui l'inserimento dei dati nel database
         cursor = connection.cursor()
         query = """
@@ -634,7 +693,7 @@ def add_gacha():
             data['Attack'], data['Defense'], data['SpAtt'], data['SpDef'],
             data['Speed'], data['Rarity'], data['Link']
         )
-        
+
         # Esegui la query
         cursor.execute(query, values)
         connection.commit()  # Conferma le modifiche nel database
@@ -766,7 +825,6 @@ def get_gacha(gacha_id):
         print(f"Errore durante il recupero del gacha: {e}")
         u.generic_error("Errore durante il recupero del gacha.")
         return jsonify(u.RESPONSE)
-    
 
 
 @app.route('/gacha/getName/<string:gacha_name>', methods=['GET'])
@@ -799,7 +857,6 @@ def get_gacha_by_name(gacha_name):
         print(f"Errore durante il recupero del gacha: {e}")
         u.generic_error("Errore durante il recupero del gacha.")
         return jsonify(u.RESPONSE)
-  
 
 
 @app.route('/gacha/get', methods=['GET'])

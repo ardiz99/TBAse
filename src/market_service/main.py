@@ -117,7 +117,7 @@ def new_auction():
         u.bad_request(str(e))
         return u.send_response()
 
-    # TODO: controllare che il gacha sia nella collection dell'utente
+    # TODO: controllare che il gacha sia nella collection dell'utente e impostare che l'utente sia quello del token
 
     path = u.DB_MANAGER_URL + "/new_auction"
     response = requests.post(path,
@@ -298,9 +298,19 @@ def end_auction(transaction_id):
     return u.send_response("Auction closed successfully.")
 
 
-@app.route('/transaction_history/<int:user_id>', methods=['GET'])
-def transaction_history(user_id):
+@app.route('/my_transaction_history', methods=['GET'])
+def my_transaction_history():
     u.reset_response()
+
+    email = request.args.get("email")
+    path = u.DB_MANAGER_URL + "/user/get_by_email"
+    response = requests.get(path, verify=False, params={"email": email})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    user_id = response.json().get("data").get("UserId")
+
     path = u.DB_MANAGER_URL + f"/transaction_history/{user_id}"
     response = requests.get(path, verify=False)
     if response.status_code != 200:
@@ -322,6 +332,19 @@ def close_auction(transaction_id):
 
     u.set_response(response)
     return u.send_response("Auction closed successfully")
+
+
+@app.route('/auction/history', methods=['GET'])
+def get_old_transaction():
+    u.reset_response()
+    path = u.DB_MANAGER_URL + f"/auction/history"
+    response = requests.get(path, verify=False)
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    u.set_response(response)
+    return u.send_response()
 
 
 if __name__ == "__main__":

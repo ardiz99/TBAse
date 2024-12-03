@@ -3,7 +3,6 @@ import jwt
 import datetime
 from flask import jsonify
 
-
 FLASK_DEBUG = False  # Do not use debug mode in production
 
 ROLL_COST = 10
@@ -91,8 +90,8 @@ def send_response(message=""):
 
 
 # Secret keys and configurations
-SECRET_KEY = "your-super-secret-key"  # Change to a secure value
-JWT_EXPIRATION_TIME = 3600  # 1 hour in seconds
+SECRET_KEY = os.getenv("SECRET_KEY")  # Change to a secure value
+JWT_EXPIRATION_TIME = 36000  # 1 hour in seconds
 ALGORITHM = "HS256"  # JWT signing algorithm
 
 # Placeholder for user roles
@@ -138,3 +137,23 @@ def validate_token(token):
         return {"error": "Invalid token"}
 
 
+def check_token(enc_token):
+    if enc_token is None:
+        unauthorized()
+        return False
+
+    return True
+
+
+def check_token_admin(enc_token):
+    if not check_token(enc_token):
+        return False
+
+    token = validate_token(enc_token)
+    role = token.get("role")
+
+    if role != 'admin':
+        unauthorized()
+        return False
+
+    return True

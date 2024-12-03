@@ -13,10 +13,29 @@ services:
       - currency-service
       - gacha-service
       - market-service
-      - db-manager
     secrets:
       - certificate
       - key
+      - secret_key
+
+  admin-gateway:
+    build:
+      context: src
+      dockerfile: ./admin_gateway/Dockerfile
+    container_name: admin-gateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./src/utils.py:/app/utils.py
+    depends_on:
+      - auth-service
+      - currency-service
+      - gacha-service
+      - market-service
+    secrets:
+      - certificate
+      - key
+      - secret_key
 
   auth-service:
     build:
@@ -32,6 +51,9 @@ services:
     secrets:
       - certificate
       - key
+      - secret_key
+    environment:
+      - SECRET_KEY=73e8a1c4efc8d1f9e0e9241bd3c285740be019d57cd6711a2f7635cf09e8dc4a
   
   gacha-service:
     build:
@@ -47,6 +69,7 @@ services:
     secrets:
       - certificate
       - key
+      - secret_key
 
   currency-service:
     build:
@@ -64,6 +87,7 @@ services:
     secrets:
       - certificate
       - key
+      - secret_key
 
   market-service:
     build:
@@ -79,6 +103,7 @@ services:
     secrets:
       - certificate
       - key
+      - secret_key
 
   db-manager:
     build:
@@ -99,7 +124,7 @@ services:
     secrets:
       - certificate
       - key
-#      - db_password
+      - secret_key
 
   db:
     image: mysql:8.0
@@ -116,5 +141,5 @@ secrets:
     file: secrets/cert.pem
   key:
     file: secrets/key.pem
-#  db_password:
-#    file: ./secrets/mongo_password.txt
+  secret_key:
+    file: ./secrets/secret_key.env

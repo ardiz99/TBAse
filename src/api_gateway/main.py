@@ -15,8 +15,7 @@ def index():
 @app.route('/roll', methods=['GET'])
 def roll():
     enc_token = request.headers.get("token")
-    if enc_token is None:
-        u.forbidden()
+    if not u.check_token(enc_token):
         return u.send_response()
 
     token = u.validate_token(enc_token)
@@ -48,8 +47,7 @@ def roll():
 @app.route('/golden_roll', methods=['GET'])
 def golden():
     enc_token = request.headers.get("token")
-    if enc_token is None:
-        u.forbidden()
+    if not u.check_token(enc_token):
         return u.send_response()
 
     token = u.validate_token(enc_token)
@@ -83,8 +81,7 @@ def golden():
 @app.route('/buy_currency', methods=['PUT'])
 def buy_currency():
     enc_token = request.headers.get("token")
-    if enc_token is None:
-        u.forbidden()
+    if not u.check_token(enc_token):
         return u.send_response()
 
     token = u.validate_token(enc_token)
@@ -386,6 +383,102 @@ def get_mygachaAll():
     u.RESPONSE["data"] = gachas
     u.RESPONSE["message"] = "Gacha retrieved successfully!"
     return jsonify(u.RESPONSE)
+
+
+# INIZIO ENDPOINT PER IL MARKET-SERVICE ==>
+@app.route('/auction')
+def get_all_auctions():
+    u.reset_response()
+
+    enc_token = request.headers.get("token")
+    if not u.check_token(enc_token):
+        return u.send_response()
+
+    path = u.MARKET_SERVICE_URL + "/auction"
+    response = requests.get(path,
+                            verify=False)
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    u.set_response(response)
+    return u.send_response()
+
+
+@app.route('/new_auction', methods=["POST"])
+def new_auction():
+    u.reset_response()
+
+    enc_token = request.headers.get("token")
+    if not u.check_token(enc_token):
+        return u.send_response()
+
+    user_owner = request.get_json().get('user_owner')
+    gacha_id = request.get_json().get('gacha_id')
+    starting_price = request.get_json().get('starting_price')
+    end_date = request.get_json().get('end_date')
+
+    path = u.MARKET_SERVICE_URL + "/new_auction"
+    response = requests.post(path,
+                             verify=False,
+                             json={'user_owner': user_owner,
+                                   'gacha_id': gacha_id,
+                                   'starting_price': starting_price,
+                                   'end_date': end_date})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    u.set_response(response)
+    return u.send_response("Auction created successfully.")
+
+
+@app.route('/bid/<transaction_id>', methods=["PUT"])
+def new_bid(transaction_id):
+    u.reset_response()
+
+    enc_token = request.headers.get("token")
+    if not u.check_token(enc_token):
+        return u.send_response()
+
+    token = u.validate_token(enc_token)
+
+    email = token.get("sub")
+    bid = request.get_json().get("bid")
+
+    if not bid or not transaction_id:
+        u.bad_request()
+        return u.send_response()
+
+    path = u.MARKET_SERVICE_URL + f"/bid/{transaction_id}"
+    response = requests.put(path,
+                            verify=False,
+                            json={"email": email,
+                                  "bid": bid})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+
+@app.route('/my_transaction_history', methods=['GET'])
+def my_transaction_history():
+    u.reset_response()
+
+    enc_token = request.headers.get("token")
+    if not u.check_token(enc_token):
+        return u.send_response()
+
+    token = u.validate_token(enc_token)
+    email = token.get("sub")
+
+    path = u.MARKET_SERVICE_URL + "/my_transaction_history"
+    response = requests.get(path, verify=False, params={"email": email})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    u.set_response(response)
+    return u.send_response()
 
 
 if __name__ == "__main__":
