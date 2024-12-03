@@ -1,0 +1,16 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY ./auth_service/main*.py .
+COPY ./auth_service/requirements.txt .
+COPY ./secrets/cert.pem /run/secrets/certificate
+COPY ./secrets/key.pem /run/secrets/key
+COPY ../utils.py ./utils.py  
+
+RUN pip install -r requirements.txt
+
+EXPOSE 5001
+
+ENV FLASK_APP=main_test
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5001", "--cert=/run/secrets/certificate", "--key=/run/secrets/key"]
