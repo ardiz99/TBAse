@@ -1,0 +1,122 @@
+{
+	"info": {
+	  "name": "Currency Service Tests",
+	  "_postman_id": "12345678-1234-1234-1234-123456789012",
+	  "description": "Unit tests for Currency Service API",
+	  "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+	  {
+		"name": "Roll Info - Valid",
+		"request": {
+		  "method": "GET",
+		  "header": [],
+		  "url": {
+			"raw": "http://localhost:5002/roll_info/10?email=alice@example.com",
+			"protocol": "http",
+			"host": ["localhost"],
+			"port": "5002",
+			"path": ["roll_info", "10"],
+			"query": [
+			  {
+				"key": "email",
+				"value": "alice@example.com"
+			  }
+			]
+		  }
+		},
+		"response": []
+	  },
+	  {
+		"name": "Roll Info - Insufficient Funds",
+		"request": {
+		  "method": "GET",
+		  "header": [],
+		  "url": {
+			"raw": "http://localhost:5002/roll_info/1000?email=bob@example.com",
+			"protocol": "http",
+			"host": ["localhost"],
+			"port": "5002",
+			"path": ["roll_info", "1000"],
+			"query": [
+			  {
+				"key": "email",
+				"value": "bob@example.com"
+			  }
+			]
+		  }
+		},
+		"response": []
+	  },
+	  {
+		"name": "Buy Currency - Valid",
+		"request": {
+		  "method": "PUT",
+		  "header": [
+			{
+			  "key": "Content-Type",
+			  "value": "application/json"
+			}
+		  ],
+		  "body": {
+			"mode": "raw",
+			"raw": "{\"quantity\": 100, \"email\": \"alice@example.com\"}"
+		  },
+		  "url": {
+			"raw": "http://localhost:5002/buy_currency",
+			"protocol": "http",
+			"host": ["localhost"],
+			"port": "5002",
+			"path": ["buy_currency"]
+		  }
+		},
+		"response": []
+	  },
+	  {
+		"name": "Buy Currency - Invalid Quantity",
+		"request": {
+		  "method": "PUT",
+		  "header": [
+			{
+			  "key": "Content-Type",
+			  "value": "application/json"
+			}
+		  ],
+		  "body": {
+			"mode": "raw",
+			"raw": "{\"quantity\": -10, \"email\": \"alice@example.com\"}"
+		  },
+		  "url": {
+			"raw": "http://localhost:5002/buy_currency",
+			"protocol": "http",
+			"host": ["localhost"],
+			"port": "5002",
+			"path": ["buy_currency"]
+		  }
+		},
+		"response": []
+	  },
+	  {
+		"name": "Roll Image",
+		"request": {
+		  "method": "GET",
+		  "header": [],
+		  "url": {
+			"raw": "http://localhost:5002/roll_img?url=/static/test.png",
+			"protocol": "http",
+			"host": ["localhost"],
+			"port": "5002",
+			"path": ["roll_img"],
+			"query": [
+			  {
+				"key": "url",
+				"value": "/static/test.png"
+			  }
+			]
+		  }
+		},
+		"response": []
+	  }
+	]
+  }
+  

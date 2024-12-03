@@ -2,11 +2,23 @@ from datetime import datetime
 from flask import Flask, jsonify, request, send_file
 import requests
 import random
-
 import utils as u
-# from src import utils as u
 
 app = Flask(__name__)
+
+mock_save_last = None
+
+def save_last(op, args, res):
+    """Funzione per salvare l'ultima operazione effettuata."""
+    if mock_save_last:
+        mock_save_last(op, args, res)
+    else:
+        timestamp = datetime.now().isoformat()
+        payload = {'timestamp': timestamp, 'op': op, 'args': args, 'res': res}
+        try:
+            requests.post('http://db-manager:8005/notify', json=payload)
+        except requests.exceptions.RequestException as e:
+            print(f"Error notifying db-manager: {e}")
 
 RARITY_DISTRIBUTION = {
     "Legendary": 0.05,
@@ -16,12 +28,20 @@ RARITY_DISTRIBUTION = {
     "Common": 54.45
 }
 
+GOLDEN_DISTRIBUTION = {
+    "Legendary": 10,
+    "Epic": 90,
+}
 
-def random_rarity():
+
+def random_rarity(golden):
     roll = random.uniform(0, 100)
     cumulative = 0
     rarity = None
-    for key, chance in RARITY_DISTRIBUTION.items():
+
+    distribution = RARITY_DISTRIBUTION if not golden else GOLDEN_DISTRIBUTION
+
+    for key, chance in distribution.items():
         cumulative += chance
         if roll <= cumulative:
             rarity = key
@@ -29,117 +49,151 @@ def random_rarity():
     return rarity
 
 
-@app.route('/roll_info', methods=['GET'])
-def roll_info():
-    u.reset_response()
+@app.route('/roll_info/<int:cost>', methods=['GET'])
+def roll_info(cost):
+    args = {"cost": cost, "email": request.args.get("email")}
+    try:
+        if cost != u.ROLL_COST and cost != u.GOLDEN_COST:
+            u.bad_request()
+            save_last('roll_info', args, u.RESPONSE)
+            return u.send_response()
 
-    # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
-    email = "taylor.smith@example.com"
-    user_id = 1
+        email = request.args.get("email")
+        if not email:
+            u.bad_request()
+            save_last('roll_info', args, u.RESPONSE)
+            return u.send_response()
 
-    path = u.DB_MANAGER_URL + "/get_amount"
-    response = requests.get(path,
-                            verify=False,
-                            params={'email': email})
-    if response.status_code != 200:
-        u.handle_error(response.status_code)
-        return jsonify(u.RESPONSE)
+        path = u.DB_MANAGER_URL + "/get_amount"
+        response = requests.get(path,
+                                verify=False,
+                                params={'email': email})
+        if response.status_code != 200:
+            u.handle_error(response.status_code)
+            save_last('roll_info', args, u.RESPONSE)
+            return u.send_response()
 
-    target_data = response.json().get("data")
-    amount = target_data["CurrencyAmount"]
-    if amount < u.ROLL_COST:
-        u.generic_error("Insufficient Pokedollars")
-        return jsonify(u.RESPONSE), u.RESPONSE["code"]
+        amount = response.json().get("data").get("CurrencyAmount")
+        if amount < cost:
+            u.generic_error("Insufficient Pokedollars")
+            save_last('roll_info', args, u.RESPONSE)
+            return u.send_response()
 
-    rarity = random_rarity()
+        rarity = random_rarity(cost == u.GOLDEN_COST)
 
-    path = u.DB_MANAGER_URL + "/get_gacha_by_rarity"
-    response = requests.get(path,
-                            verify=False,
-                            params={'rarity': rarity})
-    if response.status_code != 200:
-        u.handle_error(response.status_code)
-        return jsonify(u.RESPONSE)
+        path = u.DB_MANAGER_URL + "/get_gacha_by_rarity"
+        response = requests.get(path,
+                                verify=False,
+                                params={'rarity': rarity})
+        if response.status_code != 200:
+            u.handle_error(response.status_code)
+            save_last('roll_info', args, u.RESPONSE)
+            return u.send_response()
 
-    target_set = response.json().get("data")
-    random2 = random.randint(0, len(target_set) - 1)
-    chosen = target_set[random2]
+        target_set = response.json().get("data")
+        random2 = random.randint(0, len(target_set) - 1)
+        chosen = target_set[random2]
+        gacha_id = chosen["GachaId"]
 
-    # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
-    new_amount = amount - 10
-    path = u.DB_MANAGER_URL + "/update_amount"
-    response = requests.put(path,
-                            verify=False,
-                            json={'email': email, 'new_amount': new_amount})
-    if response.status_code != 200:
-        u.handle_error(response.status_code)
-        return jsonify(u.RESPONSE)
+        new_amount = amount - cost
+        path = u.DB_MANAGER_URL + "/update_amount"
+        response = requests.put(path,
+                                verify=False,
+                                json={'email': email, 'new_amount': new_amount})
+        if response.status_code != 200:
+            u.handle_error(response.status_code)
+            save_last('roll_info', args, u.RESPONSE)
+            return u.send_response()
 
-    gacha_id = chosen["GachaId"]
-    current_datetime = datetime.now()
-    formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-    path = u.MARKET_SERVICE_URL + "/new_transaction"
-    response = requests.post(path,
-                             verify=False,
-                             json={'user_id': user_id,
-                                   'gacha_id': gacha_id,
-                                   'cost': u.ROLL_COST,
-                                   'end-date': formatted_datetime})
+        path = u.DB_MANAGER_URL + "/user/get_by_email"
+        response = requests.get(path,
+                                verify=False,
+                                params={'email': email})
+        if response.status_code != 200:
+            u.handle_error(response.status_code)
+            save_last('roll_info', args, u.RESPONSE)
+            return u.send_response()
 
-    if response.status_code != 200:
-        u.handle_error(response.status_code)
-        return jsonify(u.RESPONSE)
+        user_id = response.json().get("data").get("UserId")
+        current_datetime = datetime.now()
+        formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        path = u.MARKET_SERVICE_URL + "/roll"
+        response = requests.post(path,
+                                verify=False,
+                                json={'user_id': user_id,
+                                    'gacha_id': gacha_id,
+                                    'cost': cost,
+                                    'end_date': formatted_datetime})
 
-    else:
+        if response.status_code != 200:
+            u.handle_error(response.status_code)
+            save_last('roll_info', args, u.RESPONSE)
+            return u.send_response()
+
         u.RESPONSE["code"] = 200
         u.RESPONSE["data"] = chosen
-        return jsonify(u.RESPONSE)
+        save_last('roll_info', args, u.RESPONSE)
+        return u.send_response()
+    except Exception as e:
+        u.generic_error(f"Unexpected error: {str(e)}")
+        save_last('roll_info', args, u.RESPONSE)
+        return u.send_response()
 
 
 @app.route('/roll_img', methods=['GET'])
 def roll_img():
-    url = request.args.get("url")
-    image_path = "." + url
-
-    return send_file(image_path, mimetype='image/png')
+    args = {"url": request.args.get("url")}
+    try:
+        url = request.args.get("url")
+        image_path = "." + url
+        save_last('roll_img', args, {"result": "Image served"})
+        return send_file(image_path, mimetype='image/png')
+    except Exception as e:
+        save_last('roll_img', args, {"error": str(e)})
+        return jsonify({"error": "Could not serve image", "details": str(e)}), 404
 
 
 @app.route('/buy_currency', methods=['PUT'])
 def buy_currency():
-    u.reset_response()
     data = request.get_json()
-    quantity = data.get('quantity')
-    if quantity <= 0:
-        u.generic_error("You can't add a negative quantity.")
+    args = {"data": data}
+    try:
+        quantity = data.get('quantity')
+        email = data.get('email')
+
+        if quantity <= 0:
+            u.generic_error("You can't add a negative quantity.")
+            save_last('buy_currency', args, u.RESPONSE)
+            return jsonify(u.RESPONSE)
+
+        path = u.DB_MANAGER_URL + "/get_amount"
+        response = requests.get(path,
+                                verify=False,
+                                params={'email': email})
+
+        amount = response.json().get("data").get("CurrencyAmount")
+
+        new_amount = amount + quantity
+        path = u.DB_MANAGER_URL + "/update_amount"
+        response = requests.put(path,
+                                verify=False,
+                                json={'email': email,
+                                    'new_amount': new_amount})
+
+        if response.json().get("code") != 200:
+            u.RESPONSE["data"] = []
+            u.RESPONSE["message"] = "Update Error"
+        else:
+            u.RESPONSE["code"] = 200
+            u.RESPONSE["data"] = []
+            u.RESPONSE["message"] = "Currency amount updated successfully. New amount: {}".format(new_amount)
+
+        save_last('buy_currency', args, u.RESPONSE)
         return jsonify(u.RESPONSE)
-
-    # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
-    email = "taylor.smith@example.com"
-    path = u.DB_MANAGER_URL + "/get_amount"
-    response = requests.get(path,
-                            verify=False,
-                            params={'email': email})
-
-    target_data = response.json().get("data")
-    amount = target_data["CurrencyAmount"]
-
-    # TODO: PRENDERE L'EMAIL DELL'UTENTE AUTENTICATO
-    new_amount = amount + quantity
-    path = u.DB_MANAGER_URL + "/update_amount"
-    response = requests.put(path,
-                            verify=False,
-                            json={'email': email,
-                                  'new_amount': new_amount})
-
-    if response.json().get("code") != 200:
-        u.RESPONSE["data"] = []
-        u.RESPONSE["message"] = "Update Error"
-    else:
-        u.RESPONSE["code"] = 200
-        u.RESPONSE["data"] = []
-        u.RESPONSE["message"] = "Currency amount updated successfully. New amount: {}".format(new_amount)
-
-    return jsonify(u.RESPONSE)
+    except Exception as e:
+        u.generic_error(f"Unexpected error: {str(e)}")
+        save_last('buy_currency', args, u.RESPONSE)
+        return jsonify(u.RESPONSE)
 
 
 if __name__ == "__main__":
