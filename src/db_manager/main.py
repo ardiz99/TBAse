@@ -168,8 +168,6 @@ def register_admin():
     u.reset_response()
 
     try:
-        # query = f"INSERT INTO admin (FirstName, LastName, Email, Password) VALUES ({firstname})
-        # Connessione al database
         query = "INSERT INTO admin (FirstName, LastName, Email, Password, Salt) VALUES ("""
         query = query + "'{}',".format(firstname)
         query = query + "'{}',".format(lastname)
@@ -184,6 +182,13 @@ def register_admin():
     except Error as e:
         u.generic_error(str(e))
         return u.send_response(str(e))
+
+
+@app.route('/get_all_admin', methods=['GET'])
+def get_all_admin():
+    query = "SELECT * FROM admin"
+    handle_db_operation(query, fetch_all=True)
+    return u.send_response()
 
 
 @app.route('/login', methods=['GET'])

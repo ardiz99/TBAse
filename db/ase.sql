@@ -28,9 +28,9 @@ CREATE TABLE `admin` (
   `AdminId` int NOT NULL AUTO_INCREMENT,
   `FirstName` varchar(45) NOT NULL,
   `LastName` varchar(45) NOT NULL,
-  `Password` varchar(45) NOT NULL,
+  `Password` varchar(255) NOT NULL,
   `Email` varchar(45) NOT NULL,
-  `Salt` varchar(80) NOT NULL,
+  `Salt` varchar(255) NOT NULL,
   PRIMARY KEY (`AdminId`),
   UNIQUE KEY `Email_UNIQUE` (`Email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
@@ -151,4 +151,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-04  1:31:44
+-- Dump completed on 2024-12-04  2:23:53

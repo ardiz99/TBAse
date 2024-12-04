@@ -115,5 +115,41 @@ def get_old_transaction():
     return u.send_response()
 
 
+@app.route('/register_admin', methods=['POST'])
+def register_admin():
+    data = request.get_json()
+    first_name = data.get('FirstName')
+    last_name = data.get('LastName')
+    email = data.get('Email')
+    password = data.get('Password')
+    response = requests.post('https://auth-service:8001/register_admin',
+                             verify=False,
+                             json={'FirstName': first_name,
+                                   'LastName': last_name,
+                                   'Email': email,
+                                   'Password': password})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    u.set_response(response)
+    return u.send_response()
+
+
+@app.route('/login_admin', methods=['GET'])
+def login_admin():
+    email = request.args.get('Email')
+    password = request.args.get('Password')
+    response = requests.get('https://auth-service:8001/login_admin',
+                            verify=False,
+                            params={'Email': email, 'Password': password})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    u.set_response(response)
+    return u.send_response()
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=u.FLASK_DEBUG)

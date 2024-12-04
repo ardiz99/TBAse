@@ -151,37 +151,27 @@ def login_admin():
     password = processed_fields[1]
 
     if not email or not password:
-        return jsonify(error="Missing email or password"), 400
-    try:
+        u.bad_request()
+        return u.send_response()
 
-        response = requests.get('https://db-manager:8005/login_admin',
-                                verify=False,
-                                params={"Email": email})
-        if response.status_code == 200:
-            # tmp = response.json().get("data")
-            stored_hash = response.json().get("data")[0].get("Password")
-            salt = response.json().get("data")[0].get("Salt")
-            tmp_hash = verify_password(password, stored_hash, salt)
-            if verify_password(password, stored_hash, salt):
-                role = "admin"
-                token = u.generate_token(email, role, stored_hash)
-                # token_data = u.validate_token(token)#rigenera i campi originali dal token cifrato
-                u.set_auth_token(token)
-                return jsonify({"message": "Login successful"}), 200
-                # encrypted_password = encrypt_password(password)
-            # # Confronta le password
-            # if stored_encrypted_password == encrypted_password:
-            #     token = u.generate_token(email, "admin")
-            #     u.set_auth_token(token)
-            #     return jsonify({"message": "Login successful"}), 200
-            else:
-                return jsonify({"error": "Invalid password credentials"}), 400
-        elif response.status_code == 400:
-            return jsonify({"error": "Invalid credentials"}), 400
-        else:
-            return jsonify({"error": "Internal server error"}), 500
-    except requests.exceptions.RequestException as e:
-        return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
+    response = requests.get('https://db-manager:8005/login_admin',
+                            verify=False,
+                            params={"Email": email})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    stored_hash = response.json().get("data")[0].get("Password")
+    salt = response.json().get("data")[0].get("Salt")
+    tmp_hash = verify_password(password, stored_hash, salt)
+    if verify_password(password, stored_hash, salt):
+        role = "admin"
+        token = u.generate_token(email, role, stored_hash)
+        u.set_auth_token(token)
+        u.RESPONSE["code"] = 200
+        u.RESPONSE["data"] = token
+        u.RESPONSE["message"] = "Login seccessful"
+        return u.send_response()
 
 
 # per gli user e admin
@@ -243,7 +233,9 @@ def register():
 
     token = u.generate_token(email, "user", hashed_password)
     u.set_auth_token(token)
-    u.set_response(response)
+    u.RESPONSE["code"] = 200
+    u.RESPONSE["data"] = token
+    u.RESPONSE["message"] = "Registration seccessful"
     return u.send_response("Registrazione avvenuta con successo!")
 
 
@@ -277,13 +269,19 @@ def register_admin():
     try:
         response = requests.post('https://db-manager:8005/register_admin',
                                  verify=False,
-                                 json={"FirstName": firstname, "LastName": lastname, "Email": email,
-                                       "Password": hashed_password, "Salt": salt})
+                                 json={"FirstName": firstname,
+                                       "LastName": lastname,
+                                       "Email": email,
+                                       "Password": hashed_password,
+                                       "Salt": salt})
         if response.status_code == 200:  # dal da-manager abbiamo in riscontro positivo
 
             token = u.generate_token(email, "admin", hashed_password)
             u.set_auth_token(token)
-            return jsonify({"ok": "Registrazione avvenuta con successo!"}), 200
+            u.RESPONSE["code"] = 200
+            u.RESPONSE["data"] = token
+            u.RESPONSE["message"] = "Registration seccessful"
+            return u.send_response()
         elif response.status_code == 400:
             return jsonify({"error": "Invalid credentials"}), 400
         else:
