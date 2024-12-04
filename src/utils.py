@@ -22,6 +22,7 @@ GACHA_SERVICE_URL = "http://127.0.0.1:8002" if LOCAL else "https://gacha-service
 MARKET_SERVICE_URL = "http://127.0.0.1:8003" if LOCAL else "https://market-service:8003"
 CURRENCY_SERVICE_URL = "http://127.0.0.1:8004" if LOCAL else "https://currency-service:8004"
 DB_MANAGER_URL = "http://127.0.0.1:8005" if LOCAL else "https://db-manager:8005"
+AUCTION_SERVICE_URL = "http://127.0.0.1:8006" if LOCAL else "https://auction-service:8006"
 
 RESPONSE = {
     "code": 200,
@@ -44,6 +45,7 @@ def generic_error(message="Unkonwn error"):
 
 def not_found(message=""):
     RESPONSE["code"] = 404
+    RESPONSE["data"] = []
     RESPONSE["message"] = "Error! Not Found. " + message
 
 
@@ -134,6 +136,7 @@ def generate_token(user_id, role, user_pass):
         "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=JWT_EXPIRATION_TIME)
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    set_auth_token(token)
     return token
 
 
