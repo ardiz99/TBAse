@@ -1,4 +1,4 @@
-CREATE DATABASE  IF NOT EXISTS `ase` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
+CREATE DATABASE  IF NOT EXISTS `ase` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `ase`;
 -- MySQL dump 10.13  Distrib 8.0.40, for Win64 (x86_64)
 --
@@ -26,12 +26,12 @@ DROP TABLE IF EXISTS `admin`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `admin` (
   `UserID` int NOT NULL AUTO_INCREMENT,
-  `FirstName` varchar(45) NOT NULL,
-  `LastName` varchar(45) NOT NULL,
-  `Password` varchar(45) NOT NULL,
-  `Email` varchar(45) NOT NULL,
-  PRIMARY KEY (`UserID`),
-  UNIQUE KEY `Email_UNIQUE` (`Email`)
+  `FirstName` varchar(45) DEFAULT NULL,
+  `LastName` varchar(45) DEFAULT NULL,
+  `Password` varchar(200) DEFAULT NULL,
+  `Email` varchar(45) DEFAULT NULL,
+  `Salt` varchar(200) DEFAULT NULL,
+  PRIMARY KEY (`UserID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -41,7 +41,7 @@ CREATE TABLE `admin` (
 
 LOCK TABLES `admin` WRITE;
 /*!40000 ALTER TABLE `admin` DISABLE KEYS */;
-INSERT INTO `admin` VALUES (1,'Diego','Del Castello','a','a'),(2,'Felice','Tortorelli','s','s'),(3,'Francesco','Ardizzoni','z','z'),(4,'Mattia','Prestifilippo','x','x');
+INSERT INTO `admin` VALUES (1,'Diego','Del Castello','a','a',NULL),(2,'Felice','Tortorelli','s','s',NULL),(3,'Francesco','Ardizzoni','z','z',NULL),(4,'Mattia','Prestifilippo','x','x',NULL);
 /*!40000 ALTER TABLE `admin` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -54,18 +54,18 @@ DROP TABLE IF EXISTS `gacha`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `gacha` (
   `GachaId` int NOT NULL,
-  `Name` varchar(45) NOT NULL,
-  `Type1` varchar(45) NOT NULL,
-  `Type2` varchar(45) NOT NULL,
-  `Total` int NOT NULL,
-  `HP` int NOT NULL,
-  `Attack` int NOT NULL,
-  `Defense` int NOT NULL,
-  `SpAtt` int NOT NULL,
-  `SpDef` int NOT NULL,
-  `Speed` int NOT NULL,
-  `Rarity` varchar(45) NOT NULL,
-  `Link` varchar(45) NOT NULL,
+  `Name` varchar(45) DEFAULT NULL,
+  `Type1` varchar(45) DEFAULT NULL,
+  `Type2` varchar(45) DEFAULT NULL,
+  `Total` int DEFAULT NULL,
+  `HP` int DEFAULT NULL,
+  `Attack` int DEFAULT NULL,
+  `Defense` int DEFAULT NULL,
+  `SpAtt` int DEFAULT NULL,
+  `SpDef` int DEFAULT NULL,
+  `Speed` int DEFAULT NULL,
+  `Rarity` varchar(45) DEFAULT NULL,
+  `Link` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`GachaId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -81,7 +81,6 @@ INSERT INTO `gacha` VALUES (1,'Bulbasaur','Grass','Poison',318,45,49,49,65,65,45
 UNLOCK TABLES;
 
 --
-
 -- Table structure for table `transaction`
 --
 
@@ -90,20 +89,13 @@ DROP TABLE IF EXISTS `transaction`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `transaction` (
   `TransactionId` int NOT NULL AUTO_INCREMENT,
-  `GachaId` int NOT NULL,
-  `RequestingUser` int NOT NULL,
   `UserOwner` int DEFAULT NULL,
-  `Cost` int NOT NULL,
-  `EndDate` varchar(45) DEFAULT NULL,
-  `SendedTo` int DEFAULT NULL,
-  PRIMARY KEY (`TransactionId`),
-  KEY `UserOwn_idx` (`UserOwner`),
-  KEY `RequestingUser_idx` (`RequestingUser`),
-  KEY `gachaId_idx` (`GachaId`),
-  CONSTRAINT `GachaId` FOREIGN KEY (`GachaId`) REFERENCES `gacha` (`GachaId`),
-  CONSTRAINT `RequestingUser` FOREIGN KEY (`RequestingUser`) REFERENCES `user` (`UserId`),
-  CONSTRAINT `UserOwner` FOREIGN KEY (`UserOwner`) REFERENCES `user` (`UserId`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
+  `RequestingUser` int DEFAULT NULL,
+  `GachaId` int DEFAULT NULL,
+  `Cost` int DEFAULT NULL,
+  `EndDate` date DEFAULT NULL,
+  PRIMARY KEY (`TransactionId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -124,14 +116,14 @@ DROP TABLE IF EXISTS `user`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user` (
   `UserId` int NOT NULL AUTO_INCREMENT,
-  `FirstName` varchar(45) NOT NULL,
-  `LastName` varchar(45) NOT NULL,
-  `Email` varchar(45) NOT NULL,
-  `Password` varchar(45) NOT NULL,
-  `CurrencyAmount` int DEFAULT NULL,
-  PRIMARY KEY (`UserId`),
-  UNIQUE KEY `Email_UNIQUE` (`Email`)
-) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8mb3;
+  `FirstName` varchar(45) DEFAULT NULL,
+  `LastName` varchar(45) DEFAULT NULL,
+  `Email` varchar(45) DEFAULT NULL,
+  `Password` varchar(200) DEFAULT NULL,
+  `CurrencyAmount` varchar(45) DEFAULT NULL,
+  `Salt` varchar(200) DEFAULT NULL,
+  PRIMARY KEY (`UserId`)
+) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -140,7 +132,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'Taylor','Smith','taylor.smith@example.com','b259fe071c41a754',152),(2,'Jane','Smith','jane.smith@domain.com','856ed03589098fa2',379),(3,'Taylor','Johnson','taylor.johnson@example.com','f6623cdcf7261c4c',484),(4,'Alex','Rodriguez','alex.rodriguez@example.com','c81114ee6d217c69',188),(5,'John','Miller','john.miller@example.com','9d7a0edd91e66aa4',327),(6,'Jamie','Smith','jamie.smith@domain.com','1b131ad0cfc411b3',864),(7,'Jane','Doe','jane.doe@example.com','3e74ca2642a01ff0',813),(8,'Alex','Miller','alex.miller@domain.com','abc92e6592d68854',949),(9,'Sam','Williams','sam.williams@example.com','f615551ca564bd8d',146),(10,'Sam','Smith','sam.smith@domain.com','db60eedf2c5ea577',592),(11,'John','Garcia','john.garcia@domain.com','b9a851aad2817a56',907),(12,'Chris','Garcia','chris.garcia@example.com','ce57d76f483c11af',161),(13,'Pat','Doe','pat.doe@example.com','6665817a7b633348',118),(14,'Alex','Johnson','alex.johnson@example.com','6d6653c9138f670d',668),(15,'Jamie','Jones','jamie.jones@domain.com','d27be2cd210db40d',922),(16,'Chris','Doe','chris.doe@domain.com','2aba4463292069da',416),(17,'Jane','Miller','jane.miller@mail.com','93074e82883f570d',375),(18,'Jane','Brown','jane.brown@example.com','79f2b93f9ff99f27',21),(19,'Chris','Rodriguez','chris.rodriguez@mail.com','8ff34199fd727cb4',264),(20,'Alex','Garcia','alex.garcia@mail.com','edec989bf6724817',742),(21,'Alex','Smith','alex.smith@mail.com','3a95dd08fe694365',2),(22,'Sam','Rodriguez','sam.rodriguez@example.com','a5a0ae793ddef2d4',351),(23,'Jamie','Doe','jamie.doe@mail.com','19eaf6a41376f15a',687),(24,'Pat','Williams','pat.williams@mail.com','94f647e2b714eeb1',239),(25,'Chris','Brown','chris.brown@example.com','d9e90e631a9c2116',38),(26,'Jordan','Williams','jordan.williams@domain.com','9309f6e2c5a33d89',148),(27,'Jamie','Johnson','jamie.johnson@mail.com','9ac4ba37dc4f8b3c',281),(28,'Sam','Garcia','sam.garcia@domain.com','cbf4b81baba0ddf3',190),(29,'Sam','Miller','sam.miller@mail.com','77eb70823166cb15',743),(30,'Sam','Johnson','sam.johnson@mail.com','1b7940170a80859e',109),(31,'Kim','Miller','kim.miller@example.com','f5053b08bf2a094b',608),(32,'Jane','Johnson','jane.johnson@mail.com','2e4074bc8b30d18e',161),(33,'Pat','Smith','pat.smith@mail.com','ce08353308a16481',35),(34,'Pat','Davis','pat.davis@mail.com','ba4f459974a0ab41',677),(35,'Taylor','Smith','taylor.smith@domain.com','56e0922b0f081bcd',891),(36,'Jane','Doe','jane.doe@domain.com','1e790adfcff04c1e',949),(37,'Jordan','Garcia','jordan.garcia@mail.com','851baf1054e06c6f',536),(40,'Taylor','Williams','taylor.williams@mail.com','85952420f1619ea0',239),(41,'Alex','Jones','alex.jones@domain.com','065b8854cec78a65',39),(42,'Jane','Garcia','jane.garcia@example.com','4c6dce1bfa4e23f7',791),(43,'Chris','Rodriguez','chris.rodriguez@domain.com','b5d052d57299f5aa',932),(44,'John','Rodriguez','john.rodriguez@example.com','7eac9ced515f333d',31),(45,'Pat','Johnson','pat.johnson@mail.com','7e05cef18450c010',547),(46,'Jamie','Brown','jamie.brown@domain.com','07f0332ed6d9b895',94),(47,'Sam','Doe','sam.doe@domain.com','dceec3693577db9e',181),(48,'Alex','Brown','a','a1ea6f198f4a7510',49),(50,'Jane','Davis','jane.davis@domain.com','d3a685a273ac4284',180);
+INSERT INTO `user` VALUES (1,'Taylor','Smith','taylor.smith@example.com','b259fe071c41a754','57.8',NULL),(2,'Jane','Smith','jane.smith@domain.com','856ed03589098fa2','379.03',NULL),(3,'Taylor','Johnson','taylor.johnson@example.com','f6623cdcf7261c4c','483.85',NULL),(4,'Alex','Rodriguez','alex.rodriguez@example.com','c81114ee6d217c69','188.0',NULL),(5,'John','Miller','john.miller@example.com','9d7a0edd91e66aa4','326.99',NULL),(6,'Jamie','Smith','jamie.smith@domain.com','1b131ad0cfc411b3','864.07',NULL),(7,'Jane','Doe','jane.doe@example.com','3e74ca2642a01ff0','813.07',NULL),(8,'Alex','Miller','alex.miller@domain.com','abc92e6592d68854','948.84',NULL),(9,'Sam','Williams','sam.williams@example.com','f615551ca564bd8d','145.85',NULL),(10,'Sam','Smith','sam.smith@domain.com','db60eedf2c5ea577','592.2',NULL),(11,'John','Garcia','john.garcia@domain.com','b9a851aad2817a56','906.99',NULL),(12,'Chris','Garcia','chris.garcia@example.com','ce57d76f483c11af','160.52',NULL),(13,'Pat','Doe','pat.doe@example.com','6665817a7b633348','118.4',NULL),(14,'Alex','Johnson','alex.johnson@example.com','6d6653c9138f670d','668.37',NULL),(15,'Jamie','Jones','jamie.jones@domain.com','d27be2cd210db40d','921.81',NULL),(16,'Chris','Doe','chris.doe@domain.com','2aba4463292069da','416.46',NULL),(17,'Jane','Miller','jane.miller@mail.com','93074e82883f570d','375.23',NULL),(18,'Jane','Brown','jane.brown@example.com','79f2b93f9ff99f27','20.84',NULL),(19,'Chris','Rodriguez','chris.rodriguez@mail.com','8ff34199fd727cb4','263.63',NULL),(20,'Alex','Garcia','alex.garcia@mail.com','edec989bf6724817','742.03',NULL),(21,'Alex','Smith','alex.smith@mail.com','3a95dd08fe694365','1.75',NULL),(22,'Sam','Rodriguez','sam.rodriguez@example.com','a5a0ae793ddef2d4','350.97',NULL),(23,'Jamie','Doe','jamie.doe@mail.com','19eaf6a41376f15a','687.15',NULL),(24,'Pat','Williams','pat.williams@mail.com','94f647e2b714eeb1','239.43',NULL),(25,'Chris','Brown','chris.brown@example.com','d9e90e631a9c2116','37.85',NULL),(26,'Jordan','Williams','jordan.williams@domain.com','9309f6e2c5a33d89','148.49',NULL),(27,'Jamie','Johnson','jamie.johnson@mail.com','9ac4ba37dc4f8b3c','280.84',NULL),(28,'Sam','Garcia','sam.garcia@domain.com','cbf4b81baba0ddf3','190.47',NULL),(29,'Sam','Miller','sam.miller@mail.com','77eb70823166cb15','743.06',NULL),(30,'Sam','Johnson','sam.johnson@mail.com','1b7940170a80859e','109.43',NULL),(31,'Kim','Miller','kim.miller@example.com','f5053b08bf2a094b','608.2',NULL),(32,'Jane','Johnson','jane.johnson@mail.com','2e4074bc8b30d18e','160.93',NULL),(33,'Pat','Smith','pat.smith@mail.com','ce08353308a16481','35.1',NULL),(34,'Pat','Davis','pat.davis@mail.com','ba4f459974a0ab41','676.78',NULL),(35,'Taylor','Smith','taylor.smith@domain.com','56e0922b0f081bcd','890.8',NULL),(36,'Jane','Doe','jane.doe@domain.com','1e790adfcff04c1e','949.46',NULL),(37,'Jordan','Garcia','jordan.garcia@mail.com','851baf1054e06c6f','535.91',NULL),(40,'Taylor','Williams','taylor.williams@mail.com','85952420f1619ea0','238.91',NULL),(41,'Alex','Jones','alex.jones@domain.com','065b8854cec78a65','38.95',NULL),(42,'Jane','Garcia','jane.garcia@example.com','4c6dce1bfa4e23f7','790.56',NULL),(43,'Chris','Rodriguez','chris.rodriguez@domain.com','b5d052d57299f5aa','932.09',NULL),(44,'John','Rodriguez','john.rodriguez@example.com','7eac9ced515f333d','31.24',NULL),(45,'Pat','Johnson','pat.johnson@mail.com','7e05cef18450c010','547.25',NULL),(46,'Jamie','Brown','jamie.brown@domain.com','07f0332ed6d9b895','94.43',NULL),(47,'Sam','Doe','sam.doe@domain.com','dceec3693577db9e','180.89',NULL),(48,'Alex','Brown','a','a1ea6f198f4a7510','48.6',NULL),(50,'Jane','Davis','jane.davis@domain.com','d3a685a273ac4284','179.9',NULL),(51,'we2','we','we','we','1',NULL),(59,'we','we','we','we','1','2b12151HQVRZWUIqbYfjr806');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -153,4 +145,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-21 18:25:27
+-- Dump completed on 2024-12-04 17:18:00
