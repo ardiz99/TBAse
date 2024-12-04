@@ -124,18 +124,21 @@ def roll_img():
 
 @app.route('/buy_currency', methods=['PUT'])
 def buy_currency():
-    data = request.get_json()
-    quantity = data.get('quantity')
-    email = data.get('email')
+    u.reset_response()
+    quantity = request.get_json().get('quantity')
+    email = request.get_json().get('email')
 
     if quantity <= 0:
         u.generic_error("You can't add a negative quantity.")
-        return jsonify(u.RESPONSE)
+        return u.send_response()
 
     path = u.DB_MANAGER_URL + "/get_amount"
     response = requests.get(path,
                             verify=False,
                             params={'email': email})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
 
     amount = response.json().get("data").get("CurrencyAmount")
 
@@ -145,16 +148,13 @@ def buy_currency():
                             verify=False,
                             json={'email': email,
                                   'new_amount': new_amount})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
 
-    if response.json().get("code") != 200:
-        u.RESPONSE["data"] = []
-        u.RESPONSE["message"] = "Update Error"
-    else:
-        u.RESPONSE["code"] = 200
-        u.RESPONSE["data"] = []
-        u.RESPONSE["message"] = "Currency amount updated successfully. New amount: {}".format(new_amount)
-
-    return jsonify(u.RESPONSE)
+    u.set_response(response)
+    u.RESPONSE["message"] = f"Currency amount updated successfully. New amount: {new_amount}"
+    return u.send_response()
 
 
 if __name__ == "__main__":

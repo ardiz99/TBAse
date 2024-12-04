@@ -16,8 +16,16 @@ def index():
 @app.route('/auction')
 def get_all_auctions():
     u.reset_response()
-    enc_token = request.headers.get("token")
-    if not u.check_token_admin(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
+
+    role = token.get("role")
+    if role != "admin":
+        u.forbidden()
         return u.send_response()
 
     path = u.MARKET_SERVICE_URL + "/auction"
@@ -34,8 +42,16 @@ def get_all_auctions():
 @app.route('/auction/<int:transaction_id>')
 def get_specific_auction(transaction_id):
     u.reset_response()
-    enc_token = request.headers.get("token")
-    if not u.check_token_admin(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
+
+    role = token.get("role")
+    if role != "admin":
+        u.forbidden()
         return u.send_response()
 
     path = u.MARKET_SERVICE_URL + f"/auction/{transaction_id}"
@@ -52,8 +68,16 @@ def get_specific_auction(transaction_id):
 @app.route('/end_auction/<int:transaction_id>', methods=['PUT'])
 def end_auction(transaction_id):
     u.reset_response()
-    enc_token = request.headers.get("token")
-    if not u.check_token_admin(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
+
+    role = token.get("role")
+    if role != "admin":
+        u.forbidden()
         return u.send_response()
 
     path = u.MARKET_SERVICE_URL + f"/close_auction/{transaction_id}"
@@ -69,8 +93,16 @@ def end_auction(transaction_id):
 @app.route('/auction/history', methods=['GET'])
 def get_old_transaction():
     u.reset_response()
-    enc_token = request.headers.get("token")
-    if not u.check_token_admin(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
+
+    role = token.get("role")
+    if role != "admin":
+        u.forbidden()
         return u.send_response()
 
     path = u.MARKET_SERVICE_URL + f"/auction/history"

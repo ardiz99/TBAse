@@ -95,11 +95,11 @@ def get_all_active_auction():
 def new_auction():
     u.reset_response()
     data = request.get_json()
-    user_owner = data.get('user_owner')
+    user_owner_email = data.get('user_owner')
     gacha_id = data.get('gacha_id')
     starting_price = data.get('starting_price')
     end_date = data.get('end_date')
-    if not user_owner or not gacha_id or not starting_price or not datetime:
+    if not user_owner_email or not gacha_id or not starting_price or not datetime:
         u.bad_request()
         return u.send_response()
 
@@ -117,12 +117,26 @@ def new_auction():
         u.bad_request(str(e))
         return u.send_response()
 
-    # TODO: controllare che il gacha sia nella collection dell'utente e impostare che l'utente sia quello del token
+    path = u.DB_MANAGER_URL + "/user/get_by_email"
+    response = requests.get(path,
+                            verify=False,
+                            params={'email': user_owner_email})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    user_owner_id = response.json().get("data").get("UserId")
+
+    path = u.GACHA_SERVICE_URL + f"/mygacha/{gacha_id}/{user_owner_id}"
+    response = requests.get(path, verify=False)
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
 
     path = u.DB_MANAGER_URL + "/new_auction"
     response = requests.post(path,
                              verify=False,
-                             json={'user_owner': user_owner,
+                             json={'user_owner': user_owner_id,
                                    'gacha_id': gacha_id,
                                    'starting_price': starting_price,
                                    'end_date': end_date})
@@ -249,7 +263,7 @@ def new_bid(transaction_id):
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()
-    
+
     u.set_response(response)
     return u.send_response("Bid inserted successfully.")
 
@@ -293,7 +307,7 @@ def end_auction(transaction_id):
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()
-    
+
     u.set_response(response)
     return u.send_response("Auction closed successfully.")
 
@@ -316,7 +330,7 @@ def my_transaction_history():
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()
-    
+
     u.set_response(response)
     return u.send_response()
 
