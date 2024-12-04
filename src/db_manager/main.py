@@ -117,7 +117,6 @@ def get_by_email():
     return u.send_response()
 
 
-
 @app.route('/user/get_by_id/<int:user_id>')
 def get_by_id(user_id):
     query = "SELECT * " \
@@ -211,7 +210,6 @@ def login():
         return u.send_response()
 
 
-
 @app.route('/check_users_profile', methods=['GET'])
 def check_users_profile():
     u.reset_response()
@@ -273,7 +271,6 @@ def check_one_admin():
         return u.send_response()
 
 
-
 @app.route('/login_admin', methods=['GET'])
 def login_admin():
     email = request.args.get('Email')
@@ -292,7 +289,6 @@ def login_admin():
     except Error as e:
         u.generic_error(e)
         return u.send_response()
-
 
 
 @app.route('/delete_user', methods=['DELETE'])
@@ -559,6 +555,14 @@ def get_transaction_by_user(requesting_user):
     return u.send_response()
 
 
+@app.route('/transaction/<int:transaction_id>/delete')
+def delete_transaction(transaction_id):
+    query = "DELETE FROM transaction WHERE TransactionId = %s"
+    values = (transaction_id,)
+    handle_db_operation(query, values, commit=True)
+    return u.send_response()
+
+
 # =======> AUCTION METHODS
 
 
@@ -618,7 +622,8 @@ def get_specific_auction(transaction_id):
 def get_actual_price(transaction_id):
     query = "SELECT * " \
             "FROM transaction " \
-            "WHERE TransactionId = %s AND UserOwner IS NOT NULL"
+            "WHERE TransactionId = %s AND UserOwner IS NOT NULL " \
+            "LIMIT 1"
     values = (transaction_id,)
     handle_db_operation(query, values, fetch_one=True)
     return u.send_response()
@@ -655,6 +660,7 @@ def get_old_transaction():
 
     return u.send_response()
 
+
 @app.route('/gacha/UserId_by_email/<string:email>')
 def get_id_by_email_gacha(email):
     query = "SELECT UserId FROM user WHERE Email = %s LIMIT 1"
@@ -682,7 +688,7 @@ def get_gacha_of_user(email):
         print(f"Query eseguita: {query}")  # Stampa la query per il debug
         cursor.execute(query)
         res = cursor.fetchone()
-        
+
         if not res:
             u.not_found()
             return jsonify(u.RESPONSE)
@@ -1015,7 +1021,6 @@ def view_transaction_user(user_id):
         print(f"Errore durante il recupero del gacha: {e}")
         u.generic_error("Errore durante il recupero del gacha.")
         return jsonify(u.RESPONSE)
-    
 
 
 if __name__ == "__main__":

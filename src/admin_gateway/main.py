@@ -65,8 +65,8 @@ def get_specific_auction(transaction_id):
     return u.send_response()
 
 
-@app.route('/end_auction/<int:transaction_id>', methods=['PUT'])
-def end_auction(transaction_id):
+@app.route('/close_auction/<int:transaction_id>', methods=['PUT'])
+def close_auction(transaction_id):
     u.reset_response()
     auth_header = request.headers.get('Authorization')
     if not auth_header:
@@ -81,7 +81,7 @@ def end_auction(transaction_id):
         return u.send_response()
 
     path = u.MARKET_SERVICE_URL + f"/close_auction/{transaction_id}"
-    response = requests.get(path, verify=False)
+    response = requests.put(path, verify=False)
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()

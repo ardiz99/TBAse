@@ -65,17 +65,25 @@ def forbidden(message=""):
     RESPONSE["message"] = "Forbidden " + message
 
 
+def method_not_allowed(message=""):
+    RESPONSE["code"] = 405
+    RESPONSE["data"] = []
+    RESPONSE["message"] = "Method not Allowed " + message
+
+
 def handle_error(code):
-    if code == 401:
-        unauthorized()
-    if code == 403:
-        forbidden()
-    if code == 404:
-        not_found()
-    if code == 500:
-        generic_error()
     if code == 400:
         bad_request()
+    elif code == 401:
+        unauthorized()
+    elif code == 403:
+        forbidden()
+    elif code == 404:
+        not_found()
+    elif code == 405:
+        method_not_allowed()
+    else:
+        generic_error()
 
 
 def set_response(response):

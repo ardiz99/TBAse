@@ -268,8 +268,14 @@ def new_bid(transaction_id):
     return u.send_response("Bid inserted successfully.")
 
 
-@app.route('/end_auction/<int:transaction_id>', methods=['PUT'])
-def end_auction(transaction_id):
+# è PENSATA PER ESSERE GESTITA TIPO CHIAMATA DI SISTEMA, IN MODO CHE
+# 1) SE NESSUNSO SI è INTERESSATO ALL'ASTA, QUESTA VIENE RIMOSSA.
+# 2) SE QUALCUNO HA PIAZZATO UNA BID, VIENE AGGIORNATO IL CAMPO SENDED_TO
+# NELLA TRANSACTION RELATIVA A QUEL GACHA, QUANDO FU PRECEDENTEMENTE ACQUISTATO
+# DAL POSSESSORE PRIMA CHE LO METTESSE ALL'ASTA.
+# L'ALTERNATIVA ALLA CHIAMATA DI SISTEMA è CHE VENGA INVOCATA DA UN ADMIN
+@app.route('/close_auction/<int:transaction_id>', methods=['PUT'])
+def close_auction(transaction_id):
     u.reset_response()
     path = u.DB_MANAGER_URL + f"/auction/{transaction_id}/get_bid"
     response = requests.get(path, verify=False)
@@ -283,7 +289,7 @@ def end_auction(transaction_id):
     gacha_id = response.json().get("data").get("GachaId")
 
     if requesting_user is None:
-        path = u.DB_MANAGER_URL + f"/auction/{transaction_id}/delete"
+        path = u.DB_MANAGER_URL + f"/transaction/{transaction_id}/delete"
         response = requests.get(path, verify=False)
         if response.status_code != 200:
             u.handle_error(response.status_code)
@@ -296,6 +302,12 @@ def end_auction(transaction_id):
 
     path = u.DB_MANAGER_URL + f"/transaction/{gacha_id}/{user_owner_id}"
     response = requests.get(path, verify=False)
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    path = u.DB_MANAGER_URL + f"/auction/{transaction_id}/close_auction"
+    response = requests.put(path, verify=False)
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()
@@ -333,19 +345,6 @@ def my_transaction_history():
 
     u.set_response(response)
     return u.send_response()
-
-
-@app.route('/close_auction/<int:transaction_id>', methods=['PUT'])
-def close_auction(transaction_id):
-    u.reset_response()
-    path = u.DB_MANAGER_URL + f"/auction/{transaction_id}/close_auction"
-    response = requests.put(path, verify=False)
-    if response.status_code != 200:
-        u.handle_error(response.status_code)
-        return u.send_response()
-
-    u.set_response(response)
-    return u.send_response("Auction closed successfully")
 
 
 @app.route('/auction/history', methods=['GET'])
