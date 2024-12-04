@@ -132,6 +132,8 @@ def get_by_id(user_id):
 
 @app.route('/register', methods=['POST'])
 def register():
+    u.reset_response()
+
     data = request.get_json()
     firstname = data.get('FirstName')
     lastname = data.get('LastName')
@@ -140,31 +142,15 @@ def register():
     salt = data.get('Salt')
     currencyAmount = data.get('CurrencyAmount')
 
-    if not email or not password or not firstname or not lastname or not currencyAmount:
-        # if 0==0:
-        # u.generic_error(data)
-        u.generic_error("All field are required")
-        return u.send_response()
-
-    u.reset_response()
-
-    try:
-        # Connessione al database
-        query = "INSERT INTO user (FirstName, LastName, Email, Password, CurrencyAmount, Salt) VALUES ("""
-        query = query + "'{}',".format(firstname)
-        query = query + "'{}',".format(lastname)
-        query = query + "'{}',".format(email)
-        query = query + "'{}',".format(password)
-        query = query + "'{}',".format(currencyAmount)
-        query = query + "'{}');""".format(salt)
-        handle_db_operation(query, commit=True)
-
-        query = "SELECT * FROM user  WHERE Email = '{}';".format(email)
-        handle_db_operation(query, fetch_all=True)
-        return u.send_response()
-    except Error as e:
-        u.generic_error(str(e))
-        return u.send_response(str(e))
+    query = "INSERT INTO user (FirstName, LastName, Email, Password, CurrencyAmount, Salt) VALUES ("""
+    query = query + "'{}',".format(firstname)
+    query = query + "'{}',".format(lastname)
+    query = query + "'{}',".format(email)
+    query = query + "'{}',".format(password)
+    query = query + "'{}',".format(currencyAmount)
+    query = query + "'{}');""".format(salt)
+    handle_db_operation(query, commit=True)
+    return u.send_response(query)
 
 
 @app.route('/register_admin', methods=['POST'])
@@ -175,7 +161,6 @@ def register_admin():
     email = data.get('Email')
     password = data.get('Password')
     salt = data.get('Salt')
-    # currencyAmount = data.get('CurrencyAmount')
 
     if not email or not password or not firstname or not lastname:
         u.generic_error("All field are required")
@@ -184,8 +169,6 @@ def register_admin():
     u.reset_response()
 
     try:
-        # query = f"INSERT INTO admin (FirstName, LastName, Email, Password) VALUES ({firstname})
-        # Connessione al database
         query = "INSERT INTO admin (FirstName, LastName, Email, Password, Salt) VALUES ("""
         query = query + "'{}',".format(firstname)
         query = query + "'{}',".format(lastname)
@@ -212,13 +195,14 @@ def login():
 
     u.reset_response()
     try:
-        query = "SELECT Password, Salt FROM user WHERE Email = '{}'".format(email)
+        query = "SELECT Password, Salt FROM user WHERE Email = '{}';".format(email)
         query = query + " LIMIT 1;"
         handle_db_operation(query, fetch_all=True)
         return u.send_response()
     except Error as e:
         u.generic_error(e)
         return u.send_response()
+
 
 
 @app.route('/check_users_profile', methods=['GET'])
@@ -232,6 +216,7 @@ def check_users_profile():
     except Error as e:
         u.generic_error(e)
         return u.send_response()
+
 
 
 @app.route('/login_admin', methods=['GET'])
@@ -252,6 +237,7 @@ def login_admin():
     except Error as e:
         u.generic_error(e)
         return u.send_response()
+
 
 
 @app.route('/delete_user', methods=['DELETE'])
@@ -612,10 +598,18 @@ def get_old_transaction():
 
     return u.send_response()
 
+@app.route('/gacha/UserId_by_email/<string:email>')
+def get_id_by_email_gacha(email):
+    query = "SELECT UserId FROM user WHERE Email = %s LIMIT 1"
+    values = (email,)
+    handle_db_operation(query, values, fetch_one=True)
+    return u.send_response()
+
 
 # INIZIO METODI DEL DBMANGER PER ESEGUIRE LE QUERY DEL GACHASERVICE
-@app.route('/gacha/get_gacha_of_user/<int:user_id>', methods=['GET'])
-def get_gacha_of_user(user_id):
+
+@app.route('/gacha/get_gacha_of_user/<string:email>', methods=['GET'])
+def get_gacha_of_user(email):
     u.reset_response()
     global connection
     init_db_connection()
@@ -625,22 +619,39 @@ def get_gacha_of_user(user_id):
         return jsonify(u.RESPONSE)
 
     try:
+        # Esegui la prima query per ottenere UserId
         cursor = connection.cursor(dictionary=True)
-        query = """
-            SELECT GachaId
-            FROM transaction
-            WHERE RequestingUser = """ + str(user_id) + """
-              AND STR_TO_DATE(EndDate, '%Y-%m-%d %H:%i:%s') < NOW()
-              AND SendedTo IS NULL
-        """
+        query = f"SELECT UserId FROM user WHERE Email = '{email}' LIMIT 1"  # Concatenazione manuale
         print(f"Query eseguita: {query}")  # Stampa la query per il debug
         cursor.execute(query)
+        res = cursor.fetchone()
+        
+        if not res:
+            u.not_found()
+            return jsonify(u.RESPONSE)
+
+        user_id = res.get("UserId")
+        cursor.close()  # Chiudi il cursore dopo la prima query
+
+        # Esegui la seconda query per ottenere GachaId
+        query = f"""
+            SELECT GachaId
+            FROM transaction
+            WHERE RequestingUser = {user_id}
+              AND STR_TO_DATE(EndDate, '%Y-%m-%d %H:%i:%s') < NOW()
+              AND SendedTo IS NULL
+        """  # Concatenazione manuale
+        print(f"Query eseguita: {query}")  # Stampa la query per il debug
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(query)
         result = cursor.fetchall()
+
         if not result:
             u.not_found()
             return jsonify(u.RESPONSE)
-        cursor.close()
-        close_db_connection()
+
+        cursor.close()  # Chiudi il cursore dopo la seconda query
+        close_db_connection()  # Chiudi la connessione al database
 
         # Estrai solo gli GachaId dalla query e invia come risposta
         u.RESPONSE["code"] = 200
@@ -652,12 +663,12 @@ def get_gacha_of_user(user_id):
         u.generic_error("Errore durante il recupero dei gacha IDs: " + str(e))
         return jsonify(u.RESPONSE)
 
-@app.route('/gacha/UserId_by_email/<string:email>')
-def get_id_by_email_gacha(email):
-    query = "SELECT UserId FROM user WHERE Email = %s LIMIT 1"
-    values = (email,)
-    handle_db_operation(query, values, fetch_one=True)
-    return u.send_response()
+    finally:
+        # Chiudi sempre la connessione e il cursore, anche in caso di errore
+        if cursor:
+            cursor.close()
+        close_db_connection()
+
 
 # INIZIO METODI DEL DBMANGER PER ESEGUIRE LE QUERY DEL ADMINGACHASERVICE
 # Il metodo add richiede di inserire anche

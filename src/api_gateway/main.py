@@ -14,11 +14,13 @@ def index():
 
 @app.route('/roll', methods=['GET'])
 def roll():
-    enc_token = request.headers.get("token")
-    if not u.check_token(enc_token):
+    u.reset_response()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
         return u.send_response()
-
-    token = u.validate_token(enc_token)
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
     email = token.get("sub")
 
     path = u.CURRENCY_SERVICE_URL + f"/roll_info/{u.ROLL_COST}"
@@ -46,11 +48,13 @@ def roll():
 
 @app.route('/golden_roll', methods=['GET'])
 def golden():
-    enc_token = request.headers.get("token")
-    if not u.check_token(enc_token):
+    u.reset_response()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
         return u.send_response()
-
-    token = u.validate_token(enc_token)
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
     email = token.get("sub")
 
     path = u.CURRENCY_SERVICE_URL + f"/roll_info/{u.GOLDEN_COST}"
@@ -80,11 +84,13 @@ def golden():
 
 @app.route('/buy_currency', methods=['PUT'])
 def buy_currency():
-    enc_token = request.headers.get("token")
-    if not u.check_token(enc_token):
+    u.reset_response()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
         return u.send_response()
-
-    token = u.validate_token(enc_token)
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
     email = token.get("sub")
 
     data = request.get_json()
@@ -103,8 +109,6 @@ def buy_currency():
     return u.send_response()
 
 
-
-
 @app.route('/login', methods=['GET'])
 def login():
     email = request.args.get('Email')
@@ -121,6 +125,8 @@ def login():
 
 @app.route('/register', methods=['POST'])
 def register():
+    u.reset_response()
+
     data = request.get_json()
     first_name = data.get('FirstName')
     last_name = data.get('LastName')
@@ -134,7 +140,13 @@ def register():
                                    'Email': email,
                                    'Password': password,
                                    'CurrencyAmount': amount})
-    return jsonify(response.json())
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        u.set_response(response)
+        return u.send_response()
+
+    u.set_response(response)
+    return u.send_response()
 
 
 @app.route('/delete_user', methods=['GET'])
@@ -186,8 +198,10 @@ def login_admin():
 # Endpoint per ottenere un singolo gacha
 @app.route('/gacha/get/<int:gacha_id>', methods=['GET'])
 def get_gacha(gacha_id):
-    enc_token = request.headers.get("token")
-    if not u.check_token(enc_token):
+    u.reset_response()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
         return u.send_response()
     url = u.GACHA_SERVICE_URL + f"/get/{gacha_id}"
     response = requests.get(url, verify=False)
@@ -211,8 +225,10 @@ def get_gacha(gacha_id):
 # Endpoint per ottenere un singolo gacha per nome
 @app.route('/gacha/getName/<string:gacha_name>', methods=['GET'])
 def get_gacha_by_name(gacha_name):
-    enc_token = request.headers.get("token")
-    if not u.check_token(enc_token):
+    u.reset_response()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
         return u.send_response()
     url = u.GACHA_SERVICE_URL + f"/getName/{gacha_name}"
     response = requests.get(url, verify=False)
@@ -236,8 +252,10 @@ def get_gacha_by_name(gacha_name):
 # Endpoint per ottenere tutti i gachas
 @app.route('/gacha/get', methods=['GET'])
 def get_all_gachas():
-    enc_token = request.headers.get("token")
-    if not u.check_token(enc_token):
+    u.reset_response()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
         return u.send_response()
     url = u.GACHA_SERVICE_URL + "/get"
     response = requests.get(url, verify=False)
@@ -260,11 +278,13 @@ def get_all_gachas():
 
 @app.route('/gacha/mygacha/<int:gacha_id>', methods=['GET'])
 def get_mygacha(gacha_id):
-    enc_token = request.headers.get("token")
-    if not u.check_token(enc_token):
+    u.reset_response()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
         return u.send_response()
-    
-    token = u.validate_token(enc_token)
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
     email = token.get("sub")
 
     url = u.GACHA_SERVICE_URL + f"/mygacha/{email}/{gacha_id}"
@@ -288,11 +308,13 @@ def get_mygacha(gacha_id):
 
 @app.route('/gacha/mygacha', methods=['GET'])
 def get_mygachaAll():
-    enc_token = request.headers.get("token")
-    if not u.check_token(enc_token):
+    u.reset_response()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
         return u.send_response()
-    
-    token = u.validate_token(enc_token)
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
     email = token.get("sub")
 
     url = u.GACHA_SERVICE_URL + f"/mygacha/{email}"
@@ -318,9 +340,9 @@ def get_mygachaAll():
 @app.route('/auction')
 def get_all_auctions():
     u.reset_response()
-
-    enc_token = request.headers.get("token")
-    if not u.check_token(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
         return u.send_response()
 
     path = u.MARKET_SERVICE_URL + "/auction"
@@ -337,9 +359,9 @@ def get_all_auctions():
 @app.route('/new_auction', methods=["POST"])
 def new_auction():
     u.reset_response()
-
-    enc_token = request.headers.get("token")
-    if not u.check_token(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
         return u.send_response()
 
     user_owner = request.get_json().get('user_owner')
@@ -365,13 +387,12 @@ def new_auction():
 @app.route('/bid/<transaction_id>', methods=["PUT"])
 def new_bid(transaction_id):
     u.reset_response()
-
-    enc_token = request.headers.get("token")
-    if not u.check_token(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
         return u.send_response()
-
-    token = u.validate_token(enc_token)
-
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
     email = token.get("sub")
     bid = request.get_json().get("bid")
 
@@ -392,12 +413,12 @@ def new_bid(transaction_id):
 @app.route('/my_transaction_history', methods=['GET'])
 def my_transaction_history():
     u.reset_response()
-
-    enc_token = request.headers.get("token")
-    if not u.check_token(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
         return u.send_response()
-
-    token = u.validate_token(enc_token)
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
     email = token.get("sub")
 
     path = u.MARKET_SERVICE_URL + "/my_transaction_history"

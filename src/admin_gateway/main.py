@@ -16,8 +16,16 @@ def index():
 @app.route('/auction')
 def get_all_auctions():
     u.reset_response()
-    enc_token = request.headers.get("token")
-    if not u.check_token_admin(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
+
+    role = token.get("role")
+    if role != "admin":
+        u.forbidden()
         return u.send_response()
 
     path = u.MARKET_SERVICE_URL + "/auction"
@@ -34,8 +42,16 @@ def get_all_auctions():
 @app.route('/auction/<int:transaction_id>')
 def get_specific_auction(transaction_id):
     u.reset_response()
-    enc_token = request.headers.get("token")
-    if not u.check_token_admin(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
+
+    role = token.get("role")
+    if role != "admin":
+        u.forbidden()
         return u.send_response()
 
     path = u.MARKET_SERVICE_URL + f"/auction/{transaction_id}"
@@ -52,8 +68,16 @@ def get_specific_auction(transaction_id):
 @app.route('/end_auction/<int:transaction_id>', methods=['PUT'])
 def end_auction(transaction_id):
     u.reset_response()
-    enc_token = request.headers.get("token")
-    if not u.check_token_admin(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
+
+    role = token.get("role")
+    if role != "admin":
+        u.forbidden()
         return u.send_response()
 
     path = u.MARKET_SERVICE_URL + f"/close_auction/{transaction_id}"
@@ -66,11 +90,56 @@ def end_auction(transaction_id):
     return u.send_response()
 
 
+@app.route('/register_admin', methods=['POST'])
+def register_admin():
+    data = request.get_json()
+    first_name = data.get('FirstName')
+    last_name = data.get('LastName')
+    email = data.get('Email')
+    password = data.get('Password')
+    response = requests.post('https://auth-service:8001/register_admin',
+                             verify=False,
+                             json={'FirstName': first_name,
+                                   'LastName': last_name,
+                                   'Email': email,
+                                   'Password': password})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    u.set_response(response)
+    return u.send_response()
+
+
+@app.route('/login_admin', methods=['GET'])
+def login_admin():
+    email = request.args.get('Email')
+    password = request.args.get('Password')
+    response = requests.get('https://auth-service:8001/login_admin',
+                            verify=False,
+                            params={'Email': email, 'Password': password})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
+        return u.send_response()
+
+    u.set_response(response)
+    return u.send_response()
+
+
+
 @app.route('/auction/history', methods=['GET'])
 def get_old_transaction():
     u.reset_response()
-    enc_token = request.headers.get("token")
-    if not u.check_token_admin(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
+
+    role = token.get("role")
+    if role != "admin":
+        u.forbidden()
         return u.send_response()
 
     path = u.MARKET_SERVICE_URL + f"/auction/history"
@@ -88,8 +157,16 @@ def get_old_transaction():
 @app.route('/gacha/add', methods=['POST'])
 def add_gacha():
     u.reset_response()
-    enc_token = request.headers.get("token")
-    if not u.check_token_admin(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
+
+    role = token.get("role")
+    if role != "admin":
+        u.forbidden()
         return u.send_response()
     # Recupera i dati JSON dalla richiesta
     try:
@@ -121,8 +198,16 @@ def add_gacha():
 @app.route('/gacha/update/<int:gacha_id>', methods=['PUT'])
 def update_gacha(gacha_id):
     u.reset_response()
-    enc_token = request.headers.get("token")
-    if not u.check_token_admin(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
+
+    role = token.get("role")
+    if role != "admin":
+        u.forbidden()
         return u.send_response()
     try:
         data = request.get_json()
@@ -154,8 +239,16 @@ def update_gacha(gacha_id):
 @app.route('/gacha/delete/<int:gacha_id>', methods=['DELETE'])
 def delete_gacha(gacha_id):
     u.reset_response()
-    enc_token = request.headers.get("token")
-    if not u.check_token_admin(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
+
+    role = token.get("role")
+    if role != "admin":
+        u.forbidden()
         return u.send_response()
     url = u.GACHA_SERVICE_URL + f"/delete/{gacha_id}"
     response = requests.delete(url, verify=False)
@@ -175,9 +268,18 @@ def delete_gacha(gacha_id):
 @app.route('/gacha/get/<int:gacha_id>', methods=['GET'])
 def get_gacha(gacha_id):
     u.reset_response()
-    enc_token = request.headers.get("token")
-    if not u.check_token_admin(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
         return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
+
+    role = token.get("role")
+    if role != "admin":
+        u.forbidden()
+        return u.send_response()
+    
     url = u.GACHA_SERVICE_URL + f"/get/{gacha_id}"
     response = requests.get(url, verify=False)
     status_code = response.status_code
@@ -201,8 +303,16 @@ def get_gacha(gacha_id):
 @app.route('/gacha/getName/<string:gacha_name>', methods=['GET'])
 def get_gacha_by_name(gacha_name):
     u.reset_response()
-    enc_token = request.headers.get("token")
-    if not u.check_token_admin(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
+
+    role = token.get("role")
+    if role != "admin":
+        u.forbidden()
         return u.send_response()
     url = u.GACHA_SERVICE_URL + f"/getName/{gacha_name}"
     response = requests.get(url, verify=False)
@@ -227,8 +337,16 @@ def get_gacha_by_name(gacha_name):
 @app.route('/gacha/get', methods=['GET'])
 def get_all_gachas():
     u.reset_response()
-    enc_token = request.headers.get("token")
-    if not u.check_token_admin(enc_token):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
+
+    role = token.get("role")
+    if role != "admin":
+        u.forbidden()
         return u.send_response()
     url = u.GACHA_SERVICE_URL + "/get"
     response = requests.get(url, verify=False)

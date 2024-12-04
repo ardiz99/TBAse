@@ -153,18 +153,8 @@ def get_all_gachas():
 # Endpoint per ottenere un singolo gacha dell'utente loggato
 @app.route('/mygacha/<string:email>/<int:gacha_id>', methods=['GET'])
 def get_mygacha(email, gacha_id):
-    u.reset_response() 
-    response = perform_request("GET", f"/UserId_by_email/{email}")
-    if isinstance(response, tuple):  # In caso di errore
-        return response
-    user_id = response.json().get("data")
-    if not user_id:
-        u.RESPONSE["code"] = 500
-        u.RESPONSE["data"] = []
-        u.RESPONSE["message"] = "Error"
-        return jsonify(u.RESPONSE)
-    
-    response = perform_request("GET", f"/get_gacha_of_user/{user_id}")
+    u.reset_response()     
+    response = perform_request("GET", f"/get_gacha_of_user/{email}")
     if isinstance(response, tuple):  # In caso di errore
         return response
     gachaIds = response.json().get("data")
@@ -192,17 +182,16 @@ def get_mygacha(email, gacha_id):
 # Endpoint per ottenere tutti i gacha dell'utente loggato
 @app.route('/mygacha/<string:email>', methods=['GET'])
 def get_allmygacha(email):
-    u.reset_response()
-    response = perform_request("GET", f"/UserId_by_email/{email}")
+    u.reset_response()     
+    response = perform_request("GET", f"/get_gacha_of_user/{email}")
     if isinstance(response, tuple):  # In caso di errore
         return response
-    user_id = response.json().get("data")
-    if not user_id:
-        u.RESPONSE["code"] = 500
+    gachaIds = response.json().get("data")
+    if not gachaIds:
+        u.RESPONSE["code"] = 404
         u.RESPONSE["data"] = []
-        u.RESPONSE["message"] = "Error"
+        u.RESPONSE["message"] = "No expired gacha found"
         return jsonify(u.RESPONSE)
-    response = perform_request("GET", f"/get_gacha_of_user/{user_id}")
     if isinstance(response, tuple):  # In caso di errore
         return response
     gachaIds = response.json().get("data")

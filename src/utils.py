@@ -44,7 +44,6 @@ def generic_error(message="Unkonwn error"):
 
 def not_found(message=""):
     RESPONSE["code"] = 404
-    RESPONSE["data"] = []
     RESPONSE["message"] = "Error! Not Found. " + message
 
 
@@ -90,7 +89,7 @@ def send_response(message=""):
 
 
 # Secret keys and configurations
-SECRET_KEY = os.getenv("SECRET_KEY")  # Change to a secure value
+SECRET_KEY = "73e8a1c4efc8d1f9e0e9241bd3c285740be019d57cd6711a2f7635cf09e8dc4a"  # Change to a secure value
 JWT_EXPIRATION_TIME = 36000  # 1 hour in seconds
 ALGORITHM = "HS256"  # JWT signing algorithm
 
@@ -111,15 +110,22 @@ def set_auth_token(token):
 
 
 # Helper: Generate JWT
-def generate_token(email, role):
+def generate_token(user_id, role, user_pass):
+    # Leggi la chiave segreta
+    global SECRET_KEY
+    # SECRET_KEY = os.getenv("SECRET_KEY")
+    # print(SECRET_KEY)
+
+    if not SECRET_KEY:
+        raise ValueError("SECRET_KEY not found in the environment variables!")
     payload = {
-        "sub": email,
+        "sub": user_id,
         "role": role,
+        "pass": user_pass,
         "iat": datetime.datetime.now(datetime.timezone.utc),
         "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=JWT_EXPIRATION_TIME)
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-    set_auth_token(token)
     return token
 
 
