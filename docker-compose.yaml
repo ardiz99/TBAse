@@ -1,0 +1,145 @@
+services:
+  api-gateway:
+    build:
+      context: src
+      dockerfile: ./api_gateway/Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src/utils.py:/app/utils.py
+    depends_on:
+      - auth-service
+      - currency-service
+      - gacha-service
+      - market-service
+    secrets:
+      - certificate
+      - key
+      - secret_key
+
+  admin-gateway:
+    build:
+      context: src
+      dockerfile: ./admin_gateway/Dockerfile
+    container_name: admin-gateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./src/utils.py:/app/utils.py
+    depends_on:
+      - auth-service
+      - currency-service
+      - gacha-service
+      - market-service
+    secrets:
+      - certificate
+      - key
+      - secret_key
+
+  auth-service:
+    build:
+      context: src
+      dockerfile: ./auth_service/Dockerfile
+    container_name: auth-service
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./src/utils.py:/app/utils.py
+    depends_on:
+      - db-manager
+    secrets:
+      - certificate
+      - key
+      - secret_key
+    environment:
+      - SECRET_KEY=73e8a1c4efc8d1f9e0e9241bd3c285740be019d57cd6711a2f7635cf09e8dc4a
+  
+  gacha-service:
+    build:
+      context: src
+      dockerfile: ./gacha_service/Dockerfile
+    container_name: gacha-service
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./src/utils.py:/app/utils.py
+    depends_on:
+      - db-manager
+    secrets:
+      - certificate
+      - key
+      - secret_key
+
+  currency-service:
+    build:
+      context: src
+      dockerfile: ./currency_service/Dockerfile
+    container_name: currency-service
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./src/utils.py:/app/utils.py
+      - ./img:/app/img
+    depends_on:
+      - db-manager
+      - market-service
+    secrets:
+      - certificate
+      - key
+      - secret_key
+
+  market-service:
+    build:
+      context: src
+      dockerfile: ./market_service/Dockerfile
+    container_name: market-service
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./src/utils.py:/app/utils.py
+    depends_on:
+      - db-manager
+    secrets:
+      - certificate
+      - key
+      - secret_key
+
+  db-manager:
+    build:
+      context: src
+      dockerfile: ./db_manager/Dockerfile
+    container_name: db-manager
+    ports:
+      - "8005:8005"
+    volumes:
+      - ./src/utils.py:/app/utils.py
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=root_password
+      - DB_NAME=ase
+    secrets:
+      - certificate
+      - key
+      - secret_key
+
+  db:
+    image: mysql:8.0
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: ase
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d
+
+secrets:
+  certificate:
+    file: secrets/cert.pem
+  key:
+    file: secrets/key.pem
+  secret_key:
+    file: ./secrets/secret_key.env
