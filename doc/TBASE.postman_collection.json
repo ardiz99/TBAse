@@ -12,14 +12,18 @@
 				{
 					"name": "roll",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{jwt_token}}",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "https://127.0.0.1:8000/roll",
 							"protocol": "https",
@@ -40,6 +44,16 @@
 				{
 					"name": "golden_roll",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -62,11 +76,27 @@
 				{
 					"name": "buy_currency",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{jwt_token}}",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"quantity\": 100\r\n}",
+							"raw": "{\r\n  \"quantity\": 11111\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -85,189 +115,6 @@
 							"port": "8000",
 							"path": [
 								"buy_currency"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "gacha_all_gachas",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "https://127.0.0.1:8000/gacha/get",
-							"protocol": "https",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"gacha",
-								"get"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "get/id",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "https://127.0.0.1:8000/gacha/get/1",
-							"protocol": "https",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"gacha",
-								"get",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "mygacha",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "https://127.0.0.1:8000/gacha/mygacha",
-							"protocol": "https",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"gacha",
-								"mygacha"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "mygacha/id",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "https://127.0.0.1:8000/gacha/mygacha/1",
-							"protocol": "https",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"gacha",
-								"mygacha",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "add",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"GachaId\": 1047,\r\n    \"Name\": \"Marco\",\r\n    \"Type1\": \"Dragon\",\r\n    \"Type2\": \"\",\r\n    \"Total\": 300,\r\n    \"HP\": 41,\r\n    \"Attack\": 64,\r\n    \"Defense\": 45,\r\n    \"SpAtt\": 50,\r\n    \"SpDef\": 50,\r\n    \"Speed\": 50,\r\n    \"Rarity\": \"Rare\",\r\n    \"Link\": \"/img/dratini.png\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "https://127.0.0.1:8000/gacha/add",
-							"protocol": "https",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"gacha",
-								"add"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "update",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"Name\": \"Giuliano\",\r\n    \"Type1\": \"Dragon\",\r\n    \"Type2\": \"\",\r\n    \"Total\": 300,\r\n    \"HP\": 41,\r\n    \"Attack\": 64,\r\n    \"Defense\": 45,\r\n    \"SpAtt\": 50,\r\n    \"SpDef\": 50,\r\n    \"Speed\": 50,\r\n    \"Rarity\": \"Rare\",\r\n    \"Link\": \"/img/dratini.png\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "https://127.0.0.1:8000/gacha/update/1048",
-							"protocol": "https",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"gacha",
-								"update",
-								"1048"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "getName",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "https://127.0.0.1:8000/gacha/getName/Giuliano",
-							"protocol": "https",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"gacha",
-								"getName",
-								"Giuliano"
 							]
 						}
 					},
@@ -375,14 +222,18 @@
 				{
 					"name": "get_all_auctions",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{jwt_token}}",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "https://127.0.0.1:8000/auction",
 							"protocol": "https",
@@ -403,6 +254,16 @@
 				{
 					"name": "new_auction",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -413,7 +274,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"user_owner\": 54,\r\n    \"gacha_id\": 1,\r\n    \"starting_price\": 20,\r\n    \"end_date\": \"2024-12-29 00:41:35\"\r\n}",
+							"raw": "{\r\n    \"gacha_id\": 41,\r\n    \"starting_price\": 20,\r\n    \"end_date\": \"2024-12-29 00:41:35\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -440,17 +301,21 @@
 				{
 					"name": "bid - per ora non funziona",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{jwt_token}}",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"bid\": 22,\r\n    \"email\": \"jane.davis@domain.com\"\r\n}",
+							"raw": "{\r\n    \"bid\": 22\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -478,6 +343,16 @@
 				{
 					"name": "transaction_history",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -502,6 +377,140 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "get",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/get",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"get"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get/id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/get/1",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"get",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mygacha",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/mygacha",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"mygacha"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mygacha/id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/mygacha/41",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"mygacha",
+								"41"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -511,14 +520,18 @@
 				{
 					"name": "get_all_auctions",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{jwt_token}}",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "https://127.0.0.1:8080/auction",
 							"protocol": "https",
@@ -539,16 +552,20 @@
 				{
 					"name": "get_specific_auction",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{jwt_token}}",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"url": {
-							"raw": "https://127.0.0.1:8080/auction/17",
+							"raw": "https://127.0.0.1:8080/auction/7",
 							"protocol": "https",
 							"host": [
 								"127",
@@ -559,25 +576,29 @@
 							"port": "8080",
 							"path": [
 								"auction",
-								"17"
+								"7"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "close_auction",
+					"name": "end_auction",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{jwt_token}}",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"url": {
-							"raw": "https://127.0.0.1:8080/close_auction/10",
+							"raw": "https://127.0.0.1:8080/end_auction/7",
 							"protocol": "https",
 							"host": [
 								"127",
@@ -587,8 +608,273 @@
 							],
 							"port": "8080",
 							"path": [
-								"close_auction",
-								"10"
+								"end_auction",
+								"7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "register_admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"pm.environment.set(\"jwt_token\", response.data);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"FirstName\": \"Aldo\",\r\n    \"LastName\": \"Baglio\",\r\n    \"Email\": \"aldo.baglio@example.com\",\r\n    \"Password\": \"ciao\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://127.0.0.1:8080/register_admin",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8080",
+							"path": [
+								"register_admin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login_admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"pm.environment.set(\"jwt_token\", response.data);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8080/login_admin?Email=aldo.baglio@example.com&Password=ciao",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8080",
+							"path": [
+								"login_admin"
+							],
+							"query": [
+								{
+									"key": "Email",
+									"value": "aldo.baglio@example.com"
+								},
+								{
+									"key": "Password",
+									"value": "ciao"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Name\": \"Giuliano\",\r\n    \"Type1\": \"Dragon\",\r\n    \"Type2\": \"\",\r\n    \"Total\": 300,\r\n    \"HP\": 41,\r\n    \"Attack\": 64,\r\n    \"Defense\": 45,\r\n    \"SpAtt\": 50,\r\n    \"SpDef\": 50,\r\n    \"Speed\": 50,\r\n    \"Rarity\": \"Rare\",\r\n    \"Link\": \"/img/dratini.png\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/update/1048",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"update",
+								"1048"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getName",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/getName/Giuliano",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"getName",
+								"Giuliano"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/get",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"get"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get/id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/get/1",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"get",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"GachaId\": 1047,\r\n    \"Name\": \"Marco\",\r\n    \"Type1\": \"Dragon\",\r\n    \"Type2\": \"\",\r\n    \"Total\": 300,\r\n    \"HP\": 41,\r\n    \"Attack\": 64,\r\n    \"Defense\": 45,\r\n    \"SpAtt\": 50,\r\n    \"SpDef\": 50,\r\n    \"Speed\": 50,\r\n    \"Rarity\": \"Rare\",\r\n    \"Link\": \"/img/dratini.png\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/add",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"add"
 							]
 						}
 					},
@@ -1144,7 +1430,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "https://127.0.0.1:8005/gacha",
+							"raw": "https://127.0.0.1:8005/gacha/get",
 							"protocol": "https",
 							"host": [
 								"127",
@@ -1154,7 +1440,8 @@
 							],
 							"port": "8005",
 							"path": [
-								"gacha"
+								"gacha",
+								"get"
 							]
 						}
 					},
@@ -1166,7 +1453,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "https://127.0.0.1:8005/gacha/60",
+							"raw": "https://127.0.0.1:8005/gacha/get/104",
 							"protocol": "https",
 							"host": [
 								"127",
@@ -1177,7 +1464,8 @@
 							"port": "8005",
 							"path": [
 								"gacha",
-								"60"
+								"get",
+								"104"
 							]
 						}
 					},
@@ -1190,7 +1478,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"FirstName\": \"Aldo\",\r\n    \"LastName\": \"Baglio\",\r\n    \"Email\": \"aldo.baglio@example.com\",\r\n    \"Password\": \"ciao\",\r\n    \"CurrencyAmount\": 100\r\n}",
+							"raw": "{\r\n    \"FirstName\": \"Aldo\",\r\n    \"LastName\": \"Baglio\",\r\n    \"Email\": \"aldo.baglio@example.com\",\r\n    \"Password\": \"ciao\",\r\n    \"CurrencyAmount\": 100,\r\n    \"Salt\": \"aaaaaaaaaaaaaaaaaaaaaaaa\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1656,6 +1944,59 @@
 								"user",
 								"get_by_id",
 								"51"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "register_admin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"FirstName\": \"Aldo\",\r\n    \"LastName\": \"Baglio\",\r\n    \"Email\": \"aldo.baglio@example.com\",\r\n    \"Password\": \"ciao\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://127.0.0.1:8005/register_admin",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8005",
+							"path": [
+								"register_admin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_all_admin",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8005/get_all_admin",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8005",
+							"path": [
+								"get_all_admin"
 							]
 						}
 					},

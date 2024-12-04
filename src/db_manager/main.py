@@ -117,6 +117,7 @@ def get_by_email():
     return u.send_response()
 
 
+
 @app.route('/user/get_by_id/<int:user_id>')
 def get_by_id(user_id):
     query = "SELECT * " \
@@ -210,6 +211,7 @@ def login():
         return u.send_response()
 
 
+
 @app.route('/check_users_profile', methods=['GET'])
 def check_users_profile():
     u.reset_response()
@@ -271,6 +273,7 @@ def check_one_admin():
         return u.send_response()
 
 
+
 @app.route('/login_admin', methods=['GET'])
 def login_admin():
     email = request.args.get('Email')
@@ -289,6 +292,7 @@ def login_admin():
     except Error as e:
         u.generic_error(e)
         return u.send_response()
+
 
 
 @app.route('/delete_user', methods=['DELETE'])
@@ -651,10 +655,18 @@ def get_old_transaction():
 
     return u.send_response()
 
+@app.route('/gacha/UserId_by_email/<string:email>')
+def get_id_by_email_gacha(email):
+    query = "SELECT UserId FROM user WHERE Email = %s LIMIT 1"
+    values = (email,)
+    handle_db_operation(query, values, fetch_one=True)
+    return u.send_response()
+
 
 # INIZIO METODI DEL DBMANGER PER ESEGUIRE LE QUERY DEL GACHASERVICE
-@app.route('/gacha/get_gacha_of_user/<int:user_id>', methods=['GET'])
-def get_expired_gacha_ids(user_id):
+
+@app.route('/gacha/get_gacha_of_user/<string:email>', methods=['GET'])
+def get_gacha_of_user(email):
     u.reset_response()
     global connection
     init_db_connection()
@@ -664,15 +676,30 @@ def get_expired_gacha_ids(user_id):
         return jsonify(u.RESPONSE)
 
     try:
+        # Esegui la prima query per ottenere UserId
         cursor = connection.cursor(dictionary=True)
-        query = """
+        query = f"SELECT UserId FROM user WHERE Email = '{email}' LIMIT 1"  # Concatenazione manuale
+        print(f"Query eseguita: {query}")  # Stampa la query per il debug
+        cursor.execute(query)
+        res = cursor.fetchone()
+        
+        if not res:
+            u.not_found()
+            return jsonify(u.RESPONSE)
+
+        user_id = res.get("UserId")
+        cursor.close()  # Chiudi il cursore dopo la prima query
+
+        # Esegui la seconda query per ottenere GachaId
+        query = f"""
             SELECT GachaId
             FROM transaction
-            WHERE RequestingUser = """ + str(user_id) + """
+            WHERE RequestingUser = {user_id}
               AND STR_TO_DATE(EndDate, '%Y-%m-%d %H:%i:%s') < NOW()
               AND SendedTo IS NULL
-        """
+        """  # Concatenazione manuale
         print(f"Query eseguita: {query}")  # Stampa la query per il debug
+        cursor = connection.cursor(dictionary=True)
         cursor.execute(query)
         result = cursor.fetchall()
 
@@ -680,8 +707,8 @@ def get_expired_gacha_ids(user_id):
             u.not_found()
             return jsonify(u.RESPONSE)
 
-        cursor.close()
-        close_db_connection()
+        cursor.close()  # Chiudi il cursore dopo la seconda query
+        close_db_connection()  # Chiudi la connessione al database
 
         # Estrai solo gli GachaId dalla query e invia come risposta
         u.RESPONSE["code"] = 200
@@ -692,6 +719,12 @@ def get_expired_gacha_ids(user_id):
     except Error as e:
         u.generic_error("Errore durante il recupero dei gacha IDs: " + str(e))
         return jsonify(u.RESPONSE)
+
+    finally:
+        # Chiudi sempre la connessione e il cursore, anche in caso di errore
+        if cursor:
+            cursor.close()
+        close_db_connection()
 
 
 # INIZIO METODI DEL DBMANGER PER ESEGUIRE LE QUERY DEL ADMINGACHASERVICE
@@ -749,7 +782,6 @@ def add_gacha():
         u.RESPONSE["data"] = []
         u.RESPONSE["message"] = "Gacha added successfully!"
         return jsonify(u.RESPONSE)
-
     except Error as e:
         print(f"Errore durante l'inserimento nel database: {e}")
         u.generic_error("Errore durante l'inserimento nel database.")
@@ -766,7 +798,6 @@ def update_gacha(gacha_id):
         print("Errore: connessione al database non riuscita.")
         u.generic_error("Errore di connessione al database.")
         return jsonify(u.RESPONSE)
-
     try:
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM gacha WHERE GachaId = %s", (gacha_id,))
@@ -774,7 +805,6 @@ def update_gacha(gacha_id):
         if not gacha:
             u.not_found
             return jsonify(u.RESPONSE)
-
         query = "UPDATE gacha " \
                 "SET Name = %s, Type1 = %s, Type2 = %s, Total = %s, HP = %s, Attack = %s, Defense = %s, SpAtt = %s, " \
                 "SpDef = %s, Speed = %s, Rarity = %s, Link = %s" \
@@ -913,7 +943,9 @@ def get_all_gachas():
         cursor = connection.cursor(dictionary=True)
         cursor.execute("SELECT * FROM gacha")
         gachas = cursor.fetchall()
-
+        if gachas is None:
+            u.not_found()
+            return jsonify(u.RESPONSE)
         u.RESPONSE["code"] = 200
         u.RESPONSE["data"] = gachas
         u.RESPONSE["message"] = "All gachas retrieved successfully!"
@@ -927,7 +959,6 @@ def get_all_gachas():
         return jsonify(u.RESPONSE)
 
 
-# FUNZIONI DI TEST SU TRANSACTION
 @app.route('/transaction', methods=['GET'])
 def view_transaction():
     u.reset_response()
@@ -943,7 +974,6 @@ def view_transaction():
         query = f"SELECT * FROM transaction"
         cursor.execute(query)
         result = cursor.fetchall()
-
         u.RESPONSE["code"] = 200
         u.RESPONSE["data"] = result
         u.RESPONSE["message"] = "All gachas retrieved successfully!"
@@ -985,6 +1015,7 @@ def view_transaction_user(user_id):
         print(f"Errore durante il recupero del gacha: {e}")
         u.generic_error("Errore durante il recupero del gacha.")
         return jsonify(u.RESPONSE)
+    
 
 
 if __name__ == "__main__":
