@@ -124,7 +124,6 @@ def roll_img():
 
 @app.route('/buy_currency', methods=['PUT'])
 def buy_currency():
-<<<<<<< HEAD
     data = request.get_json()
     quantity = data.get('quantity')
     email = data.get('email')
@@ -132,26 +131,11 @@ def buy_currency():
     if quantity <= 0:
         u.generic_error("You can't add a negative quantity.")
         return jsonify(u.RESPONSE)
-=======
-    u.reset_response()
-    quantity = request.get_json().get('quantity')
-    email = request.get_json().get('email')
-
-    if quantity <= 0:
-        u.generic_error("You can't add a negative quantity.")
-        return u.send_response()
->>>>>>> origin
 
     path = u.DB_MANAGER_URL + "/get_amount"
     response = requests.get(path,
                             verify=False,
                             params={'email': email})
-<<<<<<< HEAD
-=======
-    if response.status_code != 200:
-        u.handle_error(response.status_code)
-        return u.send_response()
->>>>>>> origin
 
     amount = response.json().get("data").get("CurrencyAmount")
 
@@ -161,7 +145,6 @@ def buy_currency():
                             verify=False,
                             json={'email': email,
                                   'new_amount': new_amount})
-<<<<<<< HEAD
 
     if response.json().get("code") != 200:
         u.RESPONSE["data"] = []
@@ -176,17 +159,3 @@ def buy_currency():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8004, debug=u.FLASK_DEBUG)
-=======
-    if response.status_code != 200:
-        u.handle_error(response.status_code)
-        return u.send_response()
-
-    u.set_response(response)
-    u.RESPONSE["message"] = f"Currency amount updated successfully. New amount: {new_amount}"
-    return u.send_response()
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8004, debug=u.FLASK_DEBUG)
-
->>>>>>> origin

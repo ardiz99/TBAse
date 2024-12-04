@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /venv/
 /src/mysql-data
 /src/db_manager/utils.py
@@ -7,8 +6,3 @@
 /src/auth_service/utils.py
 /src/market_service/utils.py
 /src/api_gateway/utils.py
-=======
-/venv/
-/mysql-data
-src/mysql-data
->>>>>>> origin

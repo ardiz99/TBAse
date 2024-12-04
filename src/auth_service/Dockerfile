@@ -9,8 +9,4 @@ RUN pip install -r requirements.txt
 
 EXPOSE 8001
 
-<<<<<<< HEAD
 CMD ["flask", "run", "--host=0.0.0.0", "--port=8001", "--cert=/run/secrets/certificate", "--key=/run/secrets/key"]
-=======
-CMD ["flask", "run", "--host=0.0.0.0", "--port=8001", "--cert=/run/secrets/certificate", "--key=/run/secrets/key"]
->>>>>>> origin

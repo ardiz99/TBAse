@@ -25,7 +25,6 @@ DROP TABLE IF EXISTS `admin`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `admin` (
-<<<<<<< HEAD
   `UserID` int NOT NULL AUTO_INCREMENT,
   `FirstName` varchar(45) DEFAULT NULL,
   `LastName` varchar(45) DEFAULT NULL,
@@ -33,16 +32,6 @@ CREATE TABLE `admin` (
   `Email` varchar(45) DEFAULT NULL,
   `Salt` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`UserID`)
-=======
-  `AdminId` int NOT NULL AUTO_INCREMENT,
-  `FirstName` varchar(45) NOT NULL,
-  `LastName` varchar(45) NOT NULL,
-  `Password` varchar(255) NOT NULL,
-  `Email` varchar(45) NOT NULL,
-  `Salt` varchar(255) NOT NULL,
-  PRIMARY KEY (`AdminId`),
-  UNIQUE KEY `Email_UNIQUE` (`Email`)
->>>>>>> origin
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -52,11 +41,7 @@ CREATE TABLE `admin` (
 
 LOCK TABLES `admin` WRITE;
 /*!40000 ALTER TABLE `admin` DISABLE KEYS */;
-<<<<<<< HEAD
 INSERT INTO `admin` VALUES (1,'Diego','Del Castello','a','a',NULL),(2,'Felice','Tortorelli','s','s',NULL),(3,'Francesco','Ardizzoni','z','z',NULL),(4,'Mattia','Prestifilippo','x','x',NULL);
-=======
-INSERT INTO `admin` VALUES (1,'Diego','Del Castello','a','a','a'),(2,'Felice','Tortorelli','s','s','a'),(3,'Francesco','Ardizzoni','z','z','a'),(4,'Mattia','Prestifilippo','x','x','a');
->>>>>>> origin
 /*!40000 ALTER TABLE `admin` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -68,7 +53,6 @@ DROP TABLE IF EXISTS `gacha`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `gacha` (
-<<<<<<< HEAD
   `GachaId` int NOT NULL,
   `Name` varchar(45) DEFAULT NULL,
   `Type1` varchar(45) DEFAULT NULL,
@@ -82,23 +66,8 @@ CREATE TABLE `gacha` (
   `Speed` int DEFAULT NULL,
   `Rarity` varchar(45) DEFAULT NULL,
   `Link` varchar(45) DEFAULT NULL,
-=======
-  `GachaId` int NOT NULL AUTO_INCREMENT,
-  `Name` varchar(45) NOT NULL,
-  `Type1` varchar(45) NOT NULL,
-  `Type2` varchar(45) NOT NULL,
-  `Total` int NOT NULL,
-  `HP` int NOT NULL,
-  `Attack` int NOT NULL,
-  `Defense` int NOT NULL,
-  `SpAtt` int NOT NULL,
-  `SpDef` int NOT NULL,
-  `Speed` int NOT NULL,
-  `Rarity` varchar(45) NOT NULL,
-  `Link` varchar(45) NOT NULL,
->>>>>>> origin
   PRIMARY KEY (`GachaId`)
-) ENGINE=InnoDB AUTO_INCREMENT=152 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -121,24 +90,12 @@ DROP TABLE IF EXISTS `transaction`;
 CREATE TABLE `transaction` (
   `TransactionId` int NOT NULL AUTO_INCREMENT,
   `UserOwner` int DEFAULT NULL,
-<<<<<<< HEAD
   `RequestingUser` int DEFAULT NULL,
   `GachaId` int DEFAULT NULL,
   `Cost` int DEFAULT NULL,
   `EndDate` date DEFAULT NULL,
   PRIMARY KEY (`TransactionId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
-=======
-  `GachaId` int NOT NULL,
-  `RequestingUser` int DEFAULT NULL,
-  `StartingPrice` int NOT NULL,
-  `ActualPrice` int NOT NULL,
-  `EndDate` varchar(45) DEFAULT NULL,
-  `SendedTo` int DEFAULT NULL,
-  PRIMARY KEY (`TransactionId`),
-  UNIQUE KEY `TransactionId_UNIQUE` (`TransactionId`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
->>>>>>> origin
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -147,7 +104,6 @@ CREATE TABLE `transaction` (
 
 LOCK TABLES `transaction` WRITE;
 /*!40000 ALTER TABLE `transaction` DISABLE KEYS */;
-INSERT INTO `transaction` VALUES (4,NULL,1,51,10,21,'2024-12-02 03:03:26',6),(5,NULL,1,1,10,0,'2024-11-18 17:11:56',NULL),(6,NULL,1,1,10,0,'2024-11-18 17:11:56',NULL),(7,51,1,51,20,22,'2024-12-29 00:41:35',NULL),(8,NULL,1,101,20,22,'2024-11-29 00:41:35',NULL);
 /*!40000 ALTER TABLE `transaction` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -160,7 +116,6 @@ DROP TABLE IF EXISTS `user`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user` (
   `UserId` int NOT NULL AUTO_INCREMENT,
-<<<<<<< HEAD
   `FirstName` varchar(45) DEFAULT NULL,
   `LastName` varchar(45) DEFAULT NULL,
   `Email` varchar(45) DEFAULT NULL,
@@ -169,17 +124,6 @@ CREATE TABLE `user` (
   `Salt` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`UserId`)
 ) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8mb3;
-=======
-  `FirstName` varchar(45) NOT NULL,
-  `LastName` varchar(45) NOT NULL,
-  `Email` varchar(45) NOT NULL,
-  `Password` varchar(255) NOT NULL,
-  `CurrencyAmount` int NOT NULL DEFAULT '0',
-  `Salt` varchar(255) NOT NULL,
-  PRIMARY KEY (`UserId`),
-  UNIQUE KEY `Email_UNIQUE` (`Email`)
-) ENGINE=InnoDB AUTO_INCREMENT=102 DEFAULT CHARSET=utf8mb3;
->>>>>>> origin
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -188,11 +132,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-<<<<<<< HEAD
 INSERT INTO `user` VALUES (1,'Taylor','Smith','taylor.smith@example.com','b259fe071c41a754','57.8',NULL),(2,'Jane','Smith','jane.smith@domain.com','856ed03589098fa2','379.03',NULL),(3,'Taylor','Johnson','taylor.johnson@example.com','f6623cdcf7261c4c','483.85',NULL),(4,'Alex','Rodriguez','alex.rodriguez@example.com','c81114ee6d217c69','188.0',NULL),(5,'John','Miller','john.miller@example.com','9d7a0edd91e66aa4','326.99',NULL),(6,'Jamie','Smith','jamie.smith@domain.com','1b131ad0cfc411b3','864.07',NULL),(7,'Jane','Doe','jane.doe@example.com','3e74ca2642a01ff0','813.07',NULL),(8,'Alex','Miller','alex.miller@domain.com','abc92e6592d68854','948.84',NULL),(9,'Sam','Williams','sam.williams@example.com','f615551ca564bd8d','145.85',NULL),(10,'Sam','Smith','sam.smith@domain.com','db60eedf2c5ea577','592.2',NULL),(11,'John','Garcia','john.garcia@domain.com','b9a851aad2817a56','906.99',NULL),(12,'Chris','Garcia','chris.garcia@example.com','ce57d76f483c11af','160.52',NULL),(13,'Pat','Doe','pat.doe@example.com','6665817a7b633348','118.4',NULL),(14,'Alex','Johnson','alex.johnson@example.com','6d6653c9138f670d','668.37',NULL),(15,'Jamie','Jones','jamie.jones@domain.com','d27be2cd210db40d','921.81',NULL),(16,'Chris','Doe','chris.doe@domain.com','2aba4463292069da','416.46',NULL),(17,'Jane','Miller','jane.miller@mail.com','93074e82883f570d','375.23',NULL),(18,'Jane','Brown','jane.brown@example.com','79f2b93f9ff99f27','20.84',NULL),(19,'Chris','Rodriguez','chris.rodriguez@mail.com','8ff34199fd727cb4','263.63',NULL),(20,'Alex','Garcia','alex.garcia@mail.com','edec989bf6724817','742.03',NULL),(21,'Alex','Smith','alex.smith@mail.com','3a95dd08fe694365','1.75',NULL),(22,'Sam','Rodriguez','sam.rodriguez@example.com','a5a0ae793ddef2d4','350.97',NULL),(23,'Jamie','Doe','jamie.doe@mail.com','19eaf6a41376f15a','687.15',NULL),(24,'Pat','Williams','pat.williams@mail.com','94f647e2b714eeb1','239.43',NULL),(25,'Chris','Brown','chris.brown@example.com','d9e90e631a9c2116','37.85',NULL),(26,'Jordan','Williams','jordan.williams@domain.com','9309f6e2c5a33d89','148.49',NULL),(27,'Jamie','Johnson','jamie.johnson@mail.com','9ac4ba37dc4f8b3c','280.84',NULL),(28,'Sam','Garcia','sam.garcia@domain.com','cbf4b81baba0ddf3','190.47',NULL),(29,'Sam','Miller','sam.miller@mail.com','77eb70823166cb15','743.06',NULL),(30,'Sam','Johnson','sam.johnson@mail.com','1b7940170a80859e','109.43',NULL),(31,'Kim','Miller','kim.miller@example.com','f5053b08bf2a094b','608.2',NULL),(32,'Jane','Johnson','jane.johnson@mail.com','2e4074bc8b30d18e','160.93',NULL),(33,'Pat','Smith','pat.smith@mail.com','ce08353308a16481','35.1',NULL),(34,'Pat','Davis','pat.davis@mail.com','ba4f459974a0ab41','676.78',NULL),(35,'Taylor','Smith','taylor.smith@domain.com','56e0922b0f081bcd','890.8',NULL),(36,'Jane','Doe','jane.doe@domain.com','1e790adfcff04c1e','949.46',NULL),(37,'Jordan','Garcia','jordan.garcia@mail.com','851baf1054e06c6f','535.91',NULL),(40,'Taylor','Williams','taylor.williams@mail.com','85952420f1619ea0','238.91',NULL),(41,'Alex','Jones','alex.jones@domain.com','065b8854cec78a65','38.95',NULL),(42,'Jane','Garcia','jane.garcia@example.com','4c6dce1bfa4e23f7','790.56',NULL),(43,'Chris','Rodriguez','chris.rodriguez@domain.com','b5d052d57299f5aa','932.09',NULL),(44,'John','Rodriguez','john.rodriguez@example.com','7eac9ced515f333d','31.24',NULL),(45,'Pat','Johnson','pat.johnson@mail.com','7e05cef18450c010','547.25',NULL),(46,'Jamie','Brown','jamie.brown@domain.com','07f0332ed6d9b895','94.43',NULL),(47,'Sam','Doe','sam.doe@domain.com','dceec3693577db9e','180.89',NULL),(48,'Alex','Brown','a','a1ea6f198f4a7510','48.6',NULL),(50,'Jane','Davis','jane.davis@domain.com','d3a685a273ac4284','179.9',NULL),(51,'we2','we','we','we','1',NULL),(59,'we','we','we','we','1','2b12151HQVRZWUIqbYfjr806');
-=======
-INSERT INTO `user` VALUES (52,'John','Doe','john.doe1@example.com','hashed_password1',100,'random_salt1'),(53,'Jane','Smith','jane.smith2@example.com','hashed_password2',200,'random_salt2'),(54,'Alice','Brown','alice.brown3@example.com','hashed_password3',300,'random_salt3'),(55,'Bob','Johnson','bob.johnson4@example.com','hashed_password4',400,'random_salt4'),(56,'Charlie','Davis','charlie.davis5@example.com','hashed_password5',500,'random_salt5'),(57,'Emily','Taylor','emily.taylor6@example.com','hashed_password6',600,'random_salt6'),(58,'Frank','Clark','frank.clark7@example.com','hashed_password7',700,'random_salt7'),(59,'Grace','Lee','grace.lee8@example.com','hashed_password8',800,'random_salt8'),(60,'Hannah','Walker','hannah.walker9@example.com','hashed_password9',900,'random_salt9'),(61,'Isaac','Hall','isaac.hall10@example.com','hashed_password10',1000,'random_salt10'),(62,'Jack','Allen','jack.allen11@example.com','hashed_password11',1100,'random_salt11'),(63,'Katie','Young','katie.young12@example.com','hashed_password12',1200,'random_salt12'),(64,'Liam','King','liam.king13@example.com','hashed_password13',1300,'random_salt13'),(65,'Mia','Wright','mia.wright14@example.com','hashed_password14',1400,'random_salt14'),(66,'Nathan','Scott','nathan.scott15@example.com','hashed_password15',1500,'random_salt15'),(67,'Olivia','Adams','olivia.adams16@example.com','hashed_password16',1600,'random_salt16'),(68,'Paul','Evans','paul.evans17@example.com','hashed_password17',1700,'random_salt17'),(69,'Quinn','Mitchell','quinn.mitchell18@example.com','hashed_password18',1800,'random_salt18'),(70,'Rachel','Harris','rachel.harris19@example.com','hashed_password19',1900,'random_salt19'),(71,'Sam','Carter','sam.carter20@example.com','hashed_password20',2000,'random_salt20'),(72,'Tina','Baker','tina.baker21@example.com','hashed_password21',2100,'random_salt21'),(73,'Uma','Bell','uma.bell22@example.com','hashed_password22',2200,'random_salt22'),(74,'Victor','Griffin','victor.griffin23@example.com','hashed_password23',2300,'random_salt23'),(75,'Wendy','Howard','wendy.howard24@example.com','hashed_password24',2400,'random_salt24'),(76,'Xander','Ward','xander.ward25@example.com','hashed_password25',2500,'random_salt25'),(77,'Yara','Cooper','yara.cooper26@example.com','hashed_password26',2600,'random_salt26'),(78,'Zack','Foster','zack.foster27@example.com','hashed_password27',2700,'random_salt27'),(79,'Amy','Murphy','amy.murphy28@example.com','hashed_password28',2800,'random_salt28'),(80,'Brian','Bailey','brian.bailey29@example.com','hashed_password29',2900,'random_salt29'),(81,'Catherine','Brooks','catherine.brooks30@example.com','hashed_password30',3000,'random_salt30'),(82,'David','Morgan','david.morgan31@example.com','hashed_password31',3100,'random_salt31'),(83,'Ella','Sanders','ella.sanders32@example.com','hashed_password32',3200,'random_salt32'),(84,'Fiona','Price','fiona.price33@example.com','hashed_password33',3300,'random_salt33'),(85,'George','Perry','george.perry34@example.com','hashed_password34',3400,'random_salt34'),(86,'Holly','Jenkins','holly.jenkins35@example.com','hashed_password35',3500,'random_salt35'),(87,'Ian','Reed','ian.reed36@example.com','hashed_password36',3600,'random_salt36'),(88,'Julia','Cook','julia.cook37@example.com','hashed_password37',3700,'random_salt37'),(89,'Kevin','Powell','kevin.powell38@example.com','hashed_password38',3800,'random_salt38'),(90,'Lila','Rogers','lila.rogers39@example.com','hashed_password39',3900,'random_salt39'),(91,'Mason','Cox','mason.cox40@example.com','hashed_password40',4000,'random_salt40'),(92,'Nina','Butler','nina.butler41@example.com','hashed_password41',4100,'random_salt41'),(93,'Oscar','Russell','oscar.russell42@example.com','hashed_password42',4200,'random_salt42'),(94,'Penny','Stewart','penny.stewart43@example.com','hashed_password43',4300,'random_salt43'),(95,'Quincy','Simmons','quincy.simmons44@example.com','hashed_password44',4400,'random_salt44'),(96,'Rose','Edwards','rose.edwards45@example.com','hashed_password45',4500,'random_salt45'),(97,'Steve','Collins','steve.collins46@example.com','hashed_password46',4600,'random_salt46'),(98,'Tara','Morris','tara.morris47@example.com','hashed_password47',4700,'random_salt47'),(99,'Ursula','Bell','ursula.bell48@example.com','hashed_password48',4800,'random_salt48'),(100,'Vince','Bryant','vince.bryant49@example.com','hashed_password49',4900,'random_salt49'),(101,'Willow','Jordan','willow.jordan50@example.com','hashed_password50',5000,'random_salt50');
->>>>>>> origin
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -205,8 +145,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
-<<<<<<< HEAD
 -- Dump completed on 2024-12-04 17:18:00
-=======
--- Dump completed on 2024-12-04  2:23:53
->>>>>>> origin
