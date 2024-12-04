@@ -189,9 +189,21 @@
 							}
 						}
 					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
 						"method": "GET",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
 							"raw": "https://127.0.0.1:8000/login?Email=aldo.baglio@example.com&Password=ciao",
 							"protocol": "https",
@@ -274,7 +286,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"gacha_id\": 41,\r\n    \"starting_price\": 20,\r\n    \"end_date\": \"2024-12-29 00:41:35\"\r\n}",
+							"raw": "{\r\n    \"gacha_id\": 33,\r\n    \"starting_price\": 20,\r\n    \"end_date\": \"2024-12-29 00:41:35\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -299,7 +311,7 @@
 					"response": []
 				},
 				{
-					"name": "bid - per ora non funziona",
+					"name": "bid",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -315,7 +327,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"bid\": 22\r\n}",
+							"raw": "{\r\n    \"bid\": 35\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -323,7 +335,7 @@
 							}
 						},
 						"url": {
-							"raw": "https://127.0.0.1:8000/bid/13",
+							"raw": "https://127.0.0.1:8000/bid/14",
 							"protocol": "https",
 							"host": [
 								"127",
@@ -334,7 +346,7 @@
 							"port": "8000",
 							"path": [
 								"bid",
-								"13"
+								"14"
 							]
 						}
 					},
@@ -583,7 +595,7 @@
 					"response": []
 				},
 				{
-					"name": "end_auction",
+					"name": "close_auction",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -598,7 +610,7 @@
 						"method": "PUT",
 						"header": [],
 						"url": {
-							"raw": "https://127.0.0.1:8080/end_auction/7",
+							"raw": "https://127.0.0.1:8080/close_auction/11",
 							"protocol": "https",
 							"host": [
 								"127",
@@ -608,8 +620,8 @@
 							],
 							"port": "8080",
 							"path": [
-								"end_auction",
-								"7"
+								"close_auction",
+								"11"
 							]
 						}
 					},

@@ -106,6 +106,7 @@ def buy_currency():
     if response.status_code != 200:
         u.handle_error(response.status_code)
 
+    u.set_response(response)
     return u.send_response()
 
 
