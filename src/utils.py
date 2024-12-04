@@ -22,6 +22,7 @@ GACHA_SERVICE_URL = "http://127.0.0.1:8002" if LOCAL else "https://gacha-service
 MARKET_SERVICE_URL = "http://127.0.0.1:8003" if LOCAL else "https://market-service:8003"
 CURRENCY_SERVICE_URL = "http://127.0.0.1:8004" if LOCAL else "https://currency-service:8004"
 DB_MANAGER_URL = "http://127.0.0.1:8005" if LOCAL else "https://db-manager:8005"
+AUCTION_SERVICE_URL = "http://127.0.0.1:8006" if LOCAL else "https://auction-service:8006"
 
 RESPONSE = {
     "code": 200,
@@ -44,6 +45,10 @@ def generic_error(message="Unkonwn error"):
 
 def not_found(message=""):
     RESPONSE["code"] = 404
+<<<<<<< HEAD
+=======
+    RESPONSE["data"] = []
+>>>>>>> origin
     RESPONSE["message"] = "Error! Not Found. " + message
 
 
@@ -63,6 +68,7 @@ def forbidden(message=""):
     RESPONSE["code"] = 403
     RESPONSE["data"] = []
     RESPONSE["message"] = "Forbidden " + message
+<<<<<<< HEAD
 
 
 def handle_error(code):
@@ -76,6 +82,29 @@ def handle_error(code):
         generic_error()
     if code == 400:
         bad_request()
+=======
+
+
+def method_not_allowed(message=""):
+    RESPONSE["code"] = 405
+    RESPONSE["data"] = []
+    RESPONSE["message"] = "Method not Allowed " + message
+
+
+def handle_error(code):
+    if code == 400:
+        bad_request()
+    elif code == 401:
+        unauthorized()
+    elif code == 403:
+        forbidden()
+    elif code == 404:
+        not_found()
+    elif code == 405:
+        method_not_allowed()
+    else:
+        generic_error()
+>>>>>>> origin
 
 
 def set_response(response):
@@ -126,6 +155,10 @@ def generate_token(user_id, role, user_pass):
         "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=JWT_EXPIRATION_TIME)
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+<<<<<<< HEAD
+=======
+    set_auth_token(token)
+>>>>>>> origin
     return token
 
 
