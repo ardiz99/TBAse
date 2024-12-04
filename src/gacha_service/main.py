@@ -7,6 +7,15 @@ import utils as u
 
 app = Flask(__name__)
 
+mock_save_last = None
+
+def save_last(op, args, res):
+    """Funzione per salvare l'ultima operazione effettuata."""
+    if mock_save_last:
+        mock_save_last(op, args, res)
+    else:
+        # Salvataggio nel formato desiderato
+        print(f"Operation: {op}, Arguments: {args}, Result: {res}")
 
 # Funzione helper per effettuare richieste verso l'API remota
 def perform_request(method, endpoint, json_data=None):
@@ -16,7 +25,6 @@ def perform_request(method, endpoint, json_data=None):
         u.handle_error(response.status_code)
         return jsonify(u.RESPONSE), response.status_code
     return response
-
 
 # INIZIO METODI PER VISUALIZZARE, AGGIUNGERE, AGGIORNARE E ELIMINARE GACHA
 
@@ -146,9 +154,10 @@ def get_all_gachas():
     return jsonify(u.RESPONSE)
 
 
+# Endpoint per ottenere un singolo gacha dell'utente loggato
 @app.route('/mygacha/<string:email>/<int:gacha_id>', methods=['GET'])
 def get_mygacha(email, gacha_id):
-    u.reset_response()
+    u.reset_response()     
     response = perform_request("GET", f"/get_gacha_of_user/{email}")
     if isinstance(response, tuple):  # In caso di errore
         return response
@@ -177,7 +186,7 @@ def get_mygacha(email, gacha_id):
 # Endpoint per ottenere tutti i gacha dell'utente loggato
 @app.route('/mygacha/<string:email>', methods=['GET'])
 def get_allmygacha(email):
-    u.reset_response()
+    u.reset_response()     
     response = perform_request("GET", f"/get_gacha_of_user/{email}")
     if isinstance(response, tuple):  # In caso di errore
         return response
@@ -204,7 +213,7 @@ def get_allmygacha(email):
         result.append(gacha)
     u.RESPONSE["data"] = result
     u.RESPONSE["code"] = 200
-    u.RESPONSE["message"] = "Gachas retrivied succesfully"
+    u.RESPONSE["message"] = "Gachas retrivied succesfully"   
     return jsonify(u.RESPONSE)
 
 

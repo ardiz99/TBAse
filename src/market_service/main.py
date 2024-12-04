@@ -6,9 +6,20 @@ import utils as u
 
 app = Flask(__name__)
 
+mock_save_last = None
+
+def save_last(op, args, res):
+    """Funzione per salvare l'ultima operazione effettuata."""
+    if mock_save_last:
+        mock_save_last(op, args, res)
+    else:
+        # Salvataggio nel formato desiderato
+        print(f"Operation: {op}, Arguments: {args}, Result: {res}")
+
 
 @app.route('/roll', methods=['POST'])
 def roll():
+    
     u.reset_response()
     data = request.get_json()
     user_id = data.get('user_id')
@@ -175,7 +186,7 @@ def new_bid(transaction_id):
         response = requests.get(path, verify=False)
         if response.status_code != 200:
             u.handle_error(response.status_code)
-            return u.send_response()
+            return u.send_response(path + " (oldReqUser)")
 
         # INFO DELL' OLD REQUESTING USER se presente
         old_requesting_user_email = response.json().get("data").get("Email")
@@ -184,7 +195,7 @@ def new_bid(transaction_id):
     response = requests.get(path, verify=False, params={"email": email})
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return u.send_response()
+        return u.send_response(path)
 
     # INFO DEL REQUESTING USER ATTUALE
     old_amount = response.json().get("data").get("CurrencyAmount")
@@ -194,7 +205,7 @@ def new_bid(transaction_id):
     response = requests.get(path, verify=False)
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return u.send_response()
+        return u.send_response(path + " (owner)")
 
     # INFO DELLO USER OWNER
     user_owner_amount = response.json().get("data").get("CurrencyAmount")
@@ -235,6 +246,7 @@ def new_bid(transaction_id):
                                       "quantity": actual_price})
         if response.status_code != 200:
             u.handle_error(response.status_code)
+            u.set_response(response)
             return u.send_response()
 
     # 5) AGGIORNO l'actual price
@@ -264,7 +276,6 @@ def new_bid(transaction_id):
         u.handle_error(response.status_code)
         return u.send_response()
 
-    u.set_response(response)
     return u.send_response("Bid inserted successfully.")
 
 
@@ -288,6 +299,7 @@ def close_auction(transaction_id):
     requesting_user = response.json().get("data").get("RequestingUser")
     gacha_id = response.json().get("data").get("GachaId")
 
+    # se il requesting_user non c'è viene proprio cancellato il record
     if requesting_user is None:
         path = u.DB_MANAGER_URL + f"/transaction/{transaction_id}/delete"
         response = requests.get(path, verify=False)
@@ -300,14 +312,16 @@ def close_auction(transaction_id):
         u.RESPONSE["message"] = "Auction deleted because it didn't take any bid."
         return u.send_response()
 
-    path = u.DB_MANAGER_URL + f"/transaction/{gacha_id}/{user_owner_id}"
-    response = requests.get(path, verify=False)
+    # se il requesting user c'è allora viene messo l'end date ad adesso
+    path = u.DB_MANAGER_URL + f"/auction/{transaction_id}/close_auction"
+    response = requests.put(path, verify=False)
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()
 
-    path = u.DB_MANAGER_URL + f"/auction/{transaction_id}/close_auction"
-    response = requests.put(path, verify=False)
+    # viene recuperata la transaction a cui cambiare il sended to
+    path = u.DB_MANAGER_URL + f"/transaction/{gacha_id}/{user_owner_id}"
+    response = requests.get(path, verify=False)
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()

@@ -10,9 +10,17 @@ import utils as u
 
 # from src import utils as u
 
-
 app = Flask(__name__)
 
+mock_save_last = None
+
+def save_last(op, args, res):
+    """Funzione per salvare l'ultima operazione effettuata."""
+    if mock_save_last:
+        mock_save_last(op, args, res)
+    else:
+        # Salvataggio nel formato desiderato
+        print(f"Operation: {op}, Arguments: {args}, Result: {res}")
 
 def hash_password(password):
     """Genera un hash e un salt per una password."""

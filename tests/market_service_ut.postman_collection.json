@@ -1,0 +1,597 @@
+{
+	"info": {
+		"_postman_id": "8b594e78-64e0-42d0-9447-f7bf51957979",
+		"name": "market_service_ut",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39688518"
+	},
+	"item": [
+		{
+			"name": "Roll",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Error: Missing required fields\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"    var response = pm.response.json();\r",
+							"    pm.expect(response.message).to.include(\"Bad Request\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"user_id\": 1,\r\n  \"gacha_id\": null,\r\n  \"cost\": 100\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5004/roll",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5004",
+					"path": [
+						"roll"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "all_transactions",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Transaction retrieval successful\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    var response = pm.response.json();\r",
+							"    pm.expect(response.message).to.include(\"success\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5004/transaction",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5004",
+					"path": [
+						"transaction"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "auction_not_found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Error: Auction not found\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"    var response = pm.response.json();\r",
+							"    pm.expect(response.message).to.include(\"Auction not found\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5004/auction/9999",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5004",
+					"path": [
+						"auction",
+						"9999"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "auction_list",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Auction list retrieved successfully\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    var response = pm.response.json();\r",
+							"    pm.expect(response.message).to.include(\"success\");\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5004/auction",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5004",
+					"path": [
+						"auction"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "auction_active",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Active auctions retrieved successfully\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    var response = pm.response.json();\r",
+							"    pm.expect(response.message).to.include(\"success\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5004/active_auction",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5004",
+					"path": [
+						"active_auction"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "new_auction",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Auction created successfully\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    var response = pm.response.json();\r",
+							"    pm.expect(response.message).to.include(\"Auction created successfully\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"user_owner\": \"user@example.com\",\r\n  \"gacha_id\": 101,\r\n  \"starting_price\": 500,\r\n  \"end_date\": \"2024-12-31 23:59:59\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "htpps://localhost:5004/new_auction",
+					"protocol": "htpps",
+					"host": [
+						"localhost"
+					],
+					"port": "5004",
+					"path": [
+						"new_auction"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "new_auction_wrong_id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Error: Invalid input for auction\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"    var response = pm.response.json();\r",
+							"    pm.expect(response.message).to.include(\"Bad Request\");\r",
+							"    pm.expect(response.message).to.include(\"Date already passed\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"user_owner\": \"user@example.com\",\r\n  \"gacha_id\": 101,\r\n  \"starting_price\": -100,\r\n  \"end_date\": \"2023-01-01 00:00:00\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "htpps://localhost:5004/new_auction",
+					"protocol": "htpps",
+					"host": [
+						"localhost"
+					],
+					"port": "5004",
+					"path": [
+						"new_auction"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "transaction_id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Bid inserted successfully\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    var response = pm.response.json();\r",
+							"    pm.expect(response.message).to.include(\"Bid inserted successfully\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"bid\": 150,\r\n  \"email\": \"alice@example.com\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5004/bid/123",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5004",
+					"path": [
+						"bid",
+						"123"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "transaction_id_noemail",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Error: Missing email for bid\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"    var response = pm.response.json();\r",
+							"    pm.expect(response.message).to.include(\"Bad Request\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"bid\": 150\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5004/bid/123",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5004",
+					"path": [
+						"bid",
+						"123"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "close_auction",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Error: Missing email for bid\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"    var response = pm.response.json();\r",
+							"    pm.expect(response.message).to.include(\"Bad Request\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"bid\": 150\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5004/close_auction/999",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5004",
+					"path": [
+						"close_auction",
+						"999"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "close_auction_auction_not_found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Error: Missing email for bid\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"    var response = pm.response.json();\r",
+							"    pm.expect(response.message).to.include(\"Bad Request\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"bid\": 150\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5004/close_auction/9999",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5004",
+					"path": [
+						"close_auction",
+						"9999"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "transaction_history_user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Transaction history retrieved successfully\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    var response = pm.response.json();\r",
+							"    pm.expect(response.message).to.include(\"success\");\r",
+							"    pm.expect(response.data).to.be.an(\"array\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5004/my_transaction_history?email=user@example.com",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5004",
+					"path": [
+						"my_transaction_history"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "user@example.com"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "transaction_history_user_not_found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Error: User not found\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"    var response = pm.response.json();\r",
+							"    pm.expect(response.message).to.include(\"User not found\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5004/my_transaction_history?email=nonexistent@example.com",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5004",
+					"path": [
+						"my_transaction_history"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "nonexistent@example.com"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "auction_history",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Auction history retrieved successfully\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    var response = pm.response.json();\r",
+							"    pm.expect(response.message).to.include(\"success\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5004/auction/history",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5004",
+					"path": [
+						"auction",
+						"history"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

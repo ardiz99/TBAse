@@ -1022,7 +1022,17 @@ def view_transaction_user(user_id):
         u.generic_error("Errore durante il recupero del gacha.")
         return jsonify(u.RESPONSE)
 
+@app.route('/transaction/<int:gacha_id>/<int:user_owner_id>', methods=['GET'])
+def get_specific_transaction(user_owner_id, gacha_id):
+    query = "SELECT * " \
+            "FROM transaction " \
+            f"WHERE GachaId = {gacha_id} " \
+            f"   AND RequestingUser = {user_owner_id} " \
+            "   AND SendedTo IS NULL " \
+            "   AND STR_TO_DATE(EndDate, '%Y-%m-%d %H:%i:%s') < NOW() " \
+            "LIMIT 1"
+    handle_db_operation(query, fetch_one=True)
+    return u.send_response()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8005, debug=u.FLASK_DEBUG)
-
