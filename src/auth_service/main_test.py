@@ -6,7 +6,11 @@ from flask import request
 flask_app = main_app.app
 
 # Database simulato in memoria
-mock_database = {}
+mock_database = {
+    "user": {
+
+    }
+}
 mock_tokens = {}  # Per gestire i token di autenticazione
 mock_blacklist = set()  # Per simulare i token blacklistati
 
@@ -118,6 +122,9 @@ def handle_register_admin(json):
 
 
 def handle_login(email, password):
+    print(email)
+    print(password)
+    
 
     if not email or not password:
         return MockResponse(400, {"error": "Email and password are required"})

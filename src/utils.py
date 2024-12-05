@@ -1,4 +1,6 @@
 import os
+import re
+
 import jwt
 import datetime
 from flask import jsonify
@@ -91,6 +93,7 @@ def handle_error(code):
 def set_response(response):
     RESPONSE["code"] = response.status_code
     RESPONSE["data"] = response.json().get("data")
+    RESPONSE["message"] = RESPONSE["message"] + " / " + response.json().get("message")
 
 
 def send_response(message=""):
@@ -123,8 +126,6 @@ def set_auth_token(token):
 def generate_token(user_id, role, user_pass):
     # Leggi la chiave segreta
     global SECRET_KEY
-    # SECRET_KEY = os.getenv("SECRET_KEY")
-    # print(SECRET_KEY)
 
     if not SECRET_KEY:
         raise ValueError("SECRET_KEY not found in the environment variables!")
@@ -174,3 +175,40 @@ def check_token_admin(enc_token):
         return False
 
     return True
+
+
+def process_fields(fields):
+    """
+    Itera sui campi forniti e restituisce una lista con i campi elaborati.
+    """
+    results = []
+    for field in fields:
+        reset_response()
+        if field:
+            # Applica la funzione di sanitizzazione
+            sanitize_hash(field)
+            # controlla la risposta ricevuta dalla funzione sanitize_username e determina se l'input è valido o meno
+            if RESPONSE["code"] == 400:
+                results.append('')
+            else:
+                tmp = RESPONSE["data"].strip("[]")
+                results.append(tmp)
+        else:
+            results.append('')
+    return results
+
+
+def sanitize_hash(input_str):
+    allowed_characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@.-: "
+    sanitized_str = input_str
+    for char in sanitized_str:
+        if char not in allowed_characters:
+            sanitized_str = sanitized_str.replace(char, "")
+    if input_str != sanitized_str:
+        RESPONSE["code"] = 400
+        RESPONSE["data"] = sanitized_str
+        return RESPONSE
+    else:
+        RESPONSE["code"] = 200
+        RESPONSE["data"] = sanitized_str
+        return RESPONSE

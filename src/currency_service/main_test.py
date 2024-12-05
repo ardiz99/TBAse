@@ -1,7 +1,12 @@
 import main as main_app
 from unittest.mock import patch
+import jwt
+import datetime
 
 flask_app = main_app.app
+
+# Secret key per token JWT (usata per i mock)
+SECRET_KEY = "test-secret-key"
 
 # Database simulato in memoria
 mock_database = {
@@ -26,10 +31,40 @@ def mock_save_last(op, args, res):
 
 main_app.mock_save_last = mock_save_last
 
-# Mock per le richieste GET
-def mock_requests_get(url, params=None, **kwargs):
-    print(f"Mock GET to {url} with params {params}")
+# Funzione per generare token di test
+def generate_test_token(user_id):
+    payload = {
+        "sub": user_id,
+        "iat": datetime.datetime.utcnow(),
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
+# Funzione per validare token mock
+def mock_validate_token(token):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return {"error": "Token expired"}
+    except jwt.InvalidTokenError:
+        return {"error": "Invalid token"}
+
+# Mock per le richieste GET
+def mock_requests_get(url, params=None, headers=None, **kwargs):
+    print(f"Mock GET to {url} with params {params} and headers {headers}")
+
+    # Controllo del token
+    auth_header = headers.get("Authorization") if headers else None
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return MockResponse(401, {"error": "Unauthorized: Missing token"})
+    
+    token = auth_header.split(" ")[1]
+    validation_result = mock_validate_token(token)
+    if "error" in validation_result:
+        return MockResponse(401, {"error": validation_result["error"]})
+
+    # Endpoint specifici
     if "/get_amount" in url:
         return handle_get_amount(params)
     if "/get_gacha_by_rarity" in url:
@@ -42,8 +77,18 @@ def mock_requests_get(url, params=None, **kwargs):
     return MockResponse(404, {"error": "Endpoint not found or unsupported GET method"})
 
 # Mock per le richieste POST
-def mock_requests_post(url, json=None, **kwargs):
-    print(f"Mock POST to {url} with json {json}")
+def mock_requests_post(url, json=None, headers=None, **kwargs):
+    print(f"Mock POST to {url} with json {json} and headers {headers}")
+
+    # Controllo del token
+    auth_header = headers.get("Authorization") if headers else None
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return MockResponse(401, {"error": "Unauthorized: Missing token"})
+    
+    token = auth_header.split(" ")[1]
+    validation_result = mock_validate_token(token)
+    if "error" in validation_result:
+        return MockResponse(401, {"error": validation_result["error"]})
 
     if "/roll" in url:
         return handle_market_roll(json)
@@ -51,25 +96,29 @@ def mock_requests_post(url, json=None, **kwargs):
     return MockResponse(404, {"error": "Endpoint not found or unsupported POST method"})
 
 # Mock per le richieste PUT
-def mock_requests_put(url, json=None, **kwargs):
-    print(f"Mock PUT to {url} with json {json}")
+def mock_requests_put(url, json=None, headers=None, **kwargs):
+    print(f"Mock PUT to {url} with json {json} and headers {headers}")
+
+    # Controllo del token
+    auth_header = headers.get("Authorization") if headers else None
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return MockResponse(401, {"error": "Unauthorized: Missing token"})
+    
+    token = auth_header.split(" ")[1]
+    validation_result = mock_validate_token(token)
+    if "error" in validation_result:
+        return MockResponse(401, {"error": validation_result["error"]})
 
     if "/update_amount" in url:
         return handle_update_amount(json)
 
     return MockResponse(404, {"error": "Endpoint not found or unsupported PUT method"})
 
-# Mock per le richieste DELETE (non usate in questo caso, ma lasciate per completezza)
-def mock_requests_delete(url, json=None, **kwargs):
-    print(f"Mock DELETE to {url} with json {json}")
-
-    return MockResponse(404, {"error": "Endpoint not found or unsupported DELETE method"})
-
 # Funzioni specifiche per la gestione dei vari endpoint
 def handle_get_amount(params):
     email = params.get("email")
     if email not in mock_database["users"]:
-        return MockResponse(400, {"error": "User not found"})
+        return MockResponse(404, {"error": "User not found"})
     user = mock_database["users"][email]
     return MockResponse(200, {"data": {"CurrencyAmount": user["CurrencyAmount"]}})
 
@@ -82,7 +131,7 @@ def handle_get_gacha_by_rarity(params):
 def handle_get_user_by_email(params):
     email = params.get("email")
     if email not in mock_database["users"]:
-        return MockResponse(400, {"error": "User not found"})
+        return MockResponse(404, {"error": "User not found"})
     user = mock_database["users"][email]
     return MockResponse(200, {"data": {"UserId": user["UserId"]}})
 
@@ -93,7 +142,6 @@ def handle_roll_img(params):
     return MockResponse(404, {"error": "Image not found"})
 
 def handle_market_roll(data):
-    # Simula il salvataggio di una roll
     print(f"Mock Market Roll: {data}")
     return MockResponse(200, {"message": "Roll successful"})
 
@@ -102,7 +150,7 @@ def handle_update_amount(data):
     new_amount = data.get("new_amount")
 
     if email not in mock_database["users"]:
-        return MockResponse(400, {"error": "User not found"})
+        return MockResponse(404, {"error": "User not found"})
     if new_amount < 0:
         return MockResponse(400, {"error": "Amount cannot be negative"})
 
@@ -122,9 +170,7 @@ class MockResponse:
 patch_requests_get = patch("requests.get", side_effect=mock_requests_get)
 patch_requests_post = patch("requests.post", side_effect=mock_requests_post)
 patch_requests_put = patch("requests.put", side_effect=mock_requests_put)
-patch_requests_delete = patch("requests.delete", side_effect=mock_requests_delete)
 
 patch_requests_get.start()
 patch_requests_post.start()
 patch_requests_put.start()
-patch_requests_delete.start()

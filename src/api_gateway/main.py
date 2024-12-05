@@ -6,11 +6,9 @@ import utils as u
 
 app = Flask(__name__)
 
-
 @app.route('/')
 def index():
     return {"message": "API Gateway is running"}
-
 
 @app.route('/roll', methods=['GET'])
 def roll():
@@ -95,7 +93,9 @@ def buy_currency():
 
     data = request.get_json()
     quantity = data.get('quantity')
-    if quantity is None:
+    fields_to_sanitize = u.process_fields([str(quantity)])
+    quantity = int(fields_to_sanitize[0])
+    if not quantity:
         u.bad_request()
         return u.send_response()
 
@@ -106,18 +106,20 @@ def buy_currency():
     if response.status_code != 200:
         u.handle_error(response.status_code)
 
+    u.set_response(response)
     return u.send_response()
 
 
-@app.route('/login', methods=['GET'])
+@app.route('/login', methods=['POST'])
 def login():
-    email = request.args.get('Email')
-    password = request.args.get('Password')
-    response = requests.get('https://auth-service:8001/login',
-                            verify=False,
-                            params={'Email': email, 'Password': password})
+    email = request.get_json().get('Email')
+    password = request.get_json().get('Password')
+    response = requests.post('https://auth-service:8001/login',
+                             verify=False,
+                             json={'Email': email, 'Password': password})
     if response.status_code != 200:
         u.handle_error(response.status_code)
+        u.set_response(response)
         return u.send_response()
 
     return jsonify(response.json()), 200
@@ -149,30 +151,55 @@ def register():
     return u.send_response()
 
 
-@app.route('/delete_user', methods=['GET'])
+@app.route('/delete_user', methods=['DELETE'])
 def delete_user():
-    email = request.args.get('Email')
-    password = request.args.get('Password')
-    response = requests.get('https://auth-service:8001/delete_user',
-                            verify=False,
-                            params={'Email': email, 'Password': password})
+    u.reset_response()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+
+    response = requests.delete('https://auth-service:8001/delete_user',
+                               verify=False,
+                               headers={'Authorization': auth_header}
+                               )
     return jsonify(response.json())
 
 
-@app.route('/delete_admin', methods=['GET'])
-def delete_admin():
-    email = request.args.get('Email')
-    password = request.args.get('Password')
-    response = requests.get('https://auth-service:8001/delete_admin',
+@app.route('/logout', methods=['GET'])
+def logout():
+    u.reset_response()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response("no token found. PLs log in first")
+    response = requests.get('https://auth-service:8001/logout',
                             verify=False,
-                            params={'Email': email, 'Password': password})
+                            headers={'Authorization': auth_header})
     return jsonify(response.json())
 
 
 @app.route('/update_user', methods=['PUT'])
 def update_user():
+    u.reset_response()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    data = request.get_json()
+    first_name = data.get('FirstName')
+    last_name = data.get('LastName')
+    email = data.get('Email')
+    password = data.get('Password')
+    amount = data.get('CurrencyAmount')
     response = requests.put('https://auth-service:8001/update_user',
-                            verify=False)
+                            verify=False,
+                            json={'FirstName': first_name,
+                                  'LastName': last_name,
+                                  'Email': email,
+                                  'Password': password,
+                                  'CurrencyAmount': amount},
+                            headers={'Authorization': auth_header})
     return jsonify(response.json())
 
 
@@ -193,7 +220,7 @@ def login_admin():
     return jsonify(response.json())
 
 
-### INIZIO Endpoint gacha  ====>
+# INIZIO Endpoint gacha  ====>
 
 # Endpoint per ottenere un singolo gacha
 @app.route('/gacha/get/<int:gacha_id>', methods=['GET'])
@@ -370,6 +397,13 @@ def new_auction():
     gacha_id = request.get_json().get('gacha_id')
     starting_price = request.get_json().get('starting_price')
     end_date = request.get_json().get('end_date')
+    fields_to_sanitize = u.process_fields([str(gacha_id), str(starting_price), end_date])
+    gacha_id = int(fields_to_sanitize[0])
+    starting_price = int(fields_to_sanitize[1])
+    end_date = fields_to_sanitize[2]
+    if not gacha_id or not starting_price or not end_date:
+        u.bad_request()
+        return u.send_response()
 
     path = u.MARKET_SERVICE_URL + "/new_auction"
     response = requests.post(path,
@@ -386,7 +420,7 @@ def new_auction():
     return u.send_response("Auction created successfully.")
 
 
-@app.route('/bid/<transaction_id>', methods=["PUT"])
+@app.route('/bid/<int:transaction_id>', methods=["PUT"])
 def new_bid(transaction_id):
     u.reset_response()
     auth_header = request.headers.get('Authorization')
@@ -399,6 +433,9 @@ def new_bid(transaction_id):
     email = token.get("sub")
     bid = request.get_json().get("bid")
 
+    fields_to_sanitize = u.process_fields([str(bid)])
+    bid = int(fields_to_sanitize[0])
+
     if not bid or not transaction_id:
         u.bad_request()
         return u.send_response()
@@ -410,8 +447,9 @@ def new_bid(transaction_id):
                                   "bid": bid})
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        u.set_response(response)
-        return u.send_response()
+
+    u.set_response(response)
+    return u.send_response()
 
 
 @app.route('/my_transaction_history', methods=['GET'])
