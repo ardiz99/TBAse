@@ -9,7 +9,7 @@
       <change beforePath="$PROJECT_DIR$/src/admin_gateway/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/admin_gateway/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/api_gateway/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api_gateway/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/auth_service/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth_service/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/db_manager/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/db_manager/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

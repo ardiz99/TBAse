@@ -35,11 +35,11 @@ def verify_password(password, encoded_hash, encoded_salt):
 
 
 # User login route
-@app.route('/login', methods=['GET'])
+@app.route('/login', methods=['POST'])
 def login():
     # prelevo le informazioni da inserire
-    email = request.args.get('Email')
-    password = request.args.get('Password')
+    email = request.get_json().get('Email')
+    password = request.get_json().get('Password')
 
     # # inserisco i campi appena presi nelvettore di sanificazione
     fields_to_process = [email, password]
@@ -49,10 +49,10 @@ def login():
     email = processed_fields[0]
     password = processed_fields[1]
 
-    response = requests.get('https://db-manager:8005/login',
-                            verify=False,
-                            params={
-                                "Email": email})  # effettuiamo un controllo preliminare sulla presenza della email
+    response = requests.post('https://db-manager:8005/login',
+                             verify=False,
+                             json={
+                                 "Email": email})  # effettuiamo un controllo preliminare sulla presenza della email
 
     if response.status_code != 200:
         u.handle_error(response.status_code)
@@ -74,11 +74,11 @@ def login():
 
 
 # admin login route
-@app.route('/login_admin', methods=['GET'])
+@app.route('/login_admin', methods=['POST'])
 def login_admin():
     # prelevo le informazioni da inserire
-    email = request.args.get('Email')
-    password = request.args.get('Password')
+    email = request.get_json().get('Email')
+    password = request.get_json().get('Password')
 
     # inserisco i campi appena presi nelvettore di sanificazione
     fields_to_process = [email, password]
@@ -92,9 +92,9 @@ def login_admin():
         u.bad_request()
         return u.send_response()
 
-    response = requests.get('https://db-manager:8005/login_admin',
-                            verify=False,
-                            params={"Email": email})
+    response = requests.post('https://db-manager:8005/login_admin',
+                             verify=False,
+                             json={"Email": email})
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()
@@ -109,6 +109,9 @@ def login_admin():
         u.RESPONSE["data"] = token
         u.RESPONSE["message"] = "Login seccessful"
         return u.send_response()
+    else:
+        u.generic_error()
+        return u.send_response("verify_password failed")
 
 
 # per gli user e admin

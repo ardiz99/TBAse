@@ -131,15 +131,15 @@ def delete_admin():
     return jsonify(response.json())
 
 
-@app.route('/login_admin', methods=['GET'])
+@app.route('/login_admin', methods=['POST'])
 def login_admin():
     u.reset_response()
 
-    email = request.args.get('Email')
-    password = request.args.get('Password')
-    response = requests.get('https://auth-service:8001/login_admin',
-                            verify=False,
-                            params={'Email': email, 'Password': password})
+    email = request.get_json().get('Email')
+    password = request.get_json().get('Password')
+    response = requests.post('https://auth-service:8001/login_admin',
+                             verify=False,
+                             json={'Email': email, 'Password': password})
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()

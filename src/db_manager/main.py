@@ -183,9 +183,9 @@ def get_all_admin():
     return u.send_response()
 
 
-@app.route('/login', methods=['GET'])
+@app.route('/login', methods=['POST'])
 def login():
-    email = request.args.get('Email')
+    email = request.get_json().get('Email')
 
     u.reset_response()
     query = "SELECT Password, Salt FROM user WHERE Email = '{}';".format(email)
@@ -235,9 +235,9 @@ def check_one_admin():
     return u.send_response()
 
 
-@app.route('/login_admin', methods=['GET'])
+@app.route('/login_admin', methods=['POST'])
 def login_admin():
-    email = request.args.get('Email')
+    email = request.get_json().get('Email')
 
     u.reset_response()
 

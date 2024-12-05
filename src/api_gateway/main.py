@@ -112,13 +112,13 @@ def buy_currency():
     return u.send_response()
 
 
-@app.route('/login', methods=['GET'])
+@app.route('/login', methods=['POST'])
 def login():
-    email = request.args.get('Email')
-    password = request.args.get('Password')
-    response = requests.get('https://auth-service:8001/login',
-                            verify=False,
-                            params={'Email': email, 'Password': password})
+    email = request.get_json().get('Email')
+    password = request.get_json().get('Password')
+    response = requests.post('https://auth-service:8001/login',
+                             verify=False,
+                             json={'Email': email, 'Password': password})
     if response.status_code != 200:
         u.handle_error(response.status_code)
         u.set_response(response)
