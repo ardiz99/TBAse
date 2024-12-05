@@ -4,7 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e6ece74-08b3-41c6-a2cf-978e2a41dcd0" name="Changes" comment="" />
+    <list default="true" id="4e6ece74-08b3-41c6-a2cf-978e2a41dcd0" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/src/admin_gateway/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/admin_gateway/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api_gateway/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/api_gateway/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/auth_service/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth_service/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/currency_service/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/currency_service/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/db_manager/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/db_manager/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/gacha_service/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/gacha_service/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/market_service/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/market_service/requirements.txt" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -24,15 +32,15 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "diego",
-    "last_opened_file_path": "C:/Users/Diego/Desktop/unipi/Secure Software Engineering/2024/Project/TBAse/src/gacha_service"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;diego&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Diego/Desktop/unipi/Secure Software Engineering/2024/Project/TBAse/src/gacha_service&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Diego\Desktop\unipi\Secure Software Engineering\2024\Project\TBAse\src\gacha_service" />
