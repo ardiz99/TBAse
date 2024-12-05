@@ -1,5 +1,6 @@
+import os
 from datetime import datetime
-from flask import Flask, jsonify, request, send_file
+from flask import Flask, request, send_file
 import requests
 import random
 
@@ -118,6 +119,9 @@ def roll_info(cost):
 def roll_img():
     url = request.args.get("url")
     image_path = "." + url
+    if not os.path.exists(image_path):
+        u.not_found()
+        return u.send_response()
 
     return send_file(image_path, mimetype='image/png')
 

@@ -4,43 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e6ece74-08b3-41c6-a2cf-978e2a41dcd0" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/auth_service/Dockerfile_test" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/auth_service/main_test.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/currency_service/Dockerfile_test" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/currency_service/main_test.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/gacha_service/Dockerfile_test" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/gacha_service/main_test.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/auth_service_ut.postman_collection.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/currency_service_ut.postman_collection.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/gacha_service_ut.postman_collection.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/TBASE.postman_collection.json" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TBASE.postman_collection.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api_gateway_openapi.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api_gateway_openapi.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/db_manager.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/doc/db_manager.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/secrets/cert.pem" beforeDir="false" afterPath="$PROJECT_DIR$/secrets/cert.pem" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/secrets/key.pem" beforeDir="false" afterPath="$PROJECT_DIR$/secrets/key.pem" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/secrets/secret_key.env" beforeDir="false" afterPath="$PROJECT_DIR$/secrets/secret_key.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_gateway/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/src/api_gateway/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_gateway/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api_gateway/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api_gateway/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/api_gateway/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/auth_service/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth_service/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/auth_service/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth_service/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/auth_service/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth_service/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/currency_service/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/src/currency_service/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/currency_service/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/currency_service/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/currency_service/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/currency_service/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/db_manager/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/src/db_manager/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/db_manager/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/db_manager/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/db_manager/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/db_manager/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/gacha_service/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/src/gacha_service/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/gacha_service/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/gacha_service/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/gacha_service/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/gacha_service/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/market_service/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/src/market_service/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/market_service/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/market_service/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/market_service/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/market_service/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils.py" afterDir="false" />
-    </list>
+    <list default="true" id="4e6ece74-08b3-41c6-a2cf-978e2a41dcd0" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -65,16 +29,18 @@
     "ASKED_ADD_EXTERNAL_FILES": "true",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "Merging diego",
-    "last_opened_file_path": "C:/Users/Diego/Desktop/unipi/Secure Software Engineering/2024/Project/TBAse/src/admin_gateway"
+    "git-widget-placeholder": "diego",
+    "last_opened_file_path": "C:/Users/Diego/Desktop/unipi/Secure Software Engineering/2024/Project/TBAse/src/gacha_service"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Diego\Desktop\unipi\Secure Software Engineering\2024\Project\TBAse\src\gacha_service" />
       <recent name="C:\Users\Diego\Desktop\unipi\Secure Software Engineering\2024\Project\TBAse\src\admin_gateway" />
       <recent name="C:\Users\Diego\Desktop\unipi\Secure Software Engineering\2024\Project\TBAse\src\auction_service" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Diego\Desktop\unipi\Secure Software Engineering\2024\Project\TBAse\src\api_gateway" />
       <recent name="C:\Users\Diego\Desktop\unipi\Secure Software Engineering\2024\Project\TBAse" />
     </key>
   </component>
@@ -156,5 +122,16 @@
   </component>
   <component name="UnknownFeatures">
     <option featureType="com.intellij.fileTypeFactory" implementationName="*.env" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

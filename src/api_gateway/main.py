@@ -106,6 +106,7 @@ def buy_currency():
     if response.status_code != 200:
         u.handle_error(response.status_code)
 
+    u.set_response(response)
     return u.send_response()
 
 
@@ -118,6 +119,7 @@ def login():
                             params={'Email': email, 'Password': password})
     if response.status_code != 200:
         u.handle_error(response.status_code)
+        u.set_response(response)
         return u.send_response()
 
     return jsonify(response.json()), 200
@@ -149,30 +151,55 @@ def register():
     return u.send_response()
 
 
-@app.route('/delete_user', methods=['GET'])
+@app.route('/delete_user', methods=['DELETE'])
 def delete_user():
-    email = request.args.get('Email')
-    password = request.args.get('Password')
-    response = requests.get('https://auth-service:8001/delete_user',
-                            verify=False,
-                            params={'Email': email, 'Password': password})
+    u.reset_response()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+
+    response = requests.delete('https://auth-service:8001/delete_user',
+                               verify=False,
+                               headers={'Authorization': auth_header}
+                               )
     return jsonify(response.json())
 
 
-@app.route('/delete_admin', methods=['GET'])
-def delete_admin():
-    email = request.args.get('Email')
-    password = request.args.get('Password')
-    response = requests.get('https://auth-service:8001/delete_admin',
+@app.route('/logout', methods=['GET'])
+def logout():
+    u.reset_response()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response("no token found. PLs log in first")
+    response = requests.get('https://auth-service:8001/logout',
                             verify=False,
-                            params={'Email': email, 'Password': password})
+                            headers={'Authorization': auth_header})
     return jsonify(response.json())
 
 
 @app.route('/update_user', methods=['PUT'])
 def update_user():
+    u.reset_response()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    data = request.get_json()
+    first_name = data.get('FirstName')
+    last_name = data.get('LastName')
+    email = data.get('Email')
+    password = data.get('Password')
+    amount = data.get('CurrencyAmount')
     response = requests.put('https://auth-service:8001/update_user',
-                            verify=False)
+                            verify=False,
+                            json={'FirstName': first_name,
+                                  'LastName': last_name,
+                                  'Email': email,
+                                  'Password': password,
+                                  'CurrencyAmount': amount},
+                            headers={'Authorization': auth_header})
     return jsonify(response.json())
 
 
@@ -193,7 +220,7 @@ def login_admin():
     return jsonify(response.json())
 
 
-### INIZIO Endpoint gacha  ====>
+# INIZIO Endpoint gacha  ====>
 
 # Endpoint per ottenere un singolo gacha
 @app.route('/gacha/get/<int:gacha_id>', methods=['GET'])
@@ -410,7 +437,9 @@ def new_bid(transaction_id):
                                   "bid": bid})
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return u.send_response()
+
+    u.set_response(response)
+    return u.send_response()
 
 
 @app.route('/my_transaction_history', methods=['GET'])
