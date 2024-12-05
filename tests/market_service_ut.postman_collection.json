@@ -30,7 +30,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"user_id\": 1,\r\n  \"gacha_id\": null,\r\n  \"cost\": 100\r\n}",
+					"raw": "{\r\n    \"user_id\": 1,\r\n    \"gacha_id\": 1,\r\n    \"cost\": 10,\r\n    \"end_date\": \"2024-11-18 17:11:56\"\r\n}\r\n    ",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -38,10 +38,61 @@
 					}
 				},
 				"url": {
-					"raw": "https://localhost:5004/roll",
+					"raw": "https://127.0.0.1:5004/roll",
 					"protocol": "https",
 					"host": [
-						"localhost"
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5004",
+					"path": [
+						"roll"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Roll_no_total_information",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Error: Missing required fields\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"    var response = pm.response.json();\r",
+							"    pm.expect(response.message).to.include(\"Bad Request\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"gacha_id\": 1,\r\n    \"cost\": 10\r\n}\r\n    ",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://127.0.0.1:5004/roll",
+					"protocol": "https",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
 					],
 					"port": "5004",
 					"path": [
@@ -148,10 +199,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5004/auction",
+					"raw": "https://127.0.0.1:5004/auction",
 					"protocol": "https",
 					"host": [
-						"localhost"
+						"127",
+						"0",
+						"0",
+						"1"
 					],
 					"port": "5004",
 					"path": [
@@ -220,7 +274,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"user_owner\": \"user@example.com\",\r\n  \"gacha_id\": 101,\r\n  \"starting_price\": 500,\r\n  \"end_date\": \"2024-12-31 23:59:59\"\r\n}\r\n",
+					"raw": "{\r\n  \"user_owner\": \"bob@example.com\",\r\n  \"gacha_id\": 2,\r\n  \"starting_price\": 500,\r\n  \"end_date\": \"2024-12-31 23:59:59\"\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -228,8 +282,8 @@
 					}
 				},
 				"url": {
-					"raw": "htpps://localhost:5004/new_auction",
-					"protocol": "htpps",
+					"raw": "https://localhost:5004/new_auction",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
@@ -274,8 +328,8 @@
 					}
 				},
 				"url": {
-					"raw": "htpps://localhost:5004/new_auction",
-					"protocol": "htpps",
+					"raw": "https://localhost:5004/new_auction",
+					"protocol": "https",
 					"host": [
 						"localhost"
 					],
