@@ -43,7 +43,7 @@ def login():
 
     # # inserisco i campi appena presi nelvettore di sanificazione
     fields_to_process = [email, password]
-    processed_fields = process_fields(fields_to_process)
+    processed_fields = u.process_fields(fields_to_process)
 
     # prelevo i campi sanificati
     email = processed_fields[0]
@@ -82,7 +82,7 @@ def login_admin():
 
     # inserisco i campi appena presi nelvettore di sanificazione
     fields_to_process = [email, password]
-    processed_fields = process_fields(fields_to_process)
+    processed_fields = u.process_fields(fields_to_process)
 
     # prelevo i campi sanificati
     email = processed_fields[0]
@@ -145,7 +145,7 @@ def register():
 
     # inserisco i campi appena presi nelvettore di sanificazione
     fields_to_process = [firstname, lastname, email, password, str(currencyAmount)]
-    processed_fields = process_fields(fields_to_process)
+    processed_fields = u.process_fields(fields_to_process)
 
     # prelevo i campi sanificati
     firstname = processed_fields[0]
@@ -187,7 +187,7 @@ def register_admin():
 
     # inserisco i campi appena presi nelvettore di sanificazione
     fields_to_process = [firstname, lastname, email, password]
-    processed_fields = process_fields(fields_to_process)
+    processed_fields = u.process_fields(fields_to_process)
 
     # prelevo i campi sanificati
     firstname = processed_fields[0]
@@ -279,7 +279,7 @@ def update_user():
 
     # inserisco i campi appena presi nelvettore di sanificazione
     fields_to_process = [firstname, lastname, email, password, str(Currency)]
-    processed_fields = process_fields(fields_to_process)
+    processed_fields = u.process_fields(fields_to_process)
 
     # prelevo i campi sanificati
     firstname = processed_fields[0]
@@ -378,7 +378,7 @@ def update_specific_user():
 
     # inserisco i campi appena presi nelvettore di sanificazione
     fields_to_process = [firstname, lastname, email, password, str(Currency)]
-    processed_fields = process_fields(fields_to_process)
+    processed_fields = u.process_fields(fields_to_process)
 
     # prelevo i campi sanificati
     firstname = processed_fields[0]
@@ -477,7 +477,7 @@ def update_admin():
 
     # inserisco i campi appena presi nelvettore di sanificazione
     fields_to_process = [firstname, lastname, email, password]
-    processed_fields = process_fields(fields_to_process)
+    processed_fields = u.process_fields(fields_to_process)
 
     # prelevo i campi sanificati
     firstname = processed_fields[0]
@@ -601,65 +601,6 @@ def delete_admin():
         return jsonify(response.json()), response.status_code
     except requests.exceptions.RequestException as e:
         return jsonify({"error": "Failed to connect to db_manager", "details": str(e)}), 500
-
-
-def process_fields(fields):
-    """
-    Itera sui campi forniti e restituisce una lista con i campi elaborati.
-    """
-    results = []
-    for field in fields:
-        u.reset_response()
-        if field:
-            # Applica la funzione di sanitizzazione
-            sanitize_hash(field)
-            # controlla la risposta ricevuta dalla funzione sanitize_username e determina se l'input è valido o meno
-            if u.RESPONSE["code"] == 400:
-                results.append('')
-            else:
-                tmp = u.RESPONSE["data"].strip("[]")
-                results.append(tmp)
-        else:
-            results.append('')
-    return results
-
-
-def sanitize_username(input_str):
-    # Only allows alphanumeric characters, underscores,space,underscore dot and snail
-    sanitized_str = re.sub('[a-zA-Z0-9_@ .]*g', '', input_str)
-    if input_str != sanitized_str:
-        u.RESPONSE["code"] = 400
-        u.RESPONSE["data"] = sanitized_str
-        return u.RESPONSE
-    else:
-        u.RESPONSE["code"] = 200
-        u.RESPONSE["data"] = sanitized_str
-        return u.RESPONSE
-
-
-# def sanitize_hash(input_str):
-#     allowed_characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@"
-#     sanitized_str = input_str
-#     for char in sanitized_str:
-#         if char not in allowed_characters:
-#             sanitized_str = sanitized_str.replace(char, "")
-#     return sanitized_str
-
-
-def sanitize_hash(input_str):
-    allowed_characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@."
-    sanitized_str = input_str
-    for char in sanitized_str:
-        if char not in allowed_characters:
-            sanitized_str = sanitized_str.replace(char, "")
-    if input_str != sanitized_str:
-        u.RESPONSE["code"] = 400
-        u.RESPONSE["data"] = sanitized_str
-        return u.RESPONSE
-    else:
-        u.RESPONSE["code"] = 200
-        u.RESPONSE["data"] = sanitized_str
-        return u.RESPONSE
 
 
 @app.route('/protected', methods=['GET'])

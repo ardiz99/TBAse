@@ -488,6 +488,7 @@ def get_all_gachas():
     u.RESPONSE["message"] = "Gachas retrivied succesfully"
     return jsonify(u.RESPONSE)
 
+
 @app.route('/specific_history', methods=['GET'])
 def specific_history():
     u.reset_response()

@@ -95,7 +95,9 @@ def buy_currency():
 
     data = request.get_json()
     quantity = data.get('quantity')
-    if quantity is None:
+    fields_to_sanitize = u.process_fields([str(quantity)])
+    quantity = int(fields_to_sanitize[0])
+    if not quantity:
         u.bad_request()
         return u.send_response()
 
@@ -397,6 +399,13 @@ def new_auction():
     gacha_id = request.get_json().get('gacha_id')
     starting_price = request.get_json().get('starting_price')
     end_date = request.get_json().get('end_date')
+    fields_to_sanitize = u.process_fields([str(gacha_id), str(starting_price), end_date])
+    gacha_id = int(fields_to_sanitize[0])
+    starting_price = int(fields_to_sanitize[1])
+    end_date = fields_to_sanitize[2]
+    if not gacha_id or not starting_price or not end_date:
+        u.bad_request()
+        return u.send_response()
 
     path = u.MARKET_SERVICE_URL + "/new_auction"
     response = requests.post(path,
@@ -413,7 +422,7 @@ def new_auction():
     return u.send_response("Auction created successfully.")
 
 
-@app.route('/bid/<transaction_id>', methods=["PUT"])
+@app.route('/bid/<int:transaction_id>', methods=["PUT"])
 def new_bid(transaction_id):
     u.reset_response()
     auth_header = request.headers.get('Authorization')
@@ -425,6 +434,9 @@ def new_bid(transaction_id):
 
     email = token.get("sub")
     bid = request.get_json().get("bid")
+
+    fields_to_sanitize = u.process_fields([str(bid)])
+    bid = int(fields_to_sanitize[0])
 
     if not bid or not transaction_id:
         u.bad_request()
