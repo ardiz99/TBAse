@@ -200,7 +200,7 @@ def new_bid(transaction_id):
     user_owner_amount = response.json().get("data").get("CurrencyAmount")
     user_owner_email = response.json().get("data").get("Email")
 
-    # 1) CONTROLLO sul end_date perché dopo 24h l'asta si chiude
+    # 1) CONTROLLO sul end_date per evitare che sia chiusa
     end_date = datetime.strptime(stored_date, "%Y-%m-%d %H:%M:%S")
     now = datetime.now()
     if now >= end_date:
