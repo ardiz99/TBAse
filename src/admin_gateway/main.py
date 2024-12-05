@@ -316,7 +316,7 @@ def add_gacha():
 
 
 # Endpoint per aggiornare un gacha
-@app.route('/gacha/update/<int:gacha_id>', methods=['PUT'])
+@app.route('/gacha/update/<string:gacha_id>', methods=['PUT'])
 def update_gacha(gacha_id):
     u.reset_response()
     auth_header = request.headers.get('Authorization')
@@ -338,7 +338,12 @@ def update_gacha(gacha_id):
         u.RESPONSE["code"] = 400
         u.RESPONSE["message"] = f"Invalid request: {str(e)}"
         return jsonify(u.RESPONSE), 400
-    url = u.GACHA_SERVICE_URL + f"/update/{gacha_id}"
+    
+    id = u.safe_parse_int(sanitize(gacha_id,u.ALLOWED_INT))
+    if id is None:
+        u.bad_request("Invalid input")
+        return u.send_response()
+    url = u.GACHA_SERVICE_URL + f"/update/{id}"
     response = requests.put(url,
                             verify=False,
                             json=data,
@@ -357,7 +362,7 @@ def update_gacha(gacha_id):
 
 
 # Endpoint per eliminare un gacha
-@app.route('/gacha/delete/<int:gacha_id>', methods=['DELETE'])
+@app.route('/gacha/delete/<string:gacha_id>', methods=['DELETE'])
 def delete_gacha(gacha_id):
     u.reset_response()
     auth_header = request.headers.get('Authorization')
@@ -371,7 +376,13 @@ def delete_gacha(gacha_id):
     if role != "admin":
         u.forbidden()
         return u.send_response()
-    url = u.GACHA_SERVICE_URL + f"/delete/{gacha_id}"
+    
+    id = u.safe_parse_int(sanitize(gacha_id,u.ALLOWED_INT))
+    if id is None:
+        u.bad_request("Invalid input")
+        return u.send_response()
+    url = u.GACHA_SERVICE_URL + f"/delete/{id}"
+
     response = requests.delete(url, verify=False)
     status_code = response.status_code
     if status_code == 404:
@@ -387,7 +398,7 @@ def delete_gacha(gacha_id):
 
 
 # Endpoint per ottenere un singolo gacha
-@app.route('/gacha/get/<int:gacha_id>', methods=['GET'])
+@app.route('/gacha/get/<string:gacha_id>', methods=['GET'])
 def get_gacha(gacha_id):
     u.reset_response()
     auth_header = request.headers.get('Authorization')
@@ -402,7 +413,12 @@ def get_gacha(gacha_id):
         u.forbidden()
         return u.send_response()
 
-    url = u.GACHA_SERVICE_URL + f"/get/{gacha_id}"
+    id = u.safe_parse_int(sanitize(gacha_id,u.ALLOWED_INT))
+    if id is None:
+        u.bad_request("Invalid input")
+        return u.send_response()
+    
+    url = u.GACHA_SERVICE_URL + f"/get/{id}"
     response = requests.get(url, verify=False)
     status_code = response.status_code
     if status_code == 404:
@@ -436,7 +452,12 @@ def get_gacha_by_name(gacha_name):
     if role != "admin":
         u.forbidden()
         return u.send_response()
-    url = u.GACHA_SERVICE_URL + f"/getName/{gacha_name}"
+    
+    name = sanitize(gacha_name,u.ALLOWED_CHAR)
+    if name is None:
+        u.bad_request("Invalid input")
+        return u.send_response()
+    url = u.GACHA_SERVICE_URL + f"/getName/{name}"
     response = requests.get(url, verify=False)
     status_code = response.status_code
     if status_code == 404:
@@ -525,6 +546,17 @@ def specific_market_history():
     response = requests.get('http://auth-service:8004/specific_market_history')
     return jsonify(response.json())
 
+
+def sanitize(input_str, allowed_characters):
+    sanitized_str = input_str
+    for char in sanitized_str:
+        if char not in allowed_characters:
+            sanitized_str = sanitized_str.replace(char, "")
+    if input_str != sanitized_str:
+        return None
+    else:
+        return sanitized_str
+    
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=u.FLASK_DEBUG)

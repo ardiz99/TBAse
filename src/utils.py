@@ -24,6 +24,9 @@ CURRENCY_SERVICE_URL = "http://127.0.0.1:8004" if LOCAL else "https://currency-s
 DB_MANAGER_URL = "http://127.0.0.1:8005" if LOCAL else "https://db-manager:8005"
 AUCTION_SERVICE_URL = "http://127.0.0.1:8006" if LOCAL else "https://auction-service:8006"
 
+ALLOWED_INT = "0123456789"
+ALLOWED_CHAR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@."
+
 RESPONSE = {
     "code": 200,
     "data": [],
@@ -175,3 +178,24 @@ def check_token_admin(enc_token):
         return False
 
     return True
+
+
+def sanitize(input_str, allowed_characters):
+    sanitized_str = input_str
+    for char in sanitized_str:
+        if char not in allowed_characters:
+            sanitized_str = sanitized_str.replace(char, "")
+    if input_str != sanitized_str:
+        return None
+    else:
+        return sanitized_str
+    
+    
+def safe_parse_int(value: str) -> int:
+    if str is None:
+        return None
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        print(f"Errore: Impossibile convertire '{value}' in un intero.")
+        return None

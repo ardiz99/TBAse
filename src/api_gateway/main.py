@@ -222,15 +222,20 @@ def login_admin():
 
 # INIZIO Endpoint gacha  ====>
 
+
 # Endpoint per ottenere un singolo gacha
-@app.route('/gacha/get/<int:gacha_id>', methods=['GET'])
+@app.route('/gacha/get/<string:gacha_id>', methods=['GET'])
 def get_gacha(gacha_id):
     u.reset_response()
     auth_header = request.headers.get('Authorization')
     if not auth_header:
         u.unauthorized()
         return u.send_response()
-    url = u.GACHA_SERVICE_URL + f"/get/{gacha_id}"
+    id = u.safe_parse_int(sanitize(gacha_id,u.ALLOWED_INT))
+    if id is None:
+        u.bad_request("Invalid input")
+        return u.send_response()
+    url = u.GACHA_SERVICE_URL + f"/get/{id}"
     response = requests.get(url, verify=False)
     status_code = response.status_code
     if status_code == 404:
@@ -257,7 +262,18 @@ def get_gacha_by_name(gacha_name):
     if not auth_header:
         u.unauthorized()
         return u.send_response()
-    url = u.GACHA_SERVICE_URL + f"/getName/{gacha_name}"
+    
+    u.reset_response()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    
+    name = sanitize(gacha_name,u.ALLOWED_CHAR)
+    if name is None:
+        u.bad_request("Invalid input")
+        return u.send_response()
+    url = u.GACHA_SERVICE_URL + f"/getName/{name}"
     response = requests.get(url, verify=False)
     status_code = response.status_code
     if status_code == 404:
@@ -303,7 +319,7 @@ def get_all_gachas():
     return jsonify(u.RESPONSE)
 
 
-@app.route('/gacha/mygacha/<int:gacha_id>', methods=['GET'])
+@app.route('/gacha/mygacha/<string:gacha_id>', methods=['GET'])
 def get_mygacha(gacha_id):
     u.reset_response()
     auth_header = request.headers.get('Authorization')
@@ -314,7 +330,17 @@ def get_mygacha(gacha_id):
     token = u.validate_token(acces_token)
     email = token.get("sub")
 
-    url = u.GACHA_SERVICE_URL + f"/mygacha/{email}/{gacha_id}"
+    u.reset_response()
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        u.unauthorized()
+        return u.send_response()
+    
+    id = u.safe_parse_int(sanitize(gacha_id,u.ALLOWED_INT))
+    if id is None:
+        u.bad_request("Invalid input")
+        return u.send_response()
+    url = u.GACHA_SERVICE_URL + f"/mygacha/{email}/{id}"
     response = requests.get(url, verify=False)
     status_code = response.status_code
     if status_code == 404:
@@ -462,6 +488,16 @@ def my_transaction_history():
     u.set_response(response)
     return u.send_response()
 
-
+def sanitize(input_str, allowed_characters):
+    sanitized_str = input_str
+    for char in sanitized_str:
+        if char not in allowed_characters:
+            sanitized_str = sanitized_str.replace(char, "")
+    if input_str != sanitized_str:
+        return None
+    else:
+        return sanitized_str
+    
+    
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=u.FLASK_DEBUG)
