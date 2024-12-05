@@ -161,27 +161,19 @@ def register_admin():
     password = data.get('Password')
     salt = data.get('Salt')
 
-    if not email or not password or not firstname or not lastname:
-        u.generic_error("All field are required")
-        return u.send_response()
-
     u.reset_response()
 
-    try:
-        query = "INSERT INTO admin (FirstName, LastName, Email, Password, Salt) VALUES ("""
-        query = query + "'{}',".format(firstname)
-        query = query + "'{}',".format(lastname)
-        query = query + "'{}',".format(email)
-        query = query + "'{}',".format(password)
-        query = query + "'{}');""".format(salt)
-        handle_db_operation(query, commit=True)
+    query = "INSERT INTO admin (FirstName, LastName, Email, Password, Salt) VALUES ("""
+    query = query + "'{}',".format(firstname)
+    query = query + "'{}',".format(lastname)
+    query = query + "'{}',".format(email)
+    query = query + "'{}',".format(password)
+    query = query + "'{}');""".format(salt)
+    handle_db_operation(query, commit=True)
 
-        query = "SELECT * FROM admin  WHERE Email = '{}';".format(email)
-        handle_db_operation(query, fetch_all=True)
-        return u.send_response()
-    except Error as e:
-        u.generic_error(str(e))
-        return u.send_response(str(e))
+    query = "SELECT * FROM admin  WHERE Email = '{}';".format(email)
+    handle_db_operation(query, fetch_all=True)
+    return u.send_response()
 
 
 @app.route('/get_all_admin', methods=['GET'])
@@ -195,61 +187,41 @@ def get_all_admin():
 def login():
     email = request.args.get('Email')
 
-    if not email:
-        u.generic_error("email required")
-        return u.send_response()
-
     u.reset_response()
-    try:
-        query = "SELECT Password, Salt FROM user WHERE Email = '{}';".format(email)
-        query = query + " LIMIT 1;"
-        handle_db_operation(query, fetch_all=True)
-        return u.send_response()
-    except Error as e:
-        u.generic_error(e)
-        return u.send_response()
+    query = "SELECT Password, Salt FROM user WHERE Email = '{}';".format(email)
+    query = query + " LIMIT 1;"
+    handle_db_operation(query, fetch_all=True)
+    return u.send_response()
 
 
 @app.route('/check_users_profile', methods=['GET'])
 def check_users_profile():
     u.reset_response()
 
-    try:
-        query = "SELECT * FROM user;"
-        handle_db_operation(query, fetch_all=True)
-        return u.send_response()
-    except Error as e:
-        u.generic_error(e)
-        return u.send_response()
+    query = "SELECT * FROM user;"
+    handle_db_operation(query, fetch_all=True)
+    return u.send_response()
 
 
 @app.route('/check_one_user', methods=['GET'])
 def check_one_user():
     u.reset_response()
     email = request.args.get('Email')
-    password = request.args.get('Password')
-    try:
-        query = "SELECT * FROM user WHERE Email = '{}'".format(email) + " and Password = '{}';".format(password)
-        # query = "SELECT Salt FROM user WHERE Email = '{}'".format(email)
-        handle_db_operation(query, fetch_all=True)
-        return u.send_response()
-    except Error as e:
-        u.generic_error(e)
-        return u.send_response()
+    query = "SELECT * " \
+            "FROM user " \
+            "WHERE Email = %s"
+    values = (email,)
+    handle_db_operation(query, values, fetch_one=True)
+    return u.send_response()
 
 
 @app.route('/check_one_user_simple', methods=['GET'])
 def check_one_user_simple():
     u.reset_response()
     Userid = request.args.get('UserId')
-    try:
-        query = "SELECT * FROM user WHERE UserId = '{}'".format(Userid) + " LIMIT 1;"
-        # query = "SELECT Salt FROM user WHERE Email = '{}'".format(email)
-        handle_db_operation(query, fetch_all=True)
-        return u.send_response()
-    except Error as e:
-        u.generic_error(e)
-        return u.send_response()
+    query = "SELECT * FROM user WHERE UserId = '{}'".format(Userid) + " LIMIT 1;"
+    handle_db_operation(query, fetch_all=True)
+    return u.send_response()
 
 
 # funzione che serve per prendere tutti i campi dell admin per l'update dinamico
@@ -257,38 +229,22 @@ def check_one_user_simple():
 def check_one_admin():
     u.reset_response()
     email = request.args.get('Email')
-    # password = request.args.get('Password')
 
-    try:
-        query = "SELECT * FROM admin WHERE Email = '{}'".format(email) + " LIMIT 1;"""
-        # query = "DELETE FROM admin WHERE Email = %s "
-        # handle_db_operation(query, values=(email), commit=True)
-        # query = "SELECT Salt FROM user WHERE Email = '{}'".format(email)
-        handle_db_operation(query, fetch_all=True)
-        return u.send_response()
-    except Error as e:
-        u.generic_error(e)
-        return u.send_response()
+    query = "SELECT * FROM admin WHERE Email = '{}'".format(email) + " LIMIT 1;"""
+    handle_db_operation(query, fetch_all=True)
+    return u.send_response()
 
 
 @app.route('/login_admin', methods=['GET'])
 def login_admin():
     email = request.args.get('Email')
 
-    if not email:
-        u.generic_error("email required")
-        return u.send_response()
-
     u.reset_response()
 
-    try:
-        query = "SELECT Password, Salt FROM admin WHERE Email = '{}'".format(email)
-        query = query + " LIMIT 1;"
-        handle_db_operation(query, fetch_all=True)
-        return u.send_response()
-    except Error as e:
-        u.generic_error(e)
-        return u.send_response()
+    query = "SELECT Password, Salt FROM admin WHERE Email = '{}'".format(email)
+    query = query + " LIMIT 1;"
+    handle_db_operation(query, fetch_all=True)
+    return u.send_response()
 
 
 @app.route('/delete_user', methods=['DELETE'])
@@ -303,23 +259,16 @@ def delete_user():
         return u.send_response()
 
     u.reset_response()
-    try:
-        # Costruisci la query SQL per eliminare l'utente
-        query = "DELETE FROM user WHERE Email = %s AND Password = %s"
-        handle_db_operation(query, values=(email, password), commit=True)
 
-        # Verifica se l'utente è stato eliminato
-        # query = "SELECT * FROM user WHERE Email = %s"
-        # handle_db_operation(query, values=(email,), fetch_one=True)
+    # Costruisci la query SQL per eliminare l'utente
+    query = "DELETE FROM user WHERE Email = %s AND Password = %s"
+    handle_db_operation(query, values=(email, password), commit=True)
 
-        if u.RESPONSE["data"]:
-            u.generic_error("Failed to delete user")
-        else:
-            u.RESPONSE["message"] = "User deleted successfully"
-        return u.send_response()
-    except Error as e:
-        u.generic_error(str(e))
-        return u.send_response()
+    if u.RESPONSE["data"]:
+        u.generic_error("Failed to delete user")
+    else:
+        u.RESPONSE["message"] = "User deleted successfully"
+    return u.send_response()
 
 
 @app.route('/delete_admin', methods=['DELETE'])
@@ -329,45 +278,32 @@ def delete_admin():
     email = data.get('Email')
     password = data.get('Password')
 
-    if not email or not password:
-        u.generic_error("Email and Password are required")
-        return u.send_response()
-
     u.reset_response()
-    try:
-        # Costruisci la query SQL per eliminare l'amministratore
-        query = "DELETE FROM admin WHERE Email = %s AND Password = %s"
-        handle_db_operation(query, values=(email, password), commit=True)
+    # Costruisci la query SQL per eliminare l'amministratore
+    query = "DELETE FROM admin WHERE Email = %s AND Password = %s"
+    handle_db_operation(query, values=(email, password), commit=True)
 
-        # Verifica se l'amministratore è stato eliminato
-        # query = "SELECT * FROM admin WHERE Email = %s"
-        # handle_db_operation(query, values=(email,), fetch_one=True)
-
-        if u.RESPONSE["data"]:
-            u.generic_error("Failed to delete admin")
-        else:
-            u.RESPONSE["message"] = "Admin deleted successfully"
-        return u.send_response()
-    except Error as e:
-        u.generic_error(str(e))
-        return u.send_response()
+    if u.RESPONSE["data"]:
+        u.generic_error("Failed to delete admin")
+    else:
+        u.RESPONSE["message"] = "Admin deleted successfully"
+    return u.send_response()
 
 
 @app.route('/update_user', methods=['PUT'])
 def update_user():
+    u.reset_response()
     # Estrai i dati dalla richiesta
     data = request.get_json()
-    if not data:
-        u.generic_error("Missing fields")
-        return u.send_response()
 
     firstname = data.get('FirstName')
     lastname = data.get('LastName')
     email = data.get('Email')
+    tmp_email = data.get('tmp_email')
     password = data.get('Password')
     currency_amount = data.get('CurrencyAmount')
+    salt = data.get('Salt')
 
-    u.reset_response()
     try:
         # Costruisci dinamicamente la query SQL
         updates = []
@@ -375,16 +311,21 @@ def update_user():
             updates.append(f"FirstName = '{firstname}'")
         if lastname:
             updates.append(f"LastName = '{lastname}'")
+        if email:
+            updates.append(f"Email = '{email}'")
         if password:
             updates.append(f"Password = '{password}'")
         if currency_amount:
-            updates.append(f"CurrencyAmount = '{currency_amount}'")
+            updates.append(f"CurrencyAmount = {currency_amount}")
+        if salt:
+            updates.append(f"Salt = '{salt}'")
 
         if not updates:
             u.generic_error("No fields to update")
             return u.send_response()
 
-        query = f"UPDATE user SET {', '.join(updates)} WHERE Email = '{email}';"
+        query = f"UPDATE user SET {', '.join(updates)} WHERE Email = '{tmp_email}';"
+
         handle_db_operation(query, commit=True)
 
         query = f"SELECT * FROM user WHERE Email = '{email}';"
@@ -444,14 +385,13 @@ def update_admin():
 def update_specific_user():
     # Estrai i dati dalla richiesta
     data = request.get_json()
-    if not data:
-        u.generic_error("Missing fields")
-        return u.send_response()
 
     firstname = data.get('FirstName')
     lastname = data.get('LastName')
     email = data.get('Email')
+    tmp_email = data.get('tmp_email')
     password = data.get('Password')
+    salt = data.get('Salt')
     currency_amount = data.get('CurrencyAmount')
 
     if not email or not any([firstname, lastname, password, currency_amount]):
@@ -466,18 +406,22 @@ def update_specific_user():
             updates.append(f"FirstName = '{firstname}'")
         if lastname:
             updates.append(f"LastName = '{lastname}'")
+        if email:
+            updates.append(f"Email = '{email}'")
         if password:
             updates.append(f"Password = '{password}'")
+        if salt:
+            updates.append(f"Salt = '{salt}'")
         if currency_amount:
-            updates.append(f"CurrencyAmount = '{currency_amount}'")
+            updates.append(f"CurrencyAmount = {currency_amount}")
 
         if not updates:
             u.generic_error("No fields to update")
             return u.send_response()
 
-        query = f"UPDATE user SET {', '.join(updates)} WHERE Email = '{email}';"
+        query = f"UPDATE user SET {', '.join(updates)} WHERE Email = '{tmp_email}';"
         handle_db_operation(query, commit=True)
-
+        return jsonify(query)
         query = f"SELECT * FROM user WHERE Email = '{email}';"
         handle_db_operation(query, fetch_one=True)
         return u.send_response()
