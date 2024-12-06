@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 import requests
 import utils as u
 
@@ -16,28 +16,14 @@ def index():
 @app.route('/auction')
 def get_all_auctions():
     u.reset_response()
-
-    # Estrai l'header di autorizzazione
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized("Authorization header missing")
+        u.unauthorized()
         return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
 
-    # Rimuovi il prefisso "Bearer"
-    try:
-        access_token =  auth_header.removeprefix("Bearer ").strip()
-        print("Access Token:", access_token)  # Log del token estratto
-    except IndexError:
-        u.unauthorized("Malformed Authorization header")
-        return u.send_response()
-
-    # Valida il token
-    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
-    if "error" in token_data:
-        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
-        return u.send_response()
-    #return jsonify({"token_data":token_data,"access_token":access_token})
-    role=token_data.get("decoded", {}).get("role")
+    role = token.get("role")
     if role != "admin":
         u.forbidden()
         return u.send_response()
@@ -56,28 +42,14 @@ def get_all_auctions():
 @app.route('/auction/<int:transaction_id>')
 def get_specific_auction(transaction_id):
     u.reset_response()
-
-    # Estrai l'header di autorizzazione
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized("Authorization header missing")
+        u.unauthorized()
         return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
 
-    # Rimuovi il prefisso "Bearer"
-    try:
-        access_token =  auth_header.removeprefix("Bearer ").strip()
-        print("Access Token:", access_token)  # Log del token estratto
-    except IndexError:
-        u.unauthorized("Malformed Authorization header")
-        return u.send_response()
-
-    # Valida il token
-    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
-    if "error" in token_data:
-        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
-        return u.send_response()
-    #return jsonify({"token_data":token_data,"access_token":access_token})
-    role=token_data.get("decoded", {}).get("role")
+    role = token.get("role")
     if role != "admin":
         u.forbidden()
         return u.send_response()
@@ -96,28 +68,14 @@ def get_specific_auction(transaction_id):
 @app.route('/close_auction/<int:transaction_id>', methods=['PUT'])
 def close_auction(transaction_id):
     u.reset_response()
-
-    # Estrai l'header di autorizzazione
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized("Authorization header missing")
+        u.unauthorized()
         return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
 
-    # Rimuovi il prefisso "Bearer"
-    try:
-        access_token =  auth_header.removeprefix("Bearer ").strip()
-        print("Access Token:", access_token)  # Log del token estratto
-    except IndexError:
-        u.unauthorized("Malformed Authorization header")
-        return u.send_response()
-
-    # Valida il token
-    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
-    if "error" in token_data:
-        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
-        return u.send_response()
-    #return jsonify({"token_data":token_data,"access_token":access_token})
-    role=token_data.get("decoded", {}).get("role")
+    role = token.get("role")
     if role != "admin":
         u.forbidden()
         return u.send_response()
@@ -134,8 +92,6 @@ def close_auction(transaction_id):
 
 @app.route('/register_admin', methods=['POST'])
 def register_admin():
-    u.reset_response()
-
     data = request.get_json()
     first_name = data.get('FirstName')
     last_name = data.get('LastName')
@@ -147,228 +103,40 @@ def register_admin():
                                    'LastName': last_name,
                                    'Email': email,
                                    'Password': password})
-    return jsonify(response.json())
-
-
-@app.route('/delete_admin', methods=['DELETE'])
-def delete_admin():
-    u.reset_response()
-
-    # Estrai l'header di autorizzazione
-    auth_header = request.headers.get('Authorization')
-    if not auth_header:
-        u.unauthorized("Authorization header missing")
-        return u.send_response()
-
-    # Rimuovi il prefisso "Bearer"
-    try:
-        access_token =  auth_header.removeprefix("Bearer ").strip()
-        print("Access Token:", access_token)  # Log del token estratto
-    except IndexError:
-        u.unauthorized("Malformed Authorization header")
-        return u.send_response()
-
-    # Valida il token
-    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
-    if "error" in token_data:
-        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
-        return u.send_response()
-    #return jsonify({"token_data":token_data,"access_token":access_token})
-    role=token_data.get("decoded", {}).get("role")
-    if role != "admin":
-        u.forbidden()
-        return u.send_response()
-
-    # email = request.args.get('Email') params={'Email': email, 'Password': password}
-    # password = request.args.get('Password')
-    response = requests.delete('https://auth-service:8001/delete_admin',
-                               verify=False,
-                               headers={'Authorization': auth_header})
-    return jsonify(response.json())
-
-
-@app.route('/login_admin', methods=['POST'])
-def login_admin():
-    u.reset_response()
-
-    email = request.get_json().get('Email')
-    password = request.get_json().get('Password')
-    response = requests.post('https://auth-service:8001/login_admin',
-                             verify=False,
-                             json={'Email': email, 'Password': password})
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()
 
-    return jsonify(response.json()), 200
+    u.set_response(response)
+    return u.send_response()
 
 
-@app.route('/check_users_profile', methods=['GET'])
-def check_users_profile():
-    u.reset_response()
-
-    # Estrai l'header di autorizzazione
-    auth_header = request.headers.get('Authorization')
-    if not auth_header:
-        u.unauthorized("Authorization header missing")
-        return u.send_response()
-
-    # Rimuovi il prefisso "Bearer"
-    try:
-        access_token =  auth_header.removeprefix("Bearer ").strip()
-        print("Access Token:", access_token)  # Log del token estratto
-    except IndexError:
-        u.unauthorized("Malformed Authorization header")
-        return u.send_response()
-
-    # Valida il token
-    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
-    if "error" in token_data:
-        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
-        return u.send_response()
-    #return jsonify({"token_data":token_data,"access_token":access_token})
-    role=token_data.get("decoded", {}).get("role")
-    if role != "admin":
-        u.forbidden()
-        return u.send_response()
-    response = requests.get('https://auth-service:8001/check_users_profile',
+@app.route('/login_admin', methods=['POST'])
+def login_admin():
+    email = request.get_json().get('Email')
+    password = request.get_json().get('Password')
+    response = requests.post('https://auth-service:8001/login_admin',
                             verify=False,
-                            headers={'Authorization': auth_header})
-    return jsonify(response.json())
-
-
-@app.route('/logout', methods=['GET'])
-def logout():
-    u.reset_response()
-    auth_header = request.headers.get('Authorization')
-    if not auth_header:
-        u.unauthorized()
-        return u.send_response("no token found. PLs log in first")
-
-    response = requests.get('https://auth-service:8001/logout',
-                            verify=False,
-                            headers={'Authorization': auth_header})
-    return jsonify(response.json())
-
-
-@app.route('/update_admin', methods=['PUT'])
-def update_admin():
-    u.reset_response()
-
-    # Estrai l'header di autorizzazione
-    auth_header = request.headers.get('Authorization')
-    if not auth_header:
-        u.unauthorized("Authorization header missing")
+                            json={'Email': email, 'Password': password})
+    if response.status_code != 200:
+        u.handle_error(response.status_code)
         return u.send_response()
 
-    # Rimuovi il prefisso "Bearer"
-    try:
-        access_token =  auth_header.removeprefix("Bearer ").strip()
-        print("Access Token:", access_token)  # Log del token estratto
-    except IndexError:
-        u.unauthorized("Malformed Authorization header")
-        return u.send_response()
-
-    # Valida il token
-    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
-    if "error" in token_data:
-        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
-        return u.send_response()
-    #return jsonify({"token_data":token_data,"access_token":access_token})
-    role=token_data.get("decoded", {}).get("role")
-    if role != "admin":
-        u.forbidden()
-        return u.send_response()
-
-    data = request.get_json()
-    first_name = data.get('FirstName')
-    last_name = data.get('LastName')
-    email = data.get('Email')
-    password = data.get('Password')
-    response = requests.put('https://auth-service:8001/update_admin',
-                            verify=False,
-                            json={'FirstName': first_name,
-                                  'LastName': last_name,
-                                  'Email': email,
-                                  'Password': password
-                                  },
-                            headers={'Authorization': auth_header})
-    return jsonify(response.json())
-
-
-@app.route('/update_specific_user', methods=['PUT'])
-def update_specific_user():
-    u.reset_response()
-
-    # Estrai l'header di autorizzazione
-    auth_header = request.headers.get('Authorization')
-    if not auth_header:
-        u.unauthorized("Authorization header missing")
-        return u.send_response()
-
-    # Rimuovi il prefisso "Bearer"
-    try:
-        access_token =  auth_header.removeprefix("Bearer ").strip()
-        print("Access Token:", access_token)  # Log del token estratto
-    except IndexError:
-        u.unauthorized("Malformed Authorization header")
-        return u.send_response()
-
-    # Valida il token
-    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
-    if "error" in token_data:
-        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
-        return u.send_response()
-    #return jsonify({"token_data":token_data,"access_token":access_token})
-    role=token_data.get("decoded", {}).get("role")
-    if role != "admin":
-        u.forbidden()
-        return u.send_response()
-
-    data = request.get_json()
-    search_email = data.get('search_email')
-    first_name = data.get('FirstName')
-    last_name = data.get('LastName')
-    email = data.get('Email')
-    password = data.get('Password')
-    amount = data.get('CurrencyAmount')
-    response = requests.put('https://auth-service:8001/update_specific_user',
-                            verify=False,
-                            json={'search_email': search_email,
-                                  'FirstName': first_name,
-                                  'LastName': last_name,
-                                  'Email': email,
-                                  'Password': password,
-                                  'CurrencyAmount': amount},
-                            headers={'Authorization': auth_header})
-    return jsonify(response.json())
+    u.set_response(response)
+    return u.send_response()
 
 
 @app.route('/auction/history', methods=['GET'])
 def get_old_transaction():
     u.reset_response()
-
-    # Estrai l'header di autorizzazione
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized("Authorization header missing")
+        u.unauthorized()
         return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
 
-    # Rimuovi il prefisso "Bearer"
-    try:
-        access_token =  auth_header.removeprefix("Bearer ").strip()
-        print("Access Token:", access_token)  # Log del token estratto
-    except IndexError:
-        u.unauthorized("Malformed Authorization header")
-        return u.send_response()
-
-    # Valida il token
-    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
-    if "error" in token_data:
-        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
-        return u.send_response()
-    #return jsonify({"token_data":token_data,"access_token":access_token})
-    role=token_data.get("decoded", {}).get("role")
+    role = token.get("role")
     if role != "admin":
         u.forbidden()
         return u.send_response()
@@ -389,28 +157,14 @@ def get_old_transaction():
 @app.route('/gacha/add', methods=['POST'])
 def add_gacha():
     u.reset_response()
-
-    # Estrai l'header di autorizzazione
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized("Authorization header missing")
+        u.unauthorized()
         return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
 
-    # Rimuovi il prefisso "Bearer"
-    try:
-        access_token =  auth_header.removeprefix("Bearer ").strip()
-        print("Access Token:", access_token)  # Log del token estratto
-    except IndexError:
-        u.unauthorized("Malformed Authorization header")
-        return u.send_response()
-
-    # Valida il token
-    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
-    if "error" in token_data:
-        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
-        return u.send_response()
-    #return jsonify({"token_data":token_data,"access_token":access_token})
-    role=token_data.get("decoded", {}).get("role")
+    role = token.get("role")
     if role != "admin":
         u.forbidden()
         return u.send_response()
@@ -442,31 +196,17 @@ def add_gacha():
 
 
 # Endpoint per aggiornare un gacha
-@app.route('/gacha/update/<string:gacha_id>', methods=['PUT'])
+@app.route('/gacha/update/<int:gacha_id>', methods=['PUT'])
 def update_gacha(gacha_id):
     u.reset_response()
-
-    # Estrai l'header di autorizzazione
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized("Authorization header missing")
+        u.unauthorized()
         return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
 
-    # Rimuovi il prefisso "Bearer"
-    try:
-        access_token =  auth_header.removeprefix("Bearer ").strip()
-        print("Access Token:", access_token)  # Log del token estratto
-    except IndexError:
-        u.unauthorized("Malformed Authorization header")
-        return u.send_response()
-
-    # Valida il token
-    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
-    if "error" in token_data:
-        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
-        return u.send_response()
-    #return jsonify({"token_data":token_data,"access_token":access_token})
-    role=token_data.get("decoded", {}).get("role")
+    role = token.get("role")
     if role != "admin":
         u.forbidden()
         return u.send_response()
@@ -478,12 +218,7 @@ def update_gacha(gacha_id):
         u.RESPONSE["code"] = 400
         u.RESPONSE["message"] = f"Invalid request: {str(e)}"
         return jsonify(u.RESPONSE), 400
-
-    id = u.safe_parse_int(sanitize(gacha_id,u.ALLOWED_INT))
-    if id is None:
-        u.bad_request("Invalid input")
-        return u.send_response()
-    url = u.GACHA_SERVICE_URL + f"/update/{id}"
+    url = u.GACHA_SERVICE_URL + f"/update/{gacha_id}"
     response = requests.put(url,
                             verify=False,
                             json=data,
@@ -502,41 +237,21 @@ def update_gacha(gacha_id):
 
 
 # Endpoint per eliminare un gacha
-@app.route('/gacha/delete/<string:gacha_id>', methods=['DELETE'])
+@app.route('/gacha/delete/<int:gacha_id>', methods=['DELETE'])
 def delete_gacha(gacha_id):
     u.reset_response()
-
-    # Estrai l'header di autorizzazione
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized("Authorization header missing")
+        u.unauthorized()
         return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
 
-    # Rimuovi il prefisso "Bearer"
-    try:
-        access_token =  auth_header.removeprefix("Bearer ").strip()
-        print("Access Token:", access_token)  # Log del token estratto
-    except IndexError:
-        u.unauthorized("Malformed Authorization header")
-        return u.send_response()
-
-    # Valida il token
-    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
-    if "error" in token_data:
-        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
-        return u.send_response()
-    #return jsonify({"token_data":token_data,"access_token":access_token})
-    role=token_data.get("decoded", {}).get("role")
+    role = token.get("role")
     if role != "admin":
         u.forbidden()
         return u.send_response()
-
-    id = u.safe_parse_int(sanitize(gacha_id,u.ALLOWED_INT))
-    if id is None:
-        u.bad_request("Invalid input")
-        return u.send_response()
-    url = u.GACHA_SERVICE_URL + f"/delete/{id}"
-
+    url = u.GACHA_SERVICE_URL + f"/delete/{gacha_id}"
     response = requests.delete(url, verify=False)
     status_code = response.status_code
     if status_code == 404:
@@ -552,41 +267,22 @@ def delete_gacha(gacha_id):
 
 
 # Endpoint per ottenere un singolo gacha
-@app.route('/gacha/get/<string:gacha_id>', methods=['GET'])
+@app.route('/gacha/get/<int:gacha_id>', methods=['GET'])
 def get_gacha(gacha_id):
     u.reset_response()
-
-    # Estrai l'header di autorizzazione
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized("Authorization header missing")
+        u.unauthorized()
         return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
 
-    # Rimuovi il prefisso "Bearer"
-    try:
-        access_token =  auth_header.removeprefix("Bearer ").strip()
-        print("Access Token:", access_token)  # Log del token estratto
-    except IndexError:
-        u.unauthorized("Malformed Authorization header")
-        return u.send_response()
-
-    # Valida il token
-    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
-    if "error" in token_data:
-        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
-        return u.send_response()
-    #return jsonify({"token_data":token_data,"access_token":access_token})
-    role=token_data.get("decoded", {}).get("role")
+    role = token.get("role")
     if role != "admin":
         u.forbidden()
         return u.send_response()
 
-    id = u.safe_parse_int(sanitize(gacha_id,u.ALLOWED_INT))
-    if id is None:
-        u.bad_request("Invalid input")
-        return u.send_response()
-
-    url = u.GACHA_SERVICE_URL + f"/get/{id}"
+    url = u.GACHA_SERVICE_URL + f"/get/{gacha_id}"
     response = requests.get(url, verify=False)
     status_code = response.status_code
     if status_code == 404:
@@ -609,37 +305,18 @@ def get_gacha(gacha_id):
 @app.route('/gacha/getName/<string:gacha_name>', methods=['GET'])
 def get_gacha_by_name(gacha_name):
     u.reset_response()
-
-    # Estrai l'header di autorizzazione
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized("Authorization header missing")
+        u.unauthorized()
         return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
 
-    # Rimuovi il prefisso "Bearer"
-    try:
-        access_token =  auth_header.removeprefix("Bearer ").strip()
-        print("Access Token:", access_token)  # Log del token estratto
-    except IndexError:
-        u.unauthorized("Malformed Authorization header")
-        return u.send_response()
-
-    # Valida il token
-    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
-    if "error" in token_data:
-        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
-        return u.send_response()
-    #return jsonify({"token_data":token_data,"access_token":access_token})
-    role=token_data.get("decoded", {}).get("role")
+    role = token.get("role")
     if role != "admin":
         u.forbidden()
         return u.send_response()
-
-    name = sanitize(gacha_name,u.ALLOWED_CHAR)
-    if name is None:
-        u.bad_request("Invalid input")
-        return u.send_response()
-    url = u.GACHA_SERVICE_URL + f"/getName/{name}"
+    url = u.GACHA_SERVICE_URL + f"/getName/{gacha_name}"
     response = requests.get(url, verify=False)
     status_code = response.status_code
     if status_code == 404:
@@ -662,28 +339,14 @@ def get_gacha_by_name(gacha_name):
 @app.route('/gacha/get', methods=['GET'])
 def get_all_gachas():
     u.reset_response()
-
-    # Estrai l'header di autorizzazione
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized("Authorization header missing")
+        u.unauthorized()
         return u.send_response()
+    acces_token = auth_header.removeprefix("Bearer ").strip()
+    token = u.validate_token(acces_token)
 
-    # Rimuovi il prefisso "Bearer"
-    try:
-        access_token =  auth_header.removeprefix("Bearer ").strip()
-        print("Access Token:", access_token)  # Log del token estratto
-    except IndexError:
-        u.unauthorized("Malformed Authorization header")
-        return u.send_response()
-
-    # Valida il token
-    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
-    if "error" in token_data:
-        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
-        return u.send_response()
-    #return jsonify({"token_data":token_data,"access_token":access_token})
-    role=token_data.get("decoded", {}).get("role")
+    role = token.get("role")
     if role != "admin":
         u.forbidden()
         return u.send_response()
@@ -705,83 +368,6 @@ def get_all_gachas():
     u.RESPONSE["message"] = "Gachas retrivied succesfully"
     return jsonify(u.RESPONSE)
 
-
-@app.route('/specific_history', methods=['GET'])
-def specific_history():
-    u.reset_response()
-
-    # Estrai l'header di autorizzazione
-    auth_header = request.headers.get('Authorization')
-    if not auth_header:
-        u.unauthorized("Authorization header missing")
-        return u.send_response()
-
-    # Rimuovi il prefisso "Bearer"
-    try:
-        access_token =  auth_header.removeprefix("Bearer ").strip()
-        print("Access Token:", access_token)  # Log del token estratto
-    except IndexError:
-        u.unauthorized("Malformed Authorization header")
-        return u.send_response()
-
-    # Valida il token
-    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
-    if "error" in token_data:
-        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
-        return u.send_response()
-    #return jsonify({"token_data":token_data,"access_token":access_token})
-    role=token_data.get("decoded", {}).get("role")
-    if role != "admin":
-        u.forbidden()
-        return u.send_response()
-
-    response = requests.get('http://auth-service:8004/specific_history')
-    return jsonify(response.json())
-
-
-@app.route('/specific_market_history', methods=['GET'])
-def specific_market_history():
-    u.reset_response()
-
-    # Estrai l'header di autorizzazione
-    auth_header = request.headers.get('Authorization')
-    if not auth_header:
-        u.unauthorized("Authorization header missing")
-        return u.send_response()
-
-    # Rimuovi il prefisso "Bearer"
-    try:
-        access_token =  auth_header.removeprefix("Bearer ").strip()
-        print("Access Token:", access_token)  # Log del token estratto
-    except IndexError:
-        u.unauthorized("Malformed Authorization header")
-        return u.send_response()
-
-    # Valida il token
-    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
-    if "error" in token_data:
-        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
-        return u.send_response()
-    #return jsonify({"token_data":token_data,"access_token":access_token})
-    role=token_data.get("decoded", {}).get("role")
-    if role != "admin":
-        u.forbidden()
-        return u.send_response()
-
-    response = requests.get('http://auth-service:8004/specific_market_history')
-    return jsonify(response.json())
-
-
-def sanitize(input_str, allowed_characters):
-    sanitized_str = input_str
-    for char in sanitized_str:
-        if char not in allowed_characters:
-            sanitized_str = sanitized_str.replace(char, "")
-    if input_str != sanitized_str:
-        return None
-    else:
-        return sanitized_str
-    
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=u.FLASK_DEBUG)

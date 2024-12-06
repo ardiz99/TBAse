@@ -5,6 +5,7 @@ WORKDIR /app
 COPY ./auth_service/main.py ./app.py
 COPY ./auth_service/requirements.txt .
 
+
 RUN pip install -r requirements.txt
 
 CMD ["flask", "run", "--host=0.0.0.0", "--port=8001", "--cert=/run/secrets/certificate", "--key=/run/secrets/key"]

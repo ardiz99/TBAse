@@ -57,7 +57,6 @@ def login():
     if response.status_code != 200:
         u.handle_error(response.status_code)
         return u.send_response()
-
     stored_hash = response.json().get("data")[0].get("Password")
     salt = response.json().get("data")[0].get("Salt")
     if verify_password(password, stored_hash, salt):
@@ -78,7 +77,6 @@ def login():
     else:
         u.generic_error()
         return u.send_response("verify_password failed")
-
 
 # admin login route
 @app.route('/login_admin', methods=['POST'])
