@@ -1,6 +1,7 @@
 import main as main_app
 from unittest.mock import patch
 from datetime import datetime
+import re
 
 flask_app = main_app.app
 
@@ -65,6 +66,12 @@ main_app.mock_save_last = mock_save_last
 def mock_requests_get(url, params=None, **kwargs):
     print(f"Mock GET to {url} with params {params}")
 
+    match = re.match(r".*/mygacha/([^/]+)/(\d+)", url)  # Regex per catturare email e gacha
+    if match:
+        # email = match.group(1)  # Estrae l'email
+        gacha = int(match.group(2))  # Estrae gacha come intero
+        return handle_mygacha(gacha)
+
     if "/user/get_by_email" in url:
         return handle_get_user_by_email(params)
     if "/auction" in url and "get_bid" in url:
@@ -89,7 +96,7 @@ def mock_requests_get(url, params=None, **kwargs):
         return handle_get_specific_auction(url)
     if "/transaction" in url:
         return handle_get_all_transactions()
-
+    print({"error": "Endpoint not found or unsupported GET method"})
     return MockResponse(404, {"error": "Endpoint not found or unsupported GET method"})
 
 
@@ -347,6 +354,13 @@ def handle_get_specific_transaction(url):
 
 def handle_get_all_transactions():
     return MockResponse(200, {"data": list(mock_database['transactions'].values())})
+
+
+def handle_mygacha(gacha_id):
+    if any(item["GachaId"] == gacha_id for item in mock_database["gacha_items"].values()):
+        return MockResponse(200, {"data": list(mock_database['gacha_items'].values())})
+    else:
+        return MockResponse(404, {"data": list(mock_database['gacha_items'].values())})
 
 
 def handle_get_specific_auction(url):

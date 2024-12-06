@@ -124,7 +124,7 @@ def new_auction():
                             params={'email': user_owner_email})
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return u.send_response()
+        return u.send_response(path)
 
     user_owner_id = response.json().get("data").get("UserId")
 
@@ -132,7 +132,7 @@ def new_auction():
     response = requests.get(path, verify=False)
     if response.status_code != 200:
         u.handle_error(response.status_code)
-        return u.send_response()
+        return u.send_response(path)
 
     path = u.DB_MANAGER_URL + "/new_auction"
     response = requests.post(path,

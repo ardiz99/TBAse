@@ -158,8 +158,6 @@ def get_all_gachas():
 
 
 # Endpoint per ottenere un singolo gacha dell'utente loggato
-
-# Endpoint per ottenere un singolo gacha dell'utente loggato
 @app.route('/mygacha/<string:email>/<int:gacha_id>', methods=['GET'])
 def get_mygacha(email, gacha_id):
     u.reset_response()
