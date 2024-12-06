@@ -93,7 +93,7 @@ jobs:
           pip install locust
 
       - name: Start Docker Compose Services
-        run: docker-compose -f docker-compose.yaml up --build -d
+        run: docker-compose up --build -d
 
       - name: Run Locust Performance Tests
         run: locust -f tests/locustfile.py --headless -u 100 -r 10 --run-time 10m --host=http://localhost
