@@ -7,6 +7,7 @@ COPY src/market_service/requirements.txt .
 COPY ./secrets/cert.pem /run/secrets/certificate
 COPY ./secrets/key.pem /run/secrets/key
 COPY src/utils.py ./utils.py
+COPY ./img ./img
 
 RUN pip install -r requirements.txt
 

@@ -4,7 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4e6ece74-08b3-41c6-a2cf-978e2a41dcd0" name="Changes" comment="" />
+    <list default="true" id="4e6ece74-08b3-41c6-a2cf-978e2a41dcd0" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/Gacha Collection.pptx" beforeDir="false" afterPath="$PROJECT_DIR$/doc/Gacha Collection.pptx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/auth_service/main_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth_service/main_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/currency_service/main_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/currency_service/main_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/gacha_service/main_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/gacha_service/main_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/market_service/Dockerfile_test" beforeDir="false" afterPath="$PROJECT_DIR$/src/market_service/Dockerfile_test" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/market_service/main_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/market_service/main_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/locustfile.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/locustfile.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/market_service_ut.postman_collection.json" beforeDir="false" afterPath="$PROJECT_DIR$/tests/market_service_ut.postman_collection.json" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -29,7 +40,7 @@
     "ASKED_ADD_EXTERNAL_FILES": "true",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "diego",
+    "git-widget-placeholder": "Merging diego",
     "last_opened_file_path": "C:/Users/Diego/Desktop/unipi/Secure Software Engineering/2024/Project/TBAse/src/gacha_service"
   }
 }]]></component>

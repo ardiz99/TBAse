@@ -11,7 +11,7 @@ mock_database = {
         2: {"GachaId": 2, "Name": "Epic Shield", "Rarity": "Epic"},
     },
     "user_gachas": {  # Relazione tra utenti e i loro Gacha
-        "alice@example.com": [1, 2],  # L'utente con ID 2 possiede i Gacha con ID 1 e 2
+        "user@example.com": [1, 2],  # L'utente con ID 2 possiede i Gacha con ID 1 e 2
     },
 }
 

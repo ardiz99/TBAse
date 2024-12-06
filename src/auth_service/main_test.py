@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+import main as main_app
 import bcrypt
 import base64
 import jwt
