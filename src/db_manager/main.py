@@ -224,6 +224,8 @@ def check_one_user_simple():
     return u.send_response()
 
 
+
+
 # funzione che serve per prendere tutti i campi dell admin per l'update dinamico
 @app.route('/check_one_admin', methods=['GET'])
 def check_one_admin():

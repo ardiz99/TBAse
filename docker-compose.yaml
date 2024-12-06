@@ -1,37 +1,19 @@
 services:
   api-gateway:
     build:
-      context: src
+      context: .
       dockerfile: ./api_gateway/Dockerfile
     container_name: api-gateway
     ports:
       - "8000:8000"
     volumes:
-      - ./src/utils.py:/app/utils.py
+      - ./utils.py:/app/utils.py
     depends_on:
       - auth-service
       - currency-service
       - gacha-service
       - market-service
-    secrets:
-      - certificate
-      - key
-      - secret_key
-
-  admin-gateway:
-    build:
-      context: src
-      dockerfile: ./admin_gateway/Dockerfile
-    container_name: admin-gateway
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./src/utils.py:/app/utils.py
-    depends_on:
-      - auth-service
-      - currency-service
-      - gacha-service
-      - market-service
+      - db-manager
     secrets:
       - certificate
       - key
@@ -39,13 +21,13 @@ services:
 
   auth-service:
     build:
-      context: src
+      context: .
       dockerfile: ./auth_service/Dockerfile
     container_name: auth-service
     ports:
       - "8001:8001"
     volumes:
-      - ./src/utils.py:/app/utils.py
+      - ./utils.py:/app/utils.py
     depends_on:
       - db-manager
     secrets:
@@ -54,16 +36,17 @@ services:
       - secret_key
     environment:
       - SECRET_KEY=73e8a1c4efc8d1f9e0e9241bd3c285740be019d57cd6711a2f7635cf09e8dc4a
-  
+
+
   gacha-service:
     build:
-      context: src
+      context: .
       dockerfile: ./gacha_service/Dockerfile
     container_name: gacha-service
     ports:
       - "8002:8002"
     volumes:
-      - ./src/utils.py:/app/utils.py
+      - ./utils.py:/app/utils.py
     depends_on:
       - db-manager
     secrets:
@@ -73,13 +56,13 @@ services:
 
   currency-service:
     build:
-      context: src
+      context: .
       dockerfile: ./currency_service/Dockerfile
     container_name: currency-service
     ports:
       - "8004:8004"
     volumes:
-      - ./src/utils.py:/app/utils.py
+      - ./utils.py:/app/utils.py
       - ./img:/app/img
     depends_on:
       - db-manager
@@ -91,13 +74,13 @@ services:
 
   market-service:
     build:
-      context: src
+      context: .
       dockerfile: ./market_service/Dockerfile
     container_name: market-service
     ports:
       - "8003:8003"
     volumes:
-      - ./src/utils.py:/app/utils.py
+      - ./utils.py:/app/utils.py
     depends_on:
       - db-manager
     secrets:
@@ -107,13 +90,13 @@ services:
 
   db-manager:
     build:
-      context: src
+      context: .
       dockerfile: ./db_manager/Dockerfile
     container_name: db-manager
     ports:
       - "8005:8005"
     volumes:
-      - ./src/utils.py:/app/utils.py
+      - ./utils.py:/app/utils.py
     depends_on:
       - db
     environment:
@@ -125,6 +108,7 @@ services:
       - certificate
       - key
       - secret_key
+#      - db_password
 
   db:
     image: mysql:8.0
@@ -134,12 +118,13 @@ services:
       MYSQL_DATABASE: ase
     volumes:
       - ./mysql-data:/var/lib/mysql
-      - ./db:/docker-entrypoint-initdb.d
 
 secrets:
   certificate:
-    file: secrets/cert.pem
+    file: ./secrets/cert.pem
   key:
-    file: secrets/key.pem
+    file: ./secrets/key.pem
   secret_key:
     file: ./secrets/secret_key.env
+#  db_password:
+#    file: ./secrets/mongo_password.txt

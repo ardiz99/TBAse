@@ -1,3 +1,8 @@
 /venv/
-/mysql-data
-src/mysql-data
+/src/mysql-data
+/src/db_manager/utils.py
+/src/currency_service/utils.py
+/src/currency_service/img
+/src/auth_service/utils.py
+/src/market_service/utils.py
+/src/api_gateway/utils.py
