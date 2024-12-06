@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ./src/currency_service/requirements.txt
+          pip install -r ./src/currency_service/requirements.txt
 
       - name: Run tests
         run: |
