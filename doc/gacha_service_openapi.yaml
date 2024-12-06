@@ -1,0 +1,217 @@
+openapi: 3.0.3
+info:
+  title: Gacha Service API
+  description: |-
+    This API is part of a microservices architecture and serves as the gacha management service
+    for the application. It provides operations for managing gachas and retrieving gacha infos.
+    
+    Some useful links:
+    - [The Pokémon Gacha repository](https://github.com/ardiz99/TBAse)
+    - [The source APIs definition for the Pokémon Gacha](https://github.com/ardiz99/TBAse/doc)
+  version: 1.0.0
+  x-microservice: gacha-service
+servers:
+  - url: http://gacha-service:8002
+    description: Gacha Service in Docker environment
+  - url: http://127.0.0.1:8002
+    description: Gacha Service on local development
+paths:
+  /gacha/add:
+    post:
+      summary: Aggiunge un nuovo Gacha
+      description: Crea un nuovo oggetto Gacha con le proprietà specificate nel corpo della richiesta.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Gacha'
+            example:
+              Name: "Charmander"
+              Attack: 52
+              Defense: 43
+              GachaId: 4
+              HP: 39
+              Link: "/img/charmander.png"
+              Rarity: "Uncommon"
+              SpAtt: 60
+              SpDef: 50
+              Speed: 65
+              Total: 309
+              Type1: "Fire"
+              Type2: ""
+      responses:
+        '200':
+          description: Gacha aggiunto con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '400':
+          description: Richiesta non valida
+        '500':
+          description: Errore interno del server
+  /gacha/update/{gacha_id}:
+    put:
+      summary: Aggiorna un Gacha esistente
+      description: Aggiorna le proprietà di un Gacha identificato dal suo ID.
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          description: ID del Gacha da aggiornare
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Gacha'
+      responses:
+        '200':
+          description: Gacha aggiornato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '400':
+          description: Richiesta non valida
+        '404':
+          description: Gacha non trovato
+        '500':
+          description: Errore interno del server
+  /gacha/delete/{gacha_id}:
+    delete:
+      summary: Elimina un Gacha
+      description: Rimuove un Gacha identificato dal suo ID.
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          description: ID del Gacha da eliminare
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Gacha eliminato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '404':
+          description: Gacha non trovato
+        '500':
+          description: Errore interno del server
+  /gacha/{gacha_id}:
+    get:
+      summary: Visualizza un singolo Gacha
+      description: Restituisce i dettagli di un Gacha identificato dal suo ID.
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          description: ID del Gacha da recuperare
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Gacha recuperato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '404':
+          description: Gacha non trovato
+        '500':
+          description: Errore interno del server
+  /gacha:
+    get:
+      summary: Recupera tutti i Gacha
+      description: Restituisce un elenco di tutti i Gacha disponibili.
+      responses:
+        '200':
+          description: Elenco di tutti i Gacha recuperato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '500':
+          description: Errore interno del server
+components:
+  schemas:
+    Gacha:
+      type: object
+      properties:
+        Name:
+          type: string
+          example: "Charmander"
+        Attack:
+          type: integer
+          example: 52
+        Defense:
+          type: integer
+          example: 43
+        GachaId:
+          type: integer
+          example: 4
+        HP:
+          type: integer
+          example: 39
+        Link:
+          type: string
+          example: "/img/charmander.png"
+        Rarity:
+          type: string
+          example: "Uncommon"
+        SpAtt:
+          type: integer
+          example: 60
+        SpDef:
+          type: integer
+          example: 50
+        Speed:
+          type: integer
+          example: 65
+        Total:
+          type: integer
+          example: 309
+        Type1:
+          type: string
+          example: "Fire"
+        Type2:
+          type: string
+          example: ""
+    Response:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: Codice HTTP restituito dalla richiesta
+          example: 200
+        data:
+          type: array
+          description: Dati restituiti dalla richiesta, che possono includere oggetti Gacha o altre informazioni.
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Gacha'
+              - type: object
+                description: Altri tipi di dati restituiti
+          example:
+            - Name: "Charmander"
+              Attack: 52
+              Defense: 43
+              GachaId: 4
+              HP: 39
+              Link: "/img/charmander.png"
+              Rarity: "Uncommon"
+              SpAtt: 60
+              SpDef: 50
+              Speed: 65
+              Total: 309
+              Type1: "Fire"
+              Type2: ""
+        message:
+          type: string
+          description: Messaggio di stato della risposta
+          example: "Operazione completata con successo"

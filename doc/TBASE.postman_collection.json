@@ -10,6 +10,104 @@
 			"name": "API_GATEWAY",
 			"item": [
 				{
+					"name": "register_user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"pm.environment.set(\"jwt_token\", response.data);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"FirstName\": \"augusto\",\r\n    \"LastName\": \"augusto\",\r\n    \"Email\": \"augusto@augusto.com\",\r\n    \"Password\": \"augusto\",\r\n    \"CurrencyAmount\": 80\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://127.0.0.1:8000/register",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"pm.environment.set(\"jwt_token\", response.data);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Email\": \"aldo.baglio@example.com\",\r\n    \"Password\": \"ciao\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://127.0.0.1:8000/login",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "roll",
 					"request": {
 						"auth": {
@@ -115,117 +213,6 @@
 							"port": "8000",
 							"path": [
 								"buy_currency"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "login",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"let response = pm.response.json();\r",
-									"pm.environment.set(\"jwt_token\", response.data);"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "https://127.0.0.1:8000/login?Email=augusto@augusto2.com&Password=augusto2",
-							"protocol": "https",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"login"
-							],
-							"query": [
-								{
-									"key": "Email",
-									"value": "augusto@augusto2.com"
-								},
-								{
-									"key": "Password",
-									"value": "augusto2"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "register_user",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"let response = pm.response.json();\r",
-									"pm.environment.set(\"jwt_token\", response.data);"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"FirstName\": \"augusto\",\r\n    \"LastName\": \"augusto\",\r\n    \"Email\": \"augusto@augusto.com\",\r\n    \"Password\": \"augusto\",\r\n    \"CurrencyAmount\": 80\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "https://127.0.0.1:8000/register",
-							"protocol": "https",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"register"
 							]
 						}
 					},
@@ -416,7 +403,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"gacha_id\": 59,\r\n    \"starting_price\": 50,\r\n    \"end_date\": \"2024-12-29 00:41:35\"\r\n}",
+							"raw": "{\r\n    \"gacha_id\": 94,\r\n    \"starting_price\": 50,\r\n    \"end_date\": \"2024-12-29 00:41:35\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -855,10 +842,19 @@
 								}
 							]
 						},
-						"method": "GET",
+						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Email\": \"augusto@augusto.com\",\r\n    \"Password\": \"augusto\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "https://127.0.0.1:8080/login_admin?Email=augusto@augusto.com&Password=augusto",
+							"raw": "https://127.0.0.1:8080/login_admin",
 							"protocol": "https",
 							"host": [
 								"127",
@@ -869,16 +865,6 @@
 							"port": "8080",
 							"path": [
 								"login_admin"
-							],
-							"query": [
-								{
-									"key": "Email",
-									"value": "augusto@augusto.com"
-								},
-								{
-									"key": "Password",
-									"value": "augusto"
-								}
 							]
 						}
 					},
@@ -1385,10 +1371,19 @@
 								}
 							]
 						},
-						"method": "GET",
+						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Email\": \"aldo.baglio@example.com\",\r\n    \"Password\": \"ciao\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "https://127.0.0.1:8001/login?Email=aldo.baglio@example.com&Password=ciao",
+							"raw": "https://127.0.0.1:8001/login",
 							"protocol": "https",
 							"host": [
 								"127",
@@ -1399,16 +1394,6 @@
 							"port": "8001",
 							"path": [
 								"login"
-							],
-							"query": [
-								{
-									"key": "Email",
-									"value": "aldo.baglio@example.com"
-								},
-								{
-									"key": "Password",
-									"value": "ciao"
-								}
 							]
 						}
 					},
@@ -2016,10 +2001,19 @@
 				{
 					"name": "login",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Email\": \"aldo.baglio@example.com\",\r\n    \"Password\": \"ciao\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "https://127.0.0.1:8005/login?Email=aldo.baglio@example.com",
+							"raw": "https://127.0.0.1:8005/login",
 							"protocol": "https",
 							"host": [
 								"127",
@@ -2030,12 +2024,6 @@
 							"port": "8005",
 							"path": [
 								"login"
-							],
-							"query": [
-								{
-									"key": "Email",
-									"value": "aldo.baglio@example.com"
-								}
 							]
 						}
 					},

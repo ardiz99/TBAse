@@ -6,10 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="4e6ece74-08b3-41c6-a2cf-978e2a41dcd0" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/Gacha Collection.pptx" beforeDir="false" afterPath="$PROJECT_DIR$/doc/Gacha Collection.pptx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/~$Gacha Collection.pptx" beforeDir="false" afterPath="$PROJECT_DIR$/doc/~$Gacha Collection.pptx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/market_service/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/market_service/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/TBASE.postman_collection.json" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TBASE.postman_collection.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/api_gateway_openapi.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api_gateway_openapi.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/db_manager.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/doc/db_manager.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/auth_service/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth_service/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

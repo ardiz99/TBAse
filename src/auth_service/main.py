@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, request
 import bcrypt
 import requests
-import re
 import base64
 import utils as u
 
