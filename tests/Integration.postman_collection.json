@@ -32,7 +32,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"FirstName\": \"ciao\",\r\n  \"LastName\": \"ciccio\",\r\n  \"Email\": \"sonounaltrapersona@example.com\",\r\n  \"Password\": \"password123\",\r\n  \"CurrencyAmount\": 500\r\n}",
+					"raw": "{\r\n  \"FirstName\": \"ciao\",\r\n  \"LastName\": \"ciccio\",\r\n  \"Email\": \"testa@example.com\",\r\n  \"Password\": \"securepassword\",\r\n  \"CurrencyAmount\": 500\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -82,7 +82,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"FirstName\": \"John\",\r\n  \"LastName\": \"Doe\",\r\n  \"Email\": \"newuser@example.com\",\r\n  \"Password\": \"password123\",\r\n  \"CurrencyAmount\": 500\r\n}",
+					"raw": "{\r\n  \"FirstName\": \"John\",\r\n  \"LastName\": \"Doe\",\r\n  \"Email\": \"testami@example.com\",\r\n  \"Password\": \"securepassword\",\r\n  \"CurrencyAmount\": 500\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -107,6 +107,106 @@
 			"response": []
 		},
 		{
+			"name": "Register_successful_admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Registrazione avvenuta con successo!\", function () {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.message).to.eql(\"Registration seccessful \");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"FirstName\": \"ciao\",\r\n  \"LastName\": \"ciccio\",\r\n  \"Email\": \"testadmin@example.com\",\r\n  \"Password\": \"securepassword\",\r\n  \"CurrencyAmount\": 500\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://127.0.0.1:8080/register_admin",
+					"protocol": "https",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"register_admin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Admin_already_registered",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 500\", function () {\r",
+							"    pm.response.to.have.status(500);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Unkonwn error / Unkonwn error / 1062 (23000): Duplicate entry\", function () {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.message).to.eql(\"Unkonwn error / Unkonwn error / 1062 (23000): Duplicate entry\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"FirstName\": \"John\",\r\n  \"LastName\": \"Doe\",\r\n  \"Email\": \"testaAdmin@example.com\",\r\n  \"Password\": \"securepassword\",\r\n  \"CurrencyAmount\": 500\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://127.0.0.1:8080/register_admin",
+					"protocol": "https",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"register_admin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Login_successful",
 			"event": [
 				{
@@ -114,7 +214,15 @@
 					"script": {
 						"exec": [
 							"let response = pm.response.json();\r",
-							"pm.environment.set(\"jwt_token\", response.data);\r",
+							"\r",
+							"// Controlla se l'access token è presente nella risposta\r",
+							"if (response.data && response.data.access_token) {\r",
+							"    pm.environment.set(\"jwt_token\", response.data.access_token);\r",
+							"    console.log(\"Access token salvato:\", response.data.access_token);\r",
+							"} else {\r",
+							"    console.error(\"Access token non trovato nella risposta\");\r",
+							"    pm.environment.set(\"jwt_token\", null);\r",
+							"}\r",
 							"\r",
 							"pm.test(\"Status code is 200\", function () {\r",
 							"    pm.response.to.have.status(200);\r",
@@ -144,7 +252,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"Email\": \"sonounaltrapersona@example.com\",\r\n    \"Password\": \"newpassword\"\r\n}\r\n",
+					"raw": "{\r\n    \"Email\": \"testa@example.com\",\r\n    \"Password\": \"securepassword\"\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -169,6 +277,76 @@
 			"response": []
 		},
 		{
+			"name": "Login_successful_admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let response = pm.response.json();\r",
+							"\r",
+							"// Controlla se l'access token è presente nella risposta\r",
+							"if (response.data && response.data.access_token) {\r",
+							"    pm.environment.set(\"jwt_token\", response.data.access_token);\r",
+							"    console.log(\"Access token salvato:\", response.data.access_token);\r",
+							"} else {\r",
+							"    console.error(\"Access token non trovato nella risposta\");\r",
+							"    pm.environment.set(\"jwt_token\", null);\r",
+							"}\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response message is success\", function () {\r",
+							"    pm.expect(response.message).to.eql(\"Login successful\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Email\": \"testadmin@example.com\",\r\n    \"Password\": \"securepassword\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://127.0.0.1:8080/login_admin",
+					"protocol": "https",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"login_admin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Login_wrong_password",
 			"event": [
 				{
@@ -176,7 +354,15 @@
 					"script": {
 						"exec": [
 							"let response = pm.response.json();\r",
-							"pm.environment.set(\"jwt_token\", response.data);\r",
+							"\r",
+							"// Controlla se l'access token è presente nella risposta\r",
+							"if (response.data && response.data.access_token) {\r",
+							"    pm.environment.set(\"jwt_token\", response.data.access_token);\r",
+							"    console.log(\"Access token salvato:\", response.data.access_token);\r",
+							"} else {\r",
+							"    console.error(\"Access token non trovato nella risposta\");\r",
+							"    pm.environment.set(\"jwt_token\", null);\r",
+							"}\r",
 							"\r",
 							"pm.test(\"Status code is 500\", function () {\r",
 							"    pm.response.to.have.status(500);\r",
@@ -206,7 +392,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"Email\": \"newuser@example.com\",\r\n    \"Password\": \"wrongPassword\"\r\n}\r\n",
+					"raw": "{\r\n    \"Email\": \"tastaAdmin@example.com\",\r\n    \"Password\": \"wrongPassword\"\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -214,7 +400,7 @@
 					}
 				},
 				"url": {
-					"raw": "https://127.0.0.1:8000/login",
+					"raw": "https://127.0.0.1:8080/login_admin",
 					"protocol": "https",
 					"host": [
 						"127",
@@ -222,9 +408,79 @@
 						"0",
 						"1"
 					],
-					"port": "8000",
+					"port": "8080",
 					"path": [
-						"login"
+						"login_admin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login_admin_wrong_password",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let response = pm.response.json();\r",
+							"\r",
+							"// Controlla se l'access token è presente nella risposta\r",
+							"if (response.data && response.data.access_token) {\r",
+							"    pm.environment.set(\"jwt_token\", response.data.access_token);\r",
+							"    console.log(\"Access token salvato:\", response.data.access_token);\r",
+							"} else {\r",
+							"    console.error(\"Access token non trovato nella risposta\");\r",
+							"    pm.environment.set(\"jwt_token\", null);\r",
+							"}\r",
+							"\r",
+							"pm.test(\"Status code is 500\", function () {\r",
+							"    pm.response.to.have.status(500);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Error message is 'Invalid password credentials'\", function () {\r",
+							"    pm.expect(response.error).to.eql(\"Unkonwn error / Unkonwn error / verify_password failed\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Email\": \"tastami@example.com\",\r\n    \"Password\": \"wrongPassword\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://127.0.0.1:8080/login_admin",
+					"protocol": "https",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8080",
+					"path": [
+						"login_admin"
 					]
 				}
 			},
@@ -238,7 +494,15 @@
 					"script": {
 						"exec": [
 							"let response = pm.response.json();\r",
-							"pm.environment.set(\"jwt_token\", response.data);\r",
+							"\r",
+							"// Controlla se l'access token è presente nella risposta\r",
+							"if (response.data && response.data.access_token) {\r",
+							"    pm.environment.set(\"jwt_token\", response.data.access_token);\r",
+							"    console.log(\"Access token salvato:\", response.data.access_token);\r",
+							"} else {\r",
+							"    console.error(\"Access token non trovato nella risposta\");\r",
+							"    pm.environment.set(\"jwt_token\", null);\r",
+							"}\r",
 							"\r",
 							"pm.test(\"Status code is 404\", function () {\r",
 							"    pm.response.to.have.status(404);\r",
@@ -287,6 +551,76 @@
 					"port": "8000",
 					"path": [
 						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login_admin_not_existent",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let response = pm.response.json();\r",
+							"\r",
+							"// Controlla se l'access token è presente nella risposta\r",
+							"if (response.data && response.data.access_token) {\r",
+							"    pm.environment.set(\"jwt_token\", response.data.access_token);\r",
+							"    console.log(\"Access token salvato:\", response.data.access_token);\r",
+							"} else {\r",
+							"    console.error(\"Access token non trovato nella risposta\");\r",
+							"    pm.environment.set(\"jwt_token\", null);\r",
+							"}\r",
+							"\r",
+							"pm.test(\"Status code is 500\", function () {\r",
+							"    pm.response.to.have.status(500);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Error message is 'Invalid password credentials'\", function () {\r",
+							"    pm.expect(response.error).to.eql(\"Unkonwn error / Unkonwn error / verify_password failed\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Email\": \"tastami@example.com\",\r\n    \"Password\": \"wrongPassword\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://127.0.0.1:8000/login_admin",
+					"protocol": "https",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"login_admin"
 					]
 				}
 			},
@@ -1779,6 +2113,25 @@
 		},
 		{
 			"name": "Logout_unauthorized",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401\", function () {\r",
+							"    pm.response.to.have.status(401);\r",
+							"});\r",
+							"pm.test(\"Unauthorized message\", function () {\r",
+							"    let response = pm.response.json();\r",
+							"    pm.expect(response.message).to.eql(\"no token found. PLs log in first\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
 			"request": {
 				"method": "GET",
 				"header": [],
@@ -1801,7 +2154,36 @@
 		},
 		{
 			"name": "Logout",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Logout successful\", function () {\r",
+							"    let response = pm.response.json();\r",
+							"    pm.expect(response.message).to.eql(\"Logout successful.\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -1828,12 +2210,12 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
+							"pm.test(\"Status code is 401\", function () {\r",
+							"    pm.response.to.have.status(401);\r",
 							"});\r",
-							"pm.test(\"User deleted successfully\", function () {\r",
+							"pm.test(\"Unauthorized message\", function () {\r",
 							"    let response = pm.response.json();\r",
-							"    pm.expect(response.message).to.eql(\"User deleted successfully.\");\r",
+							"    pm.expect(response.message).to.eql(\"Unauthorized. Admin role required.\");\r",
 							"});\r",
 							""
 						],
@@ -1843,6 +2225,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "DELETE",
 				"header": [],
 				"url": {

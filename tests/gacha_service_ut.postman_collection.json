@@ -28,6 +28,9 @@
 					}
 				}
 			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
 			"request": {
 				"method": "POST",
 				"header": [],
@@ -387,9 +390,9 @@
 							"    pm.response.to.have.status(200);\r",
 							"});\r",
 							"\r",
-							"pm.test(\"All gachas retrieved successfully\", function () {\r",
+							"pm.test(\"Gacha retrivied successfully!\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.message).to.equal(\"All gachas retrieved successfully!\");\r",
+							"    pm.expect(jsonData.message).to.equal(\"Gacha retrivied successfully!\");\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Gachas are present\", function () {\r",
@@ -432,9 +435,9 @@
 							"    pm.response.to.have.status(200);\r",
 							"});\r",
 							"\r",
-							"pm.test(\"User gachas retrieved successfully\", function () {\r",
+							"pm.test(\"Gacha retrieved successfully\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.message).to.equal(\"Gacha retrieved successfully!\");\r",
+							"    pm.expect(jsonData.message).to.equal(\"Gacha retrieved successfully\");\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Gacha data is present\", function () {\r",
@@ -454,14 +457,15 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5003/mygacha",
+					"raw": "https://localhost:5003/mygacha/alice@example.com",
 					"protocol": "https",
 					"host": [
 						"localhost"
 					],
 					"port": "5003",
 					"path": [
-						"mygacha"
+						"mygacha",
+						"alice@example.com"
 					]
 				}
 			},
@@ -495,14 +499,15 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5003/mygacha",
+					"raw": "https://localhost:5003/mygacha/alice@example.com",
 					"protocol": "https",
 					"host": [
 						"localhost"
 					],
 					"port": "5003",
 					"path": [
-						"mygacha"
+						"mygacha",
+						"alice@example.com"
 					]
 				}
 			},

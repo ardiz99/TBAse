@@ -17,9 +17,59 @@
 							"    pm.response.to.have.status(200);\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Response message is success\", function () {\r",
+							"pm.test(\"Registrazione avvenuta con successo!\", function () {\r",
 							"    const response = pm.response.json();\r",
-							"    pm.expect(response.message).to.eql(\"Registrazione avvenuta con successo!\");\r",
+							"    pm.expect(response.message).to.eql(\"Registration seccessful \");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"FirstName\": \"John\",\r\n  \"LastName\": \"Doe\",\r\n  \"Email\": \"user2@example.com\",\r\n  \"Password\": \"securepassword\",\r\n  \"CurrencyAmount\": \"100\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://127.0.0.1:5001/register",
+					"protocol": "https",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5001",
+					"path": [
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "already_register",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Bad Request.\", function () {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.message).to.eql(\"Bad Request. /\");\r",
 							"});"
 						],
 						"type": "text/javascript",
@@ -57,20 +107,21 @@
 			"response": []
 		},
 		{
-			"name": "register_missing_fields",
+			"name": "register_admin_successful",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 400\", function () {\r",
-							"    pm.response.to.have.status(400);\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Error message is 'Missing fields'\", function () {\r",
-							"    const response = pm.response.json();\r",
-							"    pm.expect(response.error).to.eql(\"Missing fields\");\r",
-							"});"
+							"pm.test(\"Response contains token\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.data).to.not.be.undefined;\r",
+							"});\r",
+							""
 						],
 						"type": "text/javascript",
 						"packages": {}
@@ -82,7 +133,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"FirstName\": \"Bob\",\r\n  \"Email\": \"bob@example.com\"\r\n}",
+					"raw": "{\r\n    \"FirstName\": \"Admin\",\r\n    \"LastName\": \"User\",\r\n    \"Email\": \"admin@example.com\",\r\n    \"Password\": \"adminpassword\"\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -90,7 +141,7 @@
 					}
 				},
 				"url": {
-					"raw": "https://127.0.0.1:5001/register",
+					"raw": "https://127.0.0.1:5001/register_admin",
 					"protocol": "https",
 					"host": [
 						"127",
@@ -100,19 +151,7 @@
 					],
 					"port": "5001",
 					"path": [
-						"register"
-					],
-					"query": [
-						{
-							"key": "Password",
-							"value": "ciao",
-							"disabled": true
-						},
-						{
-							"key": "CurrencyAmount",
-							"value": "100",
-							"disabled": true
-						}
+						"register_admin"
 					]
 				}
 			},
@@ -130,7 +169,6 @@
 							"});\r",
 							"\r",
 							"pm.test(\"Response message is success\", function () {\r",
-							"    const response = pm.response.json();\r",
 							"    pm.expect(response.message).to.eql(\"Login successful\");\r",
 							"});"
 						],
@@ -140,10 +178,29 @@
 				}
 			],
 			"request": {
-				"method": "GET",
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Email\": \"user@example.com\",\r\n    \"Password\": \"securepassword\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": "https://127.0.0.1:5001/login?Email=alice@example.com&Password=securepassword",
+					"raw": "https://127.0.0.1:5001/login",
 					"protocol": "https",
 					"host": [
 						"127",
@@ -154,182 +211,27 @@
 					"port": "5001",
 					"path": [
 						"login"
-					],
-					"query": [
-						{
-							"key": "Email",
-							"value": "alice@example.com"
-						},
-						{
-							"key": "Password",
-							"value": "securepassword"
-						}
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "admin_login_successful",
+			"name": "login_successful_wrong_password",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
+							"let response = pm.response.json();\r",
+							"pm.environment.set(\"jwt_token\", response.data);\r",
 							"\r",
-							"pm.test(\"Response message is success\", function () {\r",
-							"    const response = pm.response.json();\r",
-							"    pm.expect(response.message).to.eql(\"Login successful\");\r",
-							"});\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "https://localhost:5001/login_admin?Email=admin@example.com&Password=adminpassword",
-					"protocol": "https",
-					"host": [
-						"localhost"
-					],
-					"port": "5001",
-					"path": [
-						"login_admin"
-					],
-					"query": [
-						{
-							"key": "Email",
-							"value": "admin@example.com"
-						},
-						{
-							"key": "Password",
-							"value": "adminpassword"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "login_wrong_password",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 400\", function () {\r",
-							"    pm.response.to.have.status(400);\r",
+							"pm.test(\"Status code is 500\", function () {\r",
+							"    pm.response.to.have.status(500);\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Error message is 'Invalid password credentials'\", function () {\r",
-							"    const response = pm.response.json();\r",
-							"    pm.expect(response.error).to.eql(\"Invalid password credentials\");\r",
-							"});\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "https://localhost:5001/login?Email=alice@example.com&Password=wrongpassword",
-					"protocol": "https",
-					"host": [
-						"localhost"
-					],
-					"port": "5001",
-					"path": [
-						"login"
-					],
-					"query": [
-						{
-							"key": "Email",
-							"value": "alice@example.com"
-						},
-						{
-							"key": "Password",
-							"value": "wrongpassword"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "login_nonexistent_user",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 400\", function () {\r",
-							"    pm.response.to.have.status(400);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Error message is 'Invalid credentials'\", function () {\r",
-							"    const response = pm.response.json();\r",
-							"    pm.expect(response.error).to.eql(\"Invalid credentials\");\r",
-							"});\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "https://localhost:5001/login_admin?Email=nonexistent@example.com&Password=somepassword",
-					"protocol": "https",
-					"host": [
-						"localhost"
-					],
-					"port": "5001",
-					"path": [
-						"login_admin"
-					],
-					"query": [
-						{
-							"key": "Email",
-							"value": "nonexistent@example.com"
-						},
-						{
-							"key": "Password",
-							"value": "somepassword"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "admin_login_wrong_password",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 400\", function () {\r",
-							"    pm.response.to.have.status(400);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Error message is 'Invalid password credentials'\", function () {\r",
-							"    const response = pm.response.json();\r",
-							"    pm.expect(response.error).to.eql(\"Invalid password credentials\");\r",
+							"    pm.expect(response.error).to.eql(\"Unkonwn error / Unkonwn error / verify_password failed\");\r",
 							"});"
 						],
 						"type": "text/javascript",
@@ -338,27 +240,101 @@
 				}
 			],
 			"request": {
-				"method": "GET",
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Email\": \"alice@example.com\",\r\n    \"Password\": \"wrongPassword\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": "https://localhost:5001/login_admin?Email=admin@example.com&Password=wrongpassword",
+					"raw": "https://127.0.0.1:5001/login",
 					"protocol": "https",
 					"host": [
-						"localhost"
+						"127",
+						"0",
+						"0",
+						"1"
 					],
 					"port": "5001",
 					"path": [
-						"login_admin"
-					],
-					"query": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login_successful_non_existent_user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let response = pm.response.json();\r",
+							"pm.environment.set(\"jwt_token\", response.data);\r",
+							"\r",
+							"pm.test(\"Status code is 404\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Error message is 'Error! Not Found.  / Error! Not Found'\", function () {\r",
+							"    pm.expect(response.error).to.eql(\"Error! Not Found.  / Error! Not Found\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
 						{
-							"key": "Email",
-							"value": "admin@example.com"
-						},
-						{
-							"key": "Password",
-							"value": "wrongpassword"
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
 						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Email\": \"tizioacaso@example.com\",\r\n    \"Password\": \"passwordacaso\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://127.0.0.1:5001/login",
+					"protocol": "https",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5001",
+					"path": [
+						"login"
 					]
 				}
 			},
@@ -502,6 +478,151 @@
 			"response": []
 		},
 		{
+			"name": "check_users_failed",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Error message is 'Failed to retrieve profiles'\", function () {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.error).to.eql(\"Failed to retrieve profiles\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/check_users_profile",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"check_users_profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Logout",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains data\", function () {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response).to.be.an(\"object\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/logout",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Logout_failed",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Error message is 'Failed to retrieve profiles'\", function () {\r",
+							"    const response = pm.response.json();\r",
+							"    pm.expect(response.error).to.eql(\"Failed to retrieve profiles\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:5001/check_users_profile",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"check_users_profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "delete_user_successful",
 			"event": [
 				{
@@ -524,7 +645,17 @@
 				}
 			],
 			"request": {
-				"method": "GET",
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
 				"header": [],
 				"url": {
 					"raw": "https://127.0.0.1:5001/delete_user?Email=ali@example.com&Password=securepassword",
@@ -575,6 +706,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "DELETE",
 				"header": [],
 				"url": {
@@ -596,136 +737,6 @@
 							"key": "Password",
 							"value": "something"
 						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "delete_admin_successful",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Response message is delete done\", function () {\r",
-							"    const response = pm.response.json();\r",
-							"    pm.expect(response).to.eql(\"delete done!\");\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "https://localhost:5001/delete_admin?Email=admin@example.com&Password=adminpassword",
-					"protocol": "https",
-					"host": [
-						"localhost"
-					],
-					"port": "5001",
-					"path": [
-						"delete_admin"
-					],
-					"query": [
-						{
-							"key": "Email",
-							"value": "admin@example.com"
-						},
-						{
-							"key": "Password",
-							"value": "adminpassword"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "delete_admin_missing_password",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 400\", function () {\r",
-							"    pm.response.to.have.status(400);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Error message is 'Missing email or password'\", function () {\r",
-							"    const response = pm.response.json();\r",
-							"    pm.expect(response.error).to.eql(\"Missing email or password\");\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "https://localhost:5001/delete_admin?Email=admin@example.com\n\n",
-					"protocol": "https",
-					"host": [
-						"localhost"
-					],
-					"port": "5001",
-					"path": [
-						"delete_admin"
-					],
-					"query": [
-						{
-							"key": "Email",
-							"value": "admin@example.com\n\n"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "check_users_failed",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 400\", function () {\r",
-							"    pm.response.to.have.status(400);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Error message is 'Failed to retrieve profiles'\", function () {\r",
-							"    const response = pm.response.json();\r",
-							"    pm.expect(response.error).to.eql(\"Failed to retrieve profiles\");\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "https://localhost:5001/check_users_profile",
-					"protocol": "https",
-					"host": [
-						"localhost"
-					],
-					"port": "5001",
-					"path": [
-						"check_users_profile"
 					]
 				}
 			},

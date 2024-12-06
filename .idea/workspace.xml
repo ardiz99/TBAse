@@ -6,7 +6,18 @@
   <component name="ChangeListManager">
     <list default="true" id="4e6ece74-08b3-41c6-a2cf-978e2a41dcd0" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/admin_gateway/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/admin_gateway/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/auth_service/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth_service/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/auth_service/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth_service/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/auth_service/main_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth_service/main_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/gacha_service/Dockerfile_test" beforeDir="false" afterPath="$PROJECT_DIR$/src/gacha_service/Dockerfile_test" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/market_service/Dockerfile_test" beforeDir="false" afterPath="$PROJECT_DIR$/src/market_service/Dockerfile_test" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/Integration.postman_collection.json" beforeDir="false" afterPath="$PROJECT_DIR$/tests/Integration.postman_collection.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/auth_service_ut.postman_collection.json" beforeDir="false" afterPath="$PROJECT_DIR$/tests/auth_service_ut.postman_collection.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/currency_service_ut.postman_collection.json" beforeDir="false" afterPath="$PROJECT_DIR$/tests/currency_service_ut.postman_collection.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/gacha_service_ut.postman_collection.json" beforeDir="false" afterPath="$PROJECT_DIR$/tests/gacha_service_ut.postman_collection.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/locustfile.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/locustfile.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/market_service_ut.postman_collection.json" beforeDir="false" afterPath="$PROJECT_DIR$/tests/market_service_ut.postman_collection.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,15 +38,15 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;diego&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Diego/Desktop/unipi/Secure Software Engineering/2024/Project/TBAse/src/gacha_service&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "Merging diego",
+    "last_opened_file_path": "C:/Users/Diego/Desktop/unipi/Secure Software Engineering/2024/Project/TBAse/src/gacha_service"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Diego\Desktop\unipi\Secure Software Engineering\2024\Project\TBAse\src\gacha_service" />

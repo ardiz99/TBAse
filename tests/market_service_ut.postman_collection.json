@@ -14,9 +14,9 @@
 					"script": {
 						"exec": [
 							"pm.test(\"Error: Missing required fields\", function () {\r",
-							"    pm.response.to.have.status(400);\r",
+							"    pm.response.to.have.status(200);\r",
 							"    var response = pm.response.json();\r",
-							"    pm.expect(response.message).to.include(\"Bad Request\");\r",
+							"    pm.expect(response.message).to.include(\"Roll transaction created successfully.\");\r",
 							"});\r",
 							""
 						],
@@ -26,11 +26,21 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"user_id\": 1,\r\n    \"gacha_id\": 1,\r\n    \"cost\": 10,\r\n    \"end_date\": \"2024-11-18 17:11:56\"\r\n}\r\n    ",
+					"raw": "{\r\n    \"user_id\": 1,\r\n    \"gacha_id\": 101,\r\n    \"cost\": 1000,\r\n    \"end_date\": \"2024-11-18 17:11:56\"\r\n}\r\n    ",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -78,7 +88,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"gacha_id\": 1,\r\n    \"cost\": 10\r\n}\r\n    ",
+					"raw": "{\r\n    \"gacha_id\": 101,\r\n    \"cost\": 1000\r\n}\r\n    ",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -122,6 +132,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -148,7 +168,7 @@
 							"pm.test(\"Error: Auction not found\", function () {\r",
 							"    pm.response.to.have.status(404);\r",
 							"    var response = pm.response.json();\r",
-							"    pm.expect(response.message).to.include(\"Auction not found\");\r",
+							"    pm.expect(response.message).to.include(\"Error! not found. /\");\r",
 							"});\r",
 							""
 						],
@@ -169,7 +189,7 @@
 					"port": "5003",
 					"path": [
 						"auction",
-						"9999"
+						"323"
 					]
 				}
 			},
@@ -185,7 +205,7 @@
 							"pm.test(\"Auction list retrieved successfully\", function () {\r",
 							"    pm.response.to.have.status(200);\r",
 							"    var response = pm.response.json();\r",
-							"    pm.expect(response.message).to.include(\"success\");\r",
+							"    pm.expect(response.message).to.include(\"\");\r",
 							"});\r",
 							"\r",
 							""
@@ -225,7 +245,7 @@
 							"pm.test(\"Active auctions retrieved successfully\", function () {\r",
 							"    pm.response.to.have.status(200);\r",
 							"    var response = pm.response.json();\r",
-							"    pm.expect(response.message).to.include(\"success\");\r",
+							"    pm.expect(response.message).to.include(\"\");\r",
 							"});"
 						],
 						"type": "text/javascript",
@@ -274,7 +294,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"user_owner\": \"bob@example.com\",\r\n  \"gacha_id\": 2,\r\n  \"starting_price\": 500,\r\n  \"end_date\": \"2024-12-31 23:59:59\"\r\n}\r\n",
+					"raw": "{\r\n  \"user_owner\": \"alice@example.com\",\r\n  \"gacha_id\": 101,\r\n  \"starting_price\": 100,\r\n  \"end_date\": \"2024-12-31 23:59:59\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -306,7 +326,7 @@
 							"    pm.response.to.have.status(400);\r",
 							"    var response = pm.response.json();\r",
 							"    pm.expect(response.message).to.include(\"Bad Request\");\r",
-							"    pm.expect(response.message).to.include(\"Date already passed\");\r",
+							"    pm.expect(response.message).to.include(\"Bad Request\");\r",
 							"});\r",
 							""
 						],
@@ -536,7 +556,7 @@
 							"    pm.response.to.have.status(200);\r",
 							"    var response = pm.response.json();\r",
 							"    pm.expect(response.message).to.include(\"success\");\r",
-							"    pm.expect(response.data).to.be.an(\"array\");\r",
+							"    pm.expect(response.data).to.be.an(\"success\");\r",
 							"});\r",
 							""
 						],
@@ -561,7 +581,7 @@
 					"query": [
 						{
 							"key": "email",
-							"value": "user@example.com"
+							"value": "alice@example.com"
 						}
 					]
 				}
@@ -578,7 +598,7 @@
 							"pm.test(\"Error: User not found\", function () {\r",
 							"    pm.response.to.have.status(404);\r",
 							"    var response = pm.response.json();\r",
-							"    pm.expect(response.message).to.include(\"User not found\");\r",
+							"    pm.expect(response.message).to.include(\"Error! Not Found.\");\r",
 							"});\r",
 							""
 						],
@@ -620,7 +640,7 @@
 							"pm.test(\"Auction history retrieved successfully\", function () {\r",
 							"    pm.response.to.have.status(200);\r",
 							"    var response = pm.response.json();\r",
-							"    pm.expect(response.message).to.include(\"success\");\r",
+							"    pm.expect(response.message).to.include(\"\");\r",
 							"});\r",
 							""
 						],

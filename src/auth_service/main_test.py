@@ -2,13 +2,19 @@ import main as main_app
 from unittest.mock import patch
 import bcrypt
 from flask import request
+import base64
 
 flask_app = main_app.app
 
 # Database simulato in memoria
 mock_database = {
-    "user": {
-
+    "user@example.com": {
+        "Password": "$2b$12$/eUJpQzpFomA1Lp9zclBsug47nxbYX8uxL5NbWGJ9KZzDhfYdoDmO",
+        "Salt": "JDJiJDEyJC9lVUpwUXpwRm9tQTFMcDl6Y2xCc3U=",
+        "FirstName": "John",
+        "LastName": "Doe",
+        "CurrencyAmount": 100,
+        "Role": "user"
     }
 }
 mock_tokens = {}  # Per gestire i token di autenticazione
@@ -23,88 +29,71 @@ def mock_save_last(op, args, res):
 main_app.mock_save_last = mock_save_last
 
 
+# Funzione per simulare la chiamata al DB Manager
+def mock_db_manager_get_user(email):
+    user_data = mock_database.get(email)
+    if user_data:
+        return {
+            "Password": user_data["Password"],
+            "Salt": user_data["Salt"]
+        }
+    return None
+
+
 # Mock per il metodo GET
-def mock_requests_get(url, params=None, **kwargs):
+def mock_requests_get(url, params=None, headers=None, **kwargs):
     print(f"Mock GET to {url} with params {params}")
+    auth_token = headers.get("Authorization") if headers else None
 
-    # Converte i parametri espliciti in un formato simulato
-    email = request.args.get("Email")
-    password = request.args.get("Password")
-    if "login" in url:
-        return handle_login(email, password)
-
-    if "login_admin" in url:
-        return handle_login_admin(email, password)
-
+    if "logout" in url:
+        return handle_logout(auth_token)
     if "check_users_profile" in url:
-        return handle_check_users_profile()
-
-    if "protected" in url:
-        return handle_protected()
-
+        return handle_check_users_profile(auth_token)
     return MockResponse(404, {"error": "Endpoint not found"})
 
 
 # Mock per il metodo POST
 def mock_requests_post(url, json=None, **kwargs):
     print(f"Mock POST to {url} with json {json}")
-
+    if "login" in url:
+        return handle_login(json)
     if "register" in url:
         return handle_register(json)
-
-    if "register_admin" in url:
-        return handle_register_admin(json)
-
     return MockResponse(404, {"error": "Endpoint not found"})
 
 
 # Mock per il metodo PUT
-def mock_requests_put(url, json=None, **kwargs):
+def mock_requests_put(url, json=None, headers=None, **kwargs):
     print(f"Mock PUT to {url} with json {json}")
-
     if "update_user" in url:
-        return handle_update_user(json)
-
-    if "update_specific_user" in url:
-        return handle_update_specific_user(json)
-
-    if "update_admin" in url:
-        return handle_update_admin(json)
-
+        return handle_update_user(json, headers.get("Authorization"))
     return MockResponse(404, {"error": "Endpoint not found"})
 
 
 # Mock per il metodo DELETE
-def mock_requests_delete(url, json=None, **kwargs):
+def mock_requests_delete(url, json=None, headers=None, **kwargs):
     print(f"Mock DELETE to {url} with json {json}")
-
     if "delete_user" in url:
-        return handle_delete_user(json)
-
-    if "delete_admin" in url:
-        return handle_delete_admin(json)
-
+        return handle_delete_user(headers.get("Authorization"))
     return MockResponse(404, {"error": "Endpoint not found"})
 
 
-# Gestione specifica degli endpoint
+# Handler per endpoint
 def handle_register(json):
     email = json.get("Email")
     if email in mock_database:
         return MockResponse(400, {"error": "User already exists"})
 
-    # Genera salt e hash per la password
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(json["Password"].encode('utf-8'), salt)
 
-    # Salva nel database mock
     mock_database[email] = {
         "Password": hashed_password.decode('utf-8'),
-        "Salt": salt.decode('utf-8'),
+        "Salt": base64.b64encode(salt).decode('utf-8'),
         "FirstName": json.get("FirstName"),
         "LastName": json.get("LastName"),
         "CurrencyAmount": json.get("CurrencyAmount", 0),
-        "Role": "user",
+        "Role": "user"
     }
     return MockResponse(200, {"message": "Mock registration success"})
 
@@ -134,59 +123,52 @@ def handle_login(email, password):
     print(password)
 
     if not email or not password:
-        return MockResponse(400, {"error": "Email and password are required"})
+        return MockResponse(201, {"error": "Email and password are required"})
 
-    user_data = mock_database.get(email)
-    if not user_data:
-        return MockResponse(400, {"error": "User not found"})
+    user_info = mock_db_manager_get_user(email)
+    if not user_info:
+        return MockResponse(404, {"error": "User not found"})
 
-    stored_hash = user_data["Password"].encode('utf-8')
-    salt = user_data["Salt"].encode('utf-8')
+    stored_hash = user_info["Password"]
+    print(stored_hash)
 
-    if not bcrypt.checkpw(password.encode('utf-8'), stored_hash):
+    salt_bytes = base64.b64decode(user_info["Salt"])
+    generated_pwd = bcrypt.hashpw(password.encode('utf-8'), salt_bytes)
+
+    pwd = generated_pwd.decode('utf-8')
+
+    if not pwd == stored_hash:
         return MockResponse(400, {"error": "Invalid credentials"})
 
-    token = main_app.u.generate_token(email, user_data["Role"], stored_hash.decode('utf-8'))
+    token = main_app.u.generate_tokens(email, mock_database[email]["Role"])
     mock_tokens[email] = token
-    return MockResponse(200, {"data": token, "message": "Login successful"})
+    return MockResponse(200, {"data": {"access_token": token}, "message": "Login successful"})
 
 
-def handle_login_admin(args):
-    email = args.get("Email")
-    password = args.get("Password")
-
-    if not email or not password:
-        return MockResponse(400, {"error": "Email and password are required"})
-
-    admin_data = mock_database.get(email)
-    if not admin_data or admin_data.get("Role") != "admin":
-        return MockResponse(400, {"error": "Admin not found"})
-
-    stored_hash = admin_data["Password"].encode('utf-8')
-    salt = admin_data["Salt"].encode('utf-8')
-
-    # Verifica la password usando il salt e l'hash
-    if not bcrypt.checkpw(password.encode('utf-8'), stored_hash):
-        return MockResponse(400, {"error": "Invalid credentials"})
-
-    # Genera il token per l'admin
-    token = main_app.u.generate_token(email, "admin", stored_hash.decode('utf-8'))
-    mock_tokens[email] = token
-    return MockResponse(200, {"data": token, "message": "Admin login successful"})
+def handle_logout(auth_token):
+    if not auth_token:
+        return MockResponse(401, {"error": "Unauthorized"})
+    token = auth_token.removeprefix("Bearer ").strip()
+    if token in mock_blacklist:
+        return MockResponse(401, {"error": "Token is blacklisted"})
+    mock_blacklist.add(token)
+    return MockResponse(200, {"message": "Logout successful"})
 
 
-# Altri handler aggiornati per verificare salt e password...
-
-def handle_update_user(json):
-    email = json.get("Email")
-    if email not in mock_database:
-        return MockResponse(400, {"error": "User not found"})
-
-    mock_database[email].update({
-        "FirstName": json.get("FirstName", mock_database[email].get("FirstName")),
-        "LastName": json.get("LastName", mock_database[email].get("LastName")),
-        "Password": json.get("Password", mock_database[email].get("Password")),
-        "CurrencyAmount": json.get("CurrencyAmount", mock_database[email].get("CurrencyAmount")),
+def handle_update_user(json, auth_token):
+    if not auth_token:
+        return MockResponse(401, {"error": "Unauthorized"})
+    token = auth_token.removeprefix("Bearer ").strip()
+    email = main_app.u.validate_token(token).get("sub")
+    if not email or email not in mock_database:
+        return MockResponse(401, {"error": "Unauthorized"})
+    user_data = mock_database[email]
+    user_data.update({
+        "FirstName": json.get("FirstName", user_data.get("FirstName")),
+        "LastName": json.get("LastName", user_data.get("LastName")),
+        "Password": bcrypt.hashpw(json["Password"].encode('utf-8'), bcrypt.gensalt()).decode('utf-8') if json.get(
+            "Password") else user_data.get("Password"),
+        "CurrencyAmount": json.get("CurrencyAmount", user_data.get("CurrencyAmount"))
     })
     return MockResponse(200, {"message": "Mock user update success"})
 
@@ -202,9 +184,7 @@ def handle_check_users_profile():
                         {"data": list(mock_database.values()), "message": "All user profiles retrieved successfully"})
 
 
-def handle_protected():
-    # Simula un controllo del token
-    auth_token = request.headers.get("Authorization")
+def handle_delete_user(auth_token):
     if not auth_token:
         return MockResponse(400, {"error": "Authorization header is required"})
 
