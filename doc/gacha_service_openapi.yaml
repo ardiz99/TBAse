@@ -1,217 +1,605 @@
 openapi: 3.0.3
 info:
   title: Gacha Service API
-  description: |-
-    This API is part of a microservices architecture and serves as the gacha management service
-    for the application. It provides operations for managing gachas and retrieving gacha infos.
-    
-    Some useful links:
-    - [The Pokémon Gacha repository](https://github.com/ardiz99/TBAse)
-    - [The source APIs definition for the Pokémon Gacha](https://github.com/ardiz99/TBAse/doc)
-  version: 1.0.0
-  x-microservice: gacha-service
+  version: "1.0.0"
+  description: |
+    This API provides endpoints for managing gachas, including creation, retrieval, updating, and deletion.
+    It also allows users to view their own gachas.
+
 servers:
-  - url: http://gacha-service:8002
-    description: Gacha Service in Docker environment
-  - url: http://127.0.0.1:8002
-    description: Gacha Service on local development
-paths:
-  /gacha/add:
-    post:
-      summary: Aggiunge un nuovo Gacha
-      description: Crea un nuovo oggetto Gacha con le proprietà specificate nel corpo della richiesta.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Gacha'
-            example:
-              Name: "Charmander"
-              Attack: 52
-              Defense: 43
-              GachaId: 4
-              HP: 39
-              Link: "/img/charmander.png"
-              Rarity: "Uncommon"
-              SpAtt: 60
-              SpDef: 50
-              Speed: 65
-              Total: 309
-              Type1: "Fire"
-              Type2: ""
-      responses:
-        '200':
-          description: Gacha aggiunto con successo
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-        '400':
-          description: Richiesta non valida
-        '500':
-          description: Errore interno del server
-  /gacha/update/{gacha_id}:
-    put:
-      summary: Aggiorna un Gacha esistente
-      description: Aggiorna le proprietà di un Gacha identificato dal suo ID.
-      parameters:
-        - name: gacha_id
-          in: path
-          required: true
-          description: ID del Gacha da aggiornare
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Gacha'
-      responses:
-        '200':
-          description: Gacha aggiornato con successo
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-        '400':
-          description: Richiesta non valida
-        '404':
-          description: Gacha non trovato
-        '500':
-          description: Errore interno del server
-  /gacha/delete/{gacha_id}:
-    delete:
-      summary: Elimina un Gacha
-      description: Rimuove un Gacha identificato dal suo ID.
-      parameters:
-        - name: gacha_id
-          in: path
-          required: true
-          description: ID del Gacha da eliminare
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Gacha eliminato con successo
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-        '404':
-          description: Gacha non trovato
-        '500':
-          description: Errore interno del server
-  /gacha/{gacha_id}:
-    get:
-      summary: Visualizza un singolo Gacha
-      description: Restituisce i dettagli di un Gacha identificato dal suo ID.
-      parameters:
-        - name: gacha_id
-          in: path
-          required: true
-          description: ID del Gacha da recuperare
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Gacha recuperato con successo
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-        '404':
-          description: Gacha non trovato
-        '500':
-          description: Errore interno del server
-  /gacha:
-    get:
-      summary: Recupera tutti i Gacha
-      description: Restituisce un elenco di tutti i Gacha disponibili.
-      responses:
-        '200':
-          description: Elenco di tutti i Gacha recuperato con successo
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-        '500':
-          description: Errore interno del server
+  - url: https://localhost:8002
+    description: Local development server
+
 components:
   schemas:
-    Gacha:
-      type: object
-      properties:
-        Name:
-          type: string
-          example: "Charmander"
-        Attack:
-          type: integer
-          example: 52
-        Defense:
-          type: integer
-          example: 43
-        GachaId:
-          type: integer
-          example: 4
-        HP:
-          type: integer
-          example: 39
-        Link:
-          type: string
-          example: "/img/charmander.png"
-        Rarity:
-          type: string
-          example: "Uncommon"
-        SpAtt:
-          type: integer
-          example: 60
-        SpDef:
-          type: integer
-          example: 50
-        Speed:
-          type: integer
-          example: 65
-        Total:
-          type: integer
-          example: 309
-        Type1:
-          type: string
-          example: "Fire"
-        Type2:
-          type: string
-          example: ""
-    Response:
+    MessageResponse:
       type: object
       properties:
         code:
           type: integer
-          description: Codice HTTP restituito dalla richiesta
+          description: HTTP-like status code
           example: 200
-        data:
-          type: array
-          description: Dati restituiti dalla richiesta, che possono includere oggetti Gacha o altre informazioni.
-          items:
-            oneOf:
-              - $ref: '#/components/schemas/Gacha'
-              - type: object
-                description: Altri tipi di dati restituiti
-          example:
-            - Name: "Charmander"
-              Attack: 52
-              Defense: 43
-              GachaId: 4
-              HP: 39
-              Link: "/img/charmander.png"
-              Rarity: "Uncommon"
-              SpAtt: 60
-              SpDef: 50
-              Speed: 65
-              Total: 309
-              Type1: "Fire"
-              Type2: ""
         message:
           type: string
-          description: Messaggio di stato della risposta
-          example: "Operazione completata con successo"
+          description: Short description of the result
+          example: "Operation successful"
+        data:
+          type: object
+          description: Additional response data
+          nullable: true
+      required:
+        - code
+        - message
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: HTTP-like status code
+          example: 400
+        message:
+          type: string
+          description: Error message
+          example: "Bad Request"
+      required:
+        - code
+        - message
+
+    Gacha:
+      type: object
+      properties:
+        GachaId:
+          type: integer
+          description: Unique identifier for the Gacha
+          example: 1
+        Name:
+          type: string
+          description: Name of the Gacha
+          example: "Mystic Dragon"
+        Type:
+          type: string
+          description: Type category of the Gacha
+          example: "Legendary"
+        Description:
+          type: string
+          description: Detailed description of the Gacha
+          example: "A rare and powerful dragon with mystical abilities."
+        Rarity:
+          type: string
+          description: Rarity level of the Gacha
+          example: "Epic"
+        CreatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the Gacha was created
+          example: "2024-04-27T12:34:56Z"
+      required:
+        - GachaId
+        - Name
+        - Type
+        - Description
+        - Rarity
+        - CreatedAt
+
+    AddGachaRequest:
+      type: object
+      properties:
+        Name:
+          type: string
+          description: Name of the Gacha
+          example: "Mystic Dragon"
+        Type:
+          type: string
+          description: Type category of the Gacha
+          example: "Legendary"
+        Description:
+          type: string
+          description: Detailed description of the Gacha
+          example: "A rare and powerful dragon with mystical abilities."
+        Rarity:
+          type: string
+          description: Rarity level of the Gacha
+          example: "Epic"
+      required:
+        - Name
+        - Type
+        - Description
+        - Rarity
+
+    UpdateGachaRequest:
+      type: object
+      properties:
+        Name:
+          type: string
+          description: Name of the Gacha
+          example: "Mystic Dragon"
+        Type:
+          type: string
+          description: Type category of the Gacha
+          example: "Legendary"
+        Description:
+          type: string
+          description: Detailed description of the Gacha
+          example: "An updated description of the dragon."
+        Rarity:
+          type: string
+          description: Rarity level of the Gacha
+          example: "Legendary"
+      required:
+        - Name
+        - Type
+        - Description
+        - Rarity
+
+    GachaCollectionResponse:
+      type: object
+      properties:
+        gachaIds:
+          type: array
+          items:
+            type: integer
+          description: List of Gacha IDs owned by the user
+          example: [1, 2, 3]
+      required:
+        - gachaIds
+
+paths:
+  /add:
+    post:
+      summary: Add a new Gacha
+      operationId: add_gacha
+      requestBody:
+        description: Gacha details to be added
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddGachaRequest'
+            examples:
+              addGacha:
+                value:
+                  Name: "Mystic Dragon"
+                  Type: "Legendary"
+                  Description: "A rare and powerful dragon with mystical abilities."
+                  Rarity: "Epic"
+      responses:
+        '200':
+          description: Gacha added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Gacha added successfully!"
+                    data: null
+        '404':
+          description: Gacha not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "Gacha not found"
+        '500':
+          description: Server error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred"
+
+  /update/{gacha_id}:
+    put:
+      summary: Update an existing Gacha
+      operationId: update_gacha
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          description: Unique identifier of the Gacha to update
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        description: Updated Gacha details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGachaRequest'
+            examples:
+              updateGacha:
+                value:
+                  Name: "Mystic Dragon"
+                  Type: "Legendary"
+                  Description: "An updated description of the dragon."
+                  Rarity: "Legendary"
+      responses:
+        '200':
+          description: Gacha updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Gacha modified successfully!"
+                    data: null
+        '404':
+          description: Gacha not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "Gacha not found"
+        '500':
+          description: Server error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred"
+
+  /delete/{gacha_id}:
+    delete:
+      summary: Delete a Gacha
+      operationId: delete_gacha
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          description: Unique identifier of the Gacha to delete
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Gacha deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Gacha deleted successfully!"
+                    data: null
+        '404':
+          description: Gacha not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "Gacha not found"
+        '500':
+          description: Server error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred"
+
+  /get/{gacha_id}:
+    get:
+      summary: Retrieve a single Gacha by ID
+      operationId: get_gacha
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          description: Unique identifier of the Gacha to retrieve
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Gacha retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Gacha retrieved successfully!"
+                    data:
+                      GachaId: 1
+                      Name: "Mystic Dragon"
+                      Type: "Legendary"
+                      Description: "A rare and powerful dragon with mystical abilities."
+                      Rarity: "Epic"
+                      CreatedAt: "2024-04-27T12:34:56Z"
+        '404':
+          description: Gacha not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "Gacha not found"
+        '500':
+          description: Server error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred"
+
+  /getName/{gacha_name}:
+    get:
+      summary: Retrieve a Gacha by name
+      operationId: get_gacha_by_name
+      parameters:
+        - name: gacha_name
+          in: path
+          required: true
+          description: Name of the Gacha to retrieve
+          schema:
+            type: string
+            example: "Mystic Dragon"
+      responses:
+        '200':
+          description: Gacha retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Gacha retrieved successfully!"
+                    data:
+                      GachaId: 1
+                      Name: "Mystic Dragon"
+                      Type: "Legendary"
+                      Description: "A rare and powerful dragon with mystical abilities."
+                      Rarity: "Epic"
+                      CreatedAt: "2024-04-27T12:34:56Z"
+        '404':
+          description: Gacha not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "Gacha not found"
+        '500':
+          description: Server error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred"
+
+  /get:
+    get:
+      summary: Retrieve all Gachas
+      operationId: get_all_gachas
+      responses:
+        '200':
+          description: Gachas retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "Gachas retrieved successfully!"
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Gacha'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Gachas retrieved successfully!"
+                    data:
+                      - GachaId: 1
+                        Name: "Mystic Dragon"
+                        Type: "Legendary"
+                        Description: "A rare and powerful dragon with mystical abilities."
+                        Rarity: "Epic"
+                        CreatedAt: "2024-04-27T12:34:56Z"
+                      - GachaId: 2
+                        Name: "Shadow Phoenix"
+                        Type: "Epic"
+                        Description: "A majestic phoenix that controls shadows."
+                        Rarity: "Rare"
+                        CreatedAt: "2024-05-01T08:21:30Z"
+        '404':
+          description: No Gachas found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "Gacha not found"
+        '500':
+          description: Server error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred"
+
+  /mygacha/{email}/{gacha_id}:
+    get:
+      summary: Retrieve a specific Gacha for a user by Gacha ID
+      operationId: get_mygacha
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: Email of the user
+          schema:
+            type: string
+            format: email
+            example: "user@example.com"
+        - name: gacha_id
+          in: path
+          required: true
+          description: Unique identifier of the Gacha
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Gacha retrieved successfully for the user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Gacha retrieved successfully"
+                    data:
+                      GachaId: 1
+                      Name: "Mystic Dragon"
+                      Type: "Legendary"
+                      Description: "A rare and powerful dragon with mystical abilities."
+                      Rarity: "Epic"
+                      CreatedAt: "2024-04-27T12:34:56Z"
+        '404':
+          description: Gacha not found in user's collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "Gacha Not Found in Collection!"
+        '500':
+          description: Server error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred"
+
+  /mygacha/{email}:
+    get:
+      summary: Retrieve all Gachas for a user
+      operationId: get_allmygacha
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: Email of the user
+          schema:
+            type: string
+            format: email
+            example: "user@example.com"
+      responses:
+        '200':
+          description: Gachas retrieved successfully for the user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Gachas retrieved successfully"
+                    data:
+                      - GachaId: 1
+                        Name: "Mystic Dragon"
+                        Type: "Legendary"
+                        Description: "A rare and powerful dragon with mystical abilities."
+                        Rarity: "Epic"
+                        CreatedAt: "2024-04-27T12:34:56Z"
+                      - GachaId: 2
+                        Name: "Shadow Phoenix"
+                        Type: "Epic"
+                        Description: "A majestic phoenix that controls shadows."
+                        Rarity: "Rare"
+                        CreatedAt: "2024-05-01T08:21:30Z"
+        '404':
+          description: No Gachas found in user's collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "No gacha found in your account"
+        '500':
+          description: Server error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred"
+

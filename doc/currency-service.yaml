@@ -1,113 +1,217 @@
 openapi: 3.0.3
 info:
   title: Currency Service API
-  description: |-
-    This API is part of a microservices architecture and serves as the currency management service
-    for the application. It provides operations for managing in-game currency and rolling gacha items.
-    
-    
-    Some useful links:
-    - [The Pokémon Gacha repository](https://github.com/ardiz99/TBAse)
-    - [The source APIs definition for the Pokémon Gacha](https://github.com/ardiz99/TBAse/doc)
-  version: 1.0.0
-  x-microservice: currency-service
+  version: "1.0.0"
+  description: |
+    This service provides endpoints for rolling information, retrieving roll images, and buying currency.
+    It interacts with a MySQL database and communicates with other services such as DB Manager and Market Service.
+
 servers:
-  - url: http://currency-service:8004
-    description: Currency Service in Docker environment
-  - url: http://127.0.0.1:8004
-    description: Currency Service on local development
-tags:
-  - name: Currency Service
-    description: API operations related to managing gacha in-game currency.
+  - url: https://localhost:8004
+    description: Local development server
+
+components:
+  schemas:
+    MessageResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: HTTP-like status code
+          example: 200
+        message:
+          type: string
+          description: Short description of the result
+          example: "Operation successful"
+        data:
+          type: object
+          description: Additional response data
+          nullable: true
+      required:
+        - code
+        - message
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: HTTP-like status code
+          example: 400
+        message:
+          type: string
+          description: Error message
+          example: "Bad Request"
+      required:
+        - code
+        - message
+
+    RollInfoResponseData:
+      type: object
+      properties:
+        GachaId:
+          type: integer
+          description: Identifier for the selected Gacha
+          example: 123
+        # Add other properties of the 'chosen' object as needed
+      required:
+        - GachaId
+
+    BuyCurrencyRequest:
+      type: object
+      properties:
+        quantity:
+          type: integer
+          description: Amount of currency to purchase
+          example: 100
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: "user@example.com"
+      required:
+        - quantity
+        - email
+
 paths:
-  /roll_info:
+  /roll_info/{cost}:
     get:
-      tags:
-        - Currency Service
-      summary: Roll for a random item.
-      description: Rolls the gacha system to retrieve an item based on rarity and updates the user's currency.
+      summary: Retrieve roll information based on cost
+      operationId: get_roll_info
+      parameters:
+        - name: cost
+          in: path
+          required: true
+          description: Cost associated with the roll
+          schema:
+            type: integer
+            example: 50
+        - name: email
+          in: query
+          required: true
+          description: User's email address
+          schema:
+            type: string
+            format: email
+            example: "user@example.com"
       responses:
         '200':
-          description: Successfully rolled for an item.
+          description: Successfully retrieved roll information
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  data:
-                    type: object
-                    description: Details of the selected gacha item.
-                  message:
-                    type: string
-        '500':
-          description: Insufficient funds or other server errors.
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Operation successful"
+                    data:
+                      GachaId: 123
+        '400':
+          description: Bad Request - Invalid cost or missing email
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  message:
-                    type: string
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                badRequest:
+                  value:
+                    code: 400
+                    message: "Email is required or invalid cost"
+        '404':
+          description: Not Found - User or Gacha not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "User not found or Gacha not available"
+
   /roll_img:
     get:
-      summary: Retrieve an image for a specific gacha item.
-      tags:
-        - Currency Service
+      summary: Retrieve roll image based on URL
+      operationId: get_roll_img
       parameters:
         - name: url
           in: query
           required: true
-          description: Path to the image file.
+          description: Path to the image file
           schema:
             type: string
+            example: "/images/roll.png"
       responses:
         '200':
-          description: Successfully retrieved the image.
+          description: Successfully retrieved roll image
           content:
             image/png:
               schema:
                 type: string
                 format: binary
         '404':
-          description: Image not found.
+          description: Not Found - Image does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "Image not found"
+
   /buy_currency:
     put:
-      summary: Purchase in-game currency.
-      tags:
-        - Currency Service
-      description: Adds a specified quantity of currency to the user's account.
-      parameters:
-        - name: quantity
-          in: query
-          required: true
-          description: Quantity of currency to add.
-          schema:
-            type: integer
-            minimum: 1
+      summary: Purchase currency for a user
+      operationId: buy_currency
+      requestBody:
+        description: Quantity of currency to purchase and user's email
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuyCurrencyRequest'
+            examples:
+              buyCurrency:
+                value:
+                  quantity: 100
+                  email: "user@example.com"
       responses:
         '200':
-          description: Currency updated successfully.
+          description: Successfully updated currency amount
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  message:
-                    type: string
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Currency amount updated successfully. New amount: 150"
+                    data: null
         '400':
-          description: Invalid quantity provided.
+          description: Bad Request - Invalid quantity or missing fields
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  message:
-                    type: string
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                badRequest:
+                  value:
+                    code: 400
+                    message: "You can't add a negative quantity."
+        '404':
+          description: Not Found - User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "User not found"
+

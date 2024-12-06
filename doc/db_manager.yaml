@@ -1,25 +1,430 @@
-openapi: 3.0.1
+openapi: 3.0.3
 info:
   title: DB Manager API
-  description: |-
-    This API is part of a microservices architecture and handles all the queries to the database.
-    
-    
-    Some useful links:
-    - [The Pokémon Gacha repository](https://github.com/ardiz99/TBAse)
-    - [The source APIs definition for the Pokémon Gacha](https://github.com/ardiz99/TBAse/doc)
-  version: 1.0.0
-  x-microservice: db-manager
+  version: "1.0.0"
+  description: |
+    This service provides a set of endpoints for managing users, admins, gachas, transactions, and auctions.  
+    It interacts with a MySQL database, allowing creation, retrieval, update, and deletion of various resources.
+
 servers:
-  - url: http://db-manager:8005
-    description: DB Manager in Docker environment
-  - url: http://127.0.0.1:8005
-    description: DB Manager on local development
+  - url: http://localhost:8005
+    description: Local environment
+
+components:
+  schemas:
+    MessageResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: HTTP-like status code
+        message:
+          type: string
+          description: Short description of the result
+        data:
+          type: object
+          description: Additional response data
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+
+    User:
+      type: object
+      properties:
+        UserId:
+          type: integer
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+          format: email
+        Password:
+          type: string
+        CurrencyAmount:
+          type: integer
+        Salt:
+          type: string
+
+    Admin:
+      type: object
+      properties:
+        AdminId:
+          type: integer
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+          format: email
+        Password:
+          type: string
+        Salt:
+          type: string
+
+    Gacha:
+      type: object
+      properties:
+        GachaId:
+          type: integer
+        Name:
+          type: string
+        Type1:
+          type: string
+        Type2:
+          type: string
+        Total:
+          type: integer
+        HP:
+          type: integer
+        Attack:
+          type: integer
+        Defense:
+          type: integer
+        SpAtt:
+          type: integer
+        SpDef:
+          type: integer
+        Speed:
+          type: integer
+        Rarity:
+          type: string
+        Link:
+          type: string
+          format: uri
+
+    Transaction:
+      type: object
+      properties:
+        TransactionId:
+          type: integer
+        RequestingUser:
+          type: integer
+        UserOwner:
+          type: integer
+        GachaId:
+          type: integer
+        StartingPrice:
+          type: number
+        ActualPrice:
+          type: number
+        EndDate:
+          type: string
+          format: date-time
+        SendedTo:
+          type: integer
+
+  requestBodies:
+    RegisterUserRequest:
+      description: Data required to register a new user
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              FirstName:
+                type: string
+              LastName:
+                type: string
+              Email:
+                type: string
+                format: email
+              Password:
+                type: string
+              Salt:
+                type: string
+              CurrencyAmount:
+                type: integer
+            required:
+              - FirstName
+              - LastName
+              - Email
+              - Password
+              - Salt
+              - CurrencyAmount
+
+    RegisterAdminRequest:
+      description: Data required to register a new admin
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              FirstName:
+                type: string
+              LastName:
+                type: string
+              Email:
+                type: string
+                format: email
+              Password:
+                type: string
+              Salt:
+                type: string
+            required:
+              - FirstName
+              - LastName
+              - Email
+              - Password
+              - Salt
+
+    UpdateAmountRequest:
+      description: Data to update user's currency amount
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+              new_amount:
+                type: integer
+            required:
+              - email
+              - new_amount
+
+    RollRequest:
+      description: Data for creating a roll transaction
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              user_id:
+                type: integer
+              gacha_id:
+                type: integer
+              cost:
+                type: number
+              end_date:
+                type: string
+                format: date-time
+            required:
+              - user_id
+              - gacha_id
+              - cost
+              - end_date
+
+    TransactionSendedToRequest:
+      description: Data to update SendedTo field of a transaction
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              sended_to:
+                type: integer
+            required:
+              - sended_to
+
+    NewAuctionRequest:
+      description: Data for creating a new auction
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              user_owner:
+                type: integer
+              gacha_id:
+                type: integer
+              starting_price:
+                type: number
+              end_date:
+                type: string
+                format: date-time
+            required:
+              - user_owner
+              - gacha_id
+              - starting_price
+              - end_date
+
+    UpdateActualPriceRequest:
+      description: Data for updating actual price and requesting user of an auction
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              bid:
+                type: number
+              requesting_user:
+                type: integer
+            required:
+              - bid
+              - requesting_user
+
+    UpdateUserRequest:
+      description: Data for updating a user
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              FirstName:
+                type: string
+              LastName:
+                type: string
+              Email:
+                type: string
+                format: email
+              tmp_email:
+                type: string
+                format: email
+              Password:
+                type: string
+              CurrencyAmount:
+                type: integer
+              Salt:
+                type: string
+            required:
+              - FirstName
+              - LastName
+              - Email
+              - tmp_email
+              - Password
+              - CurrencyAmount
+              - Salt
+
+    UpdateAdminRequest:
+      description: Data for updating an admin
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              FirstName:
+                type: string
+              LastName:
+                type: string
+              Email:
+                type: string
+                format: email
+              Password:
+                type: string
+              Salt:
+                type: string
+              tmp_email:
+                type: string
+                format: email
+            required:
+              - FirstName
+              - LastName
+              - Email
+              - Password
+              - Salt
+              - tmp_email
+
+    UpdateSpecificUserRequest:
+      description: Data for updating a specific user
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              FirstName:
+                type: string
+              LastName:
+                type: string
+              Email:
+                type: string
+                format: email
+              tmp_email:
+                type: string
+                format: email
+              Password:
+                type: string
+              CurrencyAmount:
+                type: integer
+              Salt:
+                type: string
+            required:
+              - FirstName
+              - LastName
+              - Email
+              - tmp_email
+              - Password
+              - CurrencyAmount
+              - Salt
+
+    AddGachaRequest:
+      description: Data for adding a new gacha
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Gacha'
+
+    UpdateGachaRequest:
+      description: Data for updating a gacha
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              Name:
+                type: string
+              Type1:
+                type: string
+              Type2:
+                type: string
+              Total:
+                type: integer
+              HP:
+                type: integer
+              Attack:
+                type: integer
+              Defense:
+                type: integer
+              SpAtt:
+                type: integer
+              SpDef:
+                type: integer
+              Speed:
+                type: integer
+              Rarity:
+                type: string
+              Link:
+                type: string
+            required:
+              - Name
+              - Type1
+              - Type2
+              - Total
+              - HP
+              - Attack
+              - Defense
+              - SpAtt
+              - SpDef
+              - Speed
+              - Rarity
+              - Link
+
 paths:
   /get_gacha_by_rarity:
     get:
-      summary: Get Gacha by Rarity
-      description: Retrieve gacha records by their rarity.
+      summary: Get gachas by rarity
+      operationId: get_gacha_by_rarity
       parameters:
         - name: rarity
           in: query
@@ -28,377 +433,713 @@ paths:
             type: string
       responses:
         '200':
-          description: Successful response
+          description: Gacha(s) retrieved
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  data:
-                    type: array
-                    items:
-                      type: object
-                  message:
-                    type: string
-        '500':
-          description: Internal server error
+                $ref: '#/components/schemas/MessageResponse'
+
   /get_amount:
     get:
-      summary: Get User Currency Amount
-      description: Retrieve the amount of currency a user has by their email.
+      summary: Get user's currency amount by email
+      operationId: get_amount
       parameters:
         - name: email
           in: query
           required: true
           schema:
             type: string
+            format: email
       responses:
         '200':
-          description: Successful response
+          description: Amount retrieved
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  data:
-                    type: object
-                  message:
-                    type: string
-        '400':
-          description: Missing or invalid email parameter
-        '500':
-          description: Internal server error
+                $ref: '#/components/schemas/MessageResponse'
+
   /update_amount:
     put:
-      summary: Update User Currency Amount
-      description: Update the currency amount for a user by their email.
+      summary: Update user's currency amount
+      operationId: update_amount
       requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                new_amount:
-                  type: integer
+        $ref: '#/components/requestBodies/UpdateAmountRequest'
       responses:
         '200':
-          description: Successful response
+          description: Amount updated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  message:
-                    type: string
-        '400':
-          description: Invalid request data
-        '500':
-          description: Internal server error
-  /new_transaction:
-    post:
-      summary: Create New Transaction
-      description: Add a new transaction for a user purchasing a gacha.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                user_id:
-                  type: integer
-                gacha_id:
-                  type: integer
-                cost:
-                  type: integer
-                end_date:
-                  type: string
-                  format: date-time
-      responses:
-        '200':
-          description: Transaction added successfully
-        '500':
-          description: Internal server error
-  /gacha/add:
-    post:
-      summary: Add a New Gacha
-      description: Add a new gacha to the database.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                Name:
-                  type: string
-                Type1:
-                  type: string
-                Type2:
-                  type: string
-                Total:
-                  type: integer
-                HP:
-                  type: integer
-                Attack:
-                  type: integer
-                Defense:
-                  type: integer
-                SpAtt:
-                  type: integer
-                SpDef:
-                  type: integer
-                Speed:
-                  type: integer
-                Rarity:
-                  type: string
-                Link:
-                  type: string
-      responses:
-        '200':
-          description: Gacha added successfully
-        '500':
-          description: Error adding gacha
-  /gacha/update/{gacha_id}:
-    put:
-      summary: Update a Gacha
-      description: Modify an existing gacha's details.
-      parameters:
-        - name: gacha_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                Name:
-                  type: string
-                Type1:
-                  type: string
-                Type2:
-                  type: string
-                Total:
-                  type: integer
-                HP:
-                  type: integer
-                Attack:
-                  type: integer
-                Defense:
-                  type: integer
-                SpAtt:
-                  type: integer
-                SpDef:
-                  type: integer
-                Speed:
-                  type: integer
-                Rarity:
-                  type: string
-                Link:
-                  type: string
-      responses:
-        '200':
-          description: Gacha updated successfully
-        '404':
-          description: Gacha not found
-        '500':
-          description: Internal server error
-  /gacha/delete/{gacha_id}:
-    delete:
-      summary: Delete a Gacha
-      description: Remove a gacha from the database.
-      parameters:
-        - name: gacha_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Gacha deleted successfully
-        '404':
-          description: Gacha not found
-        '500':
-          description: Internal server error
-  /gacha/{gacha_id}:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /user/get_by_email:
     get:
-      summary: Get Gacha Details
-      description: Retrieve a gacha by its ID.
+      summary: Get user by email
+      operationId: get_user_by_email
       parameters:
-        - name: gacha_id
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: User retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /user/get_by_id/{user_id}:
+    get:
+      summary: Get user by ID
+      operationId: get_user_by_id
+      parameters:
+        - name: user_id
           in: path
           required: true
           schema:
             type: integer
       responses:
         '200':
-          description: Gacha retrieved successfully
-        '404':
-          description: Gacha not found
-        '500':
-          description: Internal server error
-  /gacha:
-    get:
-      summary: Get All Gachas
-      description: Retrieve all gachas from the database.
-      responses:
-        '200':
-          description: All gachas retrieved successfully
-        '500':
-          description: Internal server error
+          description: User retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
   /register:
     post:
-      summary: Register User
-      description: Register a new user in the system.
+      summary: Register a new user
+      operationId: register_user
       requestBody:
+        $ref: '#/components/requestBodies/RegisterUserRequest'
+      responses:
+        '200':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /register_admin:
+    post:
+      summary: Register a new admin
+      operationId: register_admin
+      requestBody:
+        $ref: '#/components/requestBodies/RegisterAdminRequest'
+      responses:
+        '200':
+          description: Admin registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /get_all_admin:
+    get:
+      summary: Get all admins
+      operationId: get_all_admin
+      responses:
+        '200':
+          description: Admins retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /login:
+    post:
+      summary: User login
+      operationId: user_login
+      requestBody:
+        description: Email in request body to fetch password and salt
         required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                FirstName:
-                  type: string
-                LastName:
-                  type: string
                 Email:
                   type: string
-                Password:
-                  type: string
-                CurrencyAmount:
-                  type: integer
+                  format: email
+              required:
+                - Email
       responses:
         '200':
-          description: Registration successful
-        '400':
-          description: Missing or invalid fields
-        '500':
-          description: Internal server error
-  /login:
+          description: Credentials retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /check_users_profile:
     get:
-      summary: Login User
-      description: Log in using user email.
+      summary: Get all users' profiles
+      operationId: get_all_users_profiles
+      responses:
+        '200':
+          description: Profiles retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /check_one_user:
+    get:
+      summary: Get a single user by email
+      operationId: check_one_user
       parameters:
         - name: Email
           in: query
           required: true
           schema:
             type: string
+            format: email
       responses:
         '200':
-          description: User found and login successful
-        '400':
-          description: Invalid credentials
-        '500':
-          description: Internal server error
-  /login_admin:
+          description: User retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /check_one_user_simple:
     get:
-      summary: Login Admin
-      description: Log in as admin using email.
-      parameters:
-        - name: Email
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Admin found and login successful
-        '400':
-          description: Invalid credentials
-        '500':
-          description: Internal server error
-  /delete_user:
-    get:
-      summary: Delete User
-      description: Delete a user by their email and password.
-      parameters:
-        - name: Email
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: Password
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: User deleted successfully
-        '400':
-          description: Missing fields or error during deletion
-        '500':
-          description: Internal server error
-  /delete_admin:
-    get:
-      summary: Delete Admin
-      description: Delete an admin by their email and password.
-      parameters:
-        - name: Email
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: Password
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Admin deleted successfully
-        '400':
-          description: Missing fields or error during deletion
-        '500':
-          description: Internal server error
-  /update_user:
-    put:
-      summary: Update User Details
-      description: Update the details of a user.
+      summary: Get a single user by UserId
+      operationId: check_one_user_simple
       parameters:
         - name: UserId
           in: query
           required: true
           schema:
             type: integer
-        - name: FirstName
-          in: query
-          schema:
-            type: string
-        - name: LastName
-          in: query
-          schema:
-            type: string
+      responses:
+        '200':
+          description: User retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /check_one_admin:
+    get:
+      summary: Get a single admin by email
+      operationId: check_one_admin
+      parameters:
         - name: Email
           in: query
+          required: true
           schema:
             type: string
-        - name: Password
+            format: email
+      responses:
+        '200':
+          description: Admin retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /login_admin:
+    post:
+      summary: Admin login
+      operationId: admin_login
+      requestBody:
+        description: Email in request body to fetch admin password and salt
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Email:
+                  type: string
+                  format: email
+              required:
+                - Email
+      responses:
+        '200':
+          description: Credentials retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /delete_user:
+    delete:
+      summary: Delete a user by email
+      operationId: delete_user
+      parameters:
+        - name: email
           in: query
+          required: true
           schema:
             type: string
-        - name: CurrencyAmount
+            format: email
+      responses:
+        '200':
+          description: User deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /delete_admin:
+    delete:
+      summary: Delete an admin by email and password
+      operationId: delete_admin
+      parameters:
+        - name: email
           in: query
+          required: true
+          schema:
+            type: string
+            format: email
+        - name: password
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Admin deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /update_user:
+    put:
+      summary: Update user data
+      operationId: update_user
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateUserRequest'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /update_admin:
+    put:
+      summary: Update admin data
+      operationId: update_admin
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateAdminRequest'
+      responses:
+        '200':
+          description: Admin updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /update_specific_user:
+    put:
+      summary: Update another user by tmp_email
+      operationId: update_specific_user
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateSpecificUserRequest'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /user:
+    get:
+      summary: Get all users
+      operationId: get_all_users
+      responses:
+        '200':
+          description: Users retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /roll:
+    post:
+      summary: Create a roll transaction
+      operationId: create_roll_transaction
+      requestBody:
+        $ref: '#/components/requestBodies/RollRequest'
+      responses:
+        '200':
+          description: Roll transaction created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /transaction/{transaction_id}/sended_to:
+    put:
+      summary: Update the SendedTo field of a transaction
+      operationId: update_transaction_sended_to
+      parameters:
+        - name: transaction_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        $ref: '#/components/requestBodies/TransactionSendedToRequest'
+      responses:
+        '200':
+          description: Transaction updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /transaction:
+    get:
+      summary: Get all transactions
+      operationId: get_all_transactions
+      responses:
+        '200':
+          description: Transactions retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /transaction_history/{user_id}:
+    get:
+      summary: Get transaction history for a user
+      operationId: get_transaction_history
+      parameters:
+        - name: user_id
+          in: path
+          required: true
           schema:
             type: integer
       responses:
         '200':
-          description: User updated successfully
-        '400':
-          description: Invalid fields or user not found
-        '500':
-          description: Internal server error
+          description: History retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /transaction/requesting_user/{requesting_user}:
+    get:
+      summary: Get transactions by requesting user
+      operationId: get_transactions_by_requesting_user
+      parameters:
+        - name: requesting_user
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Transactions retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /transaction/{transaction_id}/delete:
+    get:
+      summary: Delete a transaction by ID
+      operationId: delete_transaction_by_id
+      parameters:
+        - name: transaction_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Transaction deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /new_auction:
+    post:
+      summary: Create a new auction
+      operationId: create_new_auction
+      requestBody:
+        $ref: '#/components/requestBodies/NewAuctionRequest'
+      responses:
+        '200':
+          description: Auction created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /auction:
+    get:
+      summary: Get all auctions
+      operationId: get_all_auctions
+      responses:
+        '200':
+          description: Auctions retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /active_auction:
+    get:
+      summary: Get all active auctions
+      operationId: get_active_auctions
+      responses:
+        '200':
+          description: Active auctions retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /auction/gacha/{gacha}:
+    get:
+      summary: Get all auctions by gacha ID
+      operationId: get_auctions_by_gacha_id
+      parameters:
+        - name: gacha
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Auctions retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /auction/{transaction_id}:
+    get:
+      summary: Get a specific auction by transaction ID
+      operationId: get_auction_by_transaction_id
+      parameters:
+        - name: transaction_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Auction retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /auction/{transaction_id}/get_bid:
+    get:
+      summary: Get current bid info for an auction
+      operationId: get_bid_info_for_auction
+      parameters:
+        - name: transaction_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bid info retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /auction/{transaction_id}/update_actual_price:
+    put:
+      summary: Update actual price and requesting user for an auction
+      operationId: update_auction_actual_price
+      parameters:
+        - name: transaction_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateActualPriceRequest'
+      responses:
+        '200':
+          description: Auction updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /auction/{transaction_id}/close_auction:
+    put:
+      summary: Close an auction by updating its end date to now
+      operationId: close_auction
+      parameters:
+        - name: transaction_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Auction closed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /auction/history:
+    get:
+      summary: Get expired auctions (history)
+      operationId: get_expired_auctions_history
+      responses:
+        '200':
+          description: Historical auctions retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /gacha/UserId_by_email/{email}:
+    get:
+      summary: Get UserId by email
+      operationId: get_user_id_by_email
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: UserId retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /gacha/get_gacha_of_user/{email}:
+    get:
+      summary: Get expired gacha IDs of a user by email
+      operationId: get_expired_gacha_ids_of_user
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: Gacha IDs retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /gacha/add:
+    post:
+      summary: Add a new gacha
+      operationId: add_gacha
+      requestBody:
+        $ref: '#/components/requestBodies/AddGachaRequest'
+      responses:
+        '200':
+          description: Gacha added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /gacha/update/{gacha_id}:
+    put:
+      summary: Update gacha data
+      operationId: update_gacha
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateGachaRequest'
+      responses:
+        '200':
+          description: Gacha updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /gacha/delete/{gacha_id}:
+    delete:
+      summary: Delete a gacha by ID
+      operationId: delete_gacha
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Gacha deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /gacha/get/{gacha_id}:
+    get:
+      summary: Get a gacha by ID
+      operationId: get_gacha_by_id
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Gacha retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /gacha/getName/{gacha_name}:
+    get:
+      summary: Get a gacha by name
+      operationId: get_gacha_by_name
+      parameters:
+        - name: gacha_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Gacha retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /gacha/get:
+    get:
+      summary: Get all gachas
+      operationId: get_all_gachas
+      responses:
+        '200':
+          description: All gachas retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'

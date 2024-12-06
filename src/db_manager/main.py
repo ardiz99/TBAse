@@ -475,6 +475,19 @@ def update_transaction(transaction_id):
     return u.send_response()
 
 
+
+@app.route('/transaction/<int:gacha_id>/<int:user_owner_id>', methods=['GET'])
+def get_specific_transaction(user_owner_id, gacha_id):
+    query = "SELECT * " \
+            "FROM transaction " \
+            f"WHERE GachaId = {gacha_id} " \
+            f"   AND RequestingUser = {user_owner_id} " \
+            "   AND SendedTo IS NULL " \
+            "   AND STR_TO_DATE(EndDate, '%Y-%m-%d %H:%i:%s') < NOW() " \
+            "LIMIT 1"
+    handle_db_operation(query, fetch_one=True)
+    return u.send_response()
+
 @app.route('/transaction')
 def get_all_transactions():
     query = "SELECT * FROM transaction"
@@ -504,6 +517,7 @@ def delete_transaction(transaction_id):
     values = (transaction_id,)
     handle_db_operation(query, values, commit=True)
     return u.send_response()
+
 
 
 # =======> AUCTION METHODS
@@ -907,76 +921,6 @@ def get_all_gachas():
         u.generic_error("Errore durante il recupero di tutti i gachas.")
         return jsonify(u.RESPONSE)
 
-
-@app.route('/transaction', methods=['GET'])
-def view_transaction():
-    u.reset_response()
-
-    global connection
-    init_db_connection()
-
-    if connection is None:
-        u.generic_error()
-        return jsonify(u.RESPONSE)
-    try:
-        cursor = connection.cursor(dictionary=True)
-        query = f"SELECT * FROM transaction"
-        cursor.execute(query)
-        result = cursor.fetchall()
-        u.RESPONSE["code"] = 200
-        u.RESPONSE["data"] = result
-        u.RESPONSE["message"] = "All gachas retrieved successfully!"
-        cursor.close()
-        close_db_connection()
-        return jsonify(u.RESPONSE)
-
-    except Error as e:
-        print(f"Errore durante il recupero di tutti i gachas: {e}")
-        u.generic_error("Errore durante il recupero di tutti i gachas.")
-        return jsonify(u.RESPONSE)
-
-
-@app.route('/transaction/<int:user_id>', methods=['GET'])
-def view_transaction_user(user_id):
-    u.reset_response()
-
-    global connection
-    init_db_connection()
-
-    if connection is None:
-        u.generic_error()
-        return jsonify(u.RESPONSE)
-    try:
-        cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM transaction WHERE RequestingUser = %s", (user_id,))
-        result = cursor.fetchall()
-        if result is None:
-            u.not_found()
-            return jsonify(u.RESPONSE)
-        u.RESPONSE["code"] = 200
-        u.RESPONSE["data"] = result
-        u.RESPONSE["message"] = "Transaction retrieved successfully!"
-        cursor.close()
-        close_db_connection()
-        return jsonify(u.RESPONSE)
-
-    except Error as e:
-        print(f"Errore durante il recupero del gacha: {e}")
-        u.generic_error("Errore durante il recupero del gacha.")
-        return jsonify(u.RESPONSE)
-
-
-@app.route('/transaction/<int:gacha_id>/<int:user_owner_id>', methods=['GET'])
-def get_specific_transaction(user_owner_id, gacha_id):
-    query = "SELECT * " \
-            "FROM transaction " \
-            f"WHERE GachaId = {gacha_id} " \
-            f"   AND RequestingUser = {user_owner_id} " \
-            "   AND SendedTo IS NULL " \
-            "   AND STR_TO_DATE(EndDate, '%Y-%m-%d %H:%i:%s') < NOW() " \
-            "LIMIT 1"
-    handle_db_operation(query, fetch_one=True)
-    return u.send_response()
 
 
 if __name__ == "__main__":

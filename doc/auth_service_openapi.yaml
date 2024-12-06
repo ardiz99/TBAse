@@ -1,230 +1,390 @@
 openapi: 3.0.3
 info:
-  title: Auth Service API
-  version: 1.0.0
-  description: |-
-    This API is part of a microservices architecture and serves as the user management service
-    for the application. It provides operations such as register a new user or authenticate a user
-    
-    
-    Some useful links:
-    - [The Pokémon Gacha repository](https://github.com/ardiz99/TBAse)
-    - [The source APIs definition for the Pokémon Gacha](https://github.com/ardiz99/TBAse/doc)
-  x-microservice: auth-service
+  title: Authentication Service API
+  version: "1.0.0"
+  description: |
+    This service provides endpoints for user and admin account management, 
+    including login, logout, registration, account updates, and deletion.
+
 servers:
-  - url: http://auth-service:8001
-    description: Authentication Service in Docker environment
-  - url: http://127.0.0.1:8001
-    description: Authentication Service on local development
+  - url: https://localhost:8001
+    description: Local environment
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    MessageResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: string
+
+    LoginRequest:
+      type: object
+      properties:
+        Email:
+          type: string
+          format: email
+        Password:
+          type: string
+      required:
+        - Email
+        - Password
+
+    RegisterRequest:
+      type: object
+      properties:
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+          format: email
+        Password:
+          type: string
+        CurrencyAmount:
+          type: integer
+      required:
+        - FirstName
+        - LastName
+        - Email
+        - Password
+        - CurrencyAmount
+
+    RegisterAdminRequest:
+      type: object
+      properties:
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+          format: email
+        Password:
+          type: string
+      required:
+        - FirstName
+        - LastName
+        - Email
+        - Password
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+          format: email
+        Password:
+          type: string
+        CurrencyAmount:
+          type: integer
+
+    UpdateAdminRequest:
+      type: object
+      properties:
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+          format: email
+        Password:
+          type: string
+
+    UpdateSpecificUserRequest:
+      type: object
+      properties:
+        search_email:
+          type: string
+          format: email
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+          format: email
+        Password:
+          type: string
+        CurrencyAmount:
+          type: integer
 
 paths:
   /login:
-    get:
-      summary: Login utente
-      description: Effettua il login di un utente esistente.
-      parameters:
-        - name: Email
-          in: query
-          required: true
-          schema:
-            type: string
-          description: L'indirizzo email dell'utente.
-        - name: Password
-          in: query
-          required: true
-          schema:
-            type: string
-          description: La password dell'utente.
+    post:
+      summary: User login
+      description: Logs in a user with the provided email and password, returning JWT tokens.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
-          description: Login avvenuto con successo.
+          description: Login successful
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Login successful"
+                $ref: '#/components/schemas/MessageResponse'
         '400':
-          description: Credenziali non valide o parametri mancanti.
+          description: Bad request (missing or invalid fields)
         '500':
-          description: Errore interno del server.
+          description: Internal server error
+      tags:
+        - Auth
+
+  /login_admin:
+    post:
+      summary: Admin login
+      description: Logs in an admin with the provided email and password, returning JWT tokens.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Bad request (missing or invalid fields)
+        '500':
+          description: Internal server error
+      tags:
+        - Auth
+
+  /logout:
+    get:
+      summary: Logout
+      description: Logs out the currently authenticated user or admin by invalidating the token.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: Unauthorized (no valid token provided)
+        '500':
+          description: Internal server error
+      tags:
+        - Auth
 
   /register:
     post:
-      summary: Registra un nuovo utente
-      description: Endpoint per registrare un nuovo utente nel sistema.
+      summary: User registration
+      description: Registers a new user with the provided details.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                UserId:
-                  type: string
-                  example: "123"
-                FirstName:
-                  type: string
-                  example: "John"
-                LastName:
-                  type: string
-                  example: "Doe"
-                Email:
-                  type: string
-                  example: "john.doe@example.com"
-                Password:
-                  type: string
-                  example: "securepassword"
-                CurrencyAmount:
-                  type: number
-                  format: float
-                  example: 100.0
+              $ref: '#/components/schemas/RegisterRequest'
       responses:
         '200':
-          description: Registrazione avvenuta con successo.
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
         '400':
-          description: Parametri mancanti o credenziali non valide.
+          description: Bad request (missing or invalid fields)
         '500':
-          description: Errore interno del server.
+          description: Internal server error
+      tags:
+        - Auth
+
+  /register_admin:
+    post:
+      summary: Admin registration
+      description: Registers a new admin with the provided details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterAdminRequest'
+      responses:
+        '200':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Bad request (missing or invalid fields)
+        '500':
+          description: Internal server error
+      tags:
+        - Auth
 
   /update_user:
     put:
-      summary: Aggiorna le informazioni di un utente
-      description: Modifica i dettagli di un utente esistente.
+      summary: Update user data
+      description: Updates the authenticated user's data. Requires a valid user token.
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                UserId:
-                  type: string
-                  example: "123"
-                FirstName:
-                  type: string
-                  example: "John"
-                LastName:
-                  type: string
-                  example: "Doe"
-                Email:
-                  type: string
-                  example: "john.doe@example.com"
-                Password:
-                  type: string
-                  example: "securepassword"
-                CurrencyAmount:
-                  type: number
-                  format: float
-                  example: 100.0
+              $ref: '#/components/schemas/UpdateUserRequest'
       responses:
         '200':
-          description: Aggiornamento avvenuto con successo.
+          description: Update completed successfully
         '400':
-          description: Parametri mancanti o credenziali non valide.
+          description: Bad request
+        '401':
+          description: Unauthorized (no valid token)
         '500':
-          description: Errore interno del server.
+          description: Internal server error
+      tags:
+        - User Management
+
+  /update_specific_user:
+    put:
+      summary: Update a specific user (admin only)
+      description: Updates another user's data, identified by `search_email`. Requires a valid admin token.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSpecificUserRequest'
+      responses:
+        '200':
+          description: Update completed successfully
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized (no valid admin token)
+        '500':
+          description: Internal server error
+      tags:
+        - Admin Management
+
+  /update_admin:
+    put:
+      summary: Update admin data
+      description: Updates the authenticated admin's data. Requires a valid admin token.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAdminRequest'
+      responses:
+        '200':
+          description: Update completed successfully
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized (no valid admin token)
+        '500':
+          description: Internal server error
+      tags:
+        - Admin Management
 
   /check_users_profile:
     get:
-      summary: Ottieni profili utenti
-      description: Endpoint per controllare i profili di tutti gli utenti registrati.
+      summary: Check all users' profiles
+      description: Retrieves profiles of all users. According to the provided code, no token is required for this endpoint.
       responses:
         '200':
-          description: Profili utente recuperati con successo.
-        '500':
-          description: Errore interno del server.
-
-  /login_admin:
-    get:
-      summary: Login amministratore
-      description: Effettua il login di un amministratore.
-      parameters:
-        - name: Email
-          in: query
-          required: true
-          schema:
-            type: string
-          description: L'indirizzo email dell'amministratore.
-        - name: Password
-          in: query
-          required: true
-          schema:
-            type: string
-          description: La password dell'amministratore.
-      responses:
-        '200':
-          description: Login amministratore avvenuto con successo.
+          description: Profiles retrieved successfully
         '400':
-          description: Credenziali non valide o parametri mancanti.
+          description: Bad request
         '500':
-          description: Errore interno del server.
+          description: Internal server error
+      tags:
+        - User Management
 
   /delete_user:
-    get:
-      summary: Cancella un utente
-      description: Cancella un utente specifico dal sistema.
-      parameters:
-        - name: Email
-          in: query
-          required: true
-          schema:
-            type: string
-          description: L'indirizzo email dell'utente.
-        - name: Password
-          in: query
-          required: true
-          schema:
-            type: string
-          description: La password dell'utente.
+    delete:
+      summary: Delete user
+      description: Deletes the authenticated user's account. Requires a valid user token.
+      security:
+        - BearerAuth: []
       responses:
         '200':
-          description: Utente cancellato con successo.
+          description: User deleted successfully
         '400':
-          description: Credenziali non valide o parametri mancanti.
+          description: Bad request
+        '401':
+          description: Unauthorized (no valid token)
         '500':
-          description: Errore interno del server.
+          description: Internal server error
+      tags:
+        - User Management
 
   /delete_admin:
-    get:
-      summary: Cancella un amministratore
-      description: Cancella un amministratore specifico dal sistema.
-      parameters:
-        - name: Email
-          in: query
-          required: true
-          schema:
-            type: string
-          description: L'indirizzo email dell'amministratore.
-        - name: Password
-          in: query
-          required: true
-          schema:
-            type: string
-          description: La password dell'amministratore.
+    delete:
+      summary: Delete admin
+      description: Deletes the authenticated admin's account. Requires a valid admin token.
+      security:
+        - BearerAuth: []
       responses:
         '200':
-          description: Amministratore cancellato con successo.
+          description: Admin deleted successfully
         '400':
-          description: Credenziali non valide o parametri mancanti.
+          description: Bad request
+        '401':
+          description: Unauthorized (no valid admin token)
         '500':
-          description: Errore interno del server.
+          description: Internal server error
+      tags:
+        - Admin Management
 
   /protected:
     get:
-      summary: Endpoint protetto
-      description: Accesso a una risorsa protetta tramite token JWT.
-      parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
-            example: "Bearer <JWT_token>"
+      summary: Protected endpoint
+      description: A protected endpoint to verify token-based access. Requires a valid token.
+      security:
+        - BearerAuth: []
       responses:
         '200':
-          description: Accesso autorizzato.
+          description: Access granted
+        '400':
+          description: Bad request or invalid token
         '401':
-          description: Token non valido o scaduto.
+          description: Unauthorized
+      tags:
+        - Test

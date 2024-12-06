@@ -1,90 +1,787 @@
 openapi: 3.0.3
 info:
   title: Market Service API
-  description: |-
-    This API is part of a microservices architecture and handles transactions related to gacha items
-    and user purchases. It interacts with other services to track and update user transactions.
-    
-    
-    Some useful links:
-    - [The Pokémon Gacha repository](https://github.com/ardiz99/TBAse)
-    - [The source APIs definition for the Pokémon Gacha](https://github.com/ardiz99/TBAse/doc)
-  version: 1.0.0
-  x-microservice: market-service
+  version: "1.0.0"
+  description: |
+    This API provides endpoints for managing rolls, transactions, auctions, and retrieving user-specific auction data.
+    It interacts with external services such as DB Manager and Gacha Service.
+
 servers:
-  - url: http://market-service:8003
-    description: Market Service in Docker environment
-  - url: http://127.0.0.1:8003
-    description: Market Service on local development
-tags:
-  - name: Market Service
-    description: API operations related to handling gacha transactions and user purchases.
+  - url: https://localhost:8003
+    description: Local development server
+
+components:
+  schemas:
+    MessageResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: HTTP-like status code
+          example: 200
+        message:
+          type: string
+          description: Short description of the result
+          example: "Operation successful"
+        data:
+          type: object
+          description: Additional response data
+          nullable: true
+      required:
+        - code
+        - message
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: HTTP-like status code
+          example: 400
+        message:
+          type: string
+          description: Error message
+          example: "Bad Request"
+      required:
+        - code
+        - message
+
+    RollRequest:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          description: ID of the user performing the roll
+          example: 1
+        gacha_id:
+          type: integer
+          description: ID of the Gacha being rolled
+          example: 101
+        cost:
+          type: number
+          description: Cost of the roll
+          example: 50.0
+        end_date:
+          type: string
+          format: date-time
+          description: End date of the roll
+          example: "2024-12-31T23:59:59Z"
+      required:
+        - user_id
+        - gacha_id
+        - cost
+        - end_date
+
+    NewAuctionRequest:
+      type: object
+      properties:
+        user_owner:
+          type: integer
+          description: ID of the user owning the auction
+          example: 1
+        gacha_id:
+          type: integer
+          description: ID of the Gacha being auctioned
+          example: 101
+        starting_price:
+          type: number
+          description: Starting price of the auction
+          example: 100.0
+        end_date:
+          type: string
+          format: date-time
+          description: End date of the auction
+          example: "2024-12-31T23:59:59Z"
+      required:
+        - user_owner
+        - gacha_id
+        - starting_price
+        - end_date
+
+    BidRequest:
+      type: object
+      properties:
+        bid:
+          type: number
+          description: Bid amount
+          example: 150.0
+        email:
+          type: string
+          format: email
+          description: Email of the user placing the bid
+          example: "user@example.com"
+      required:
+        - bid
+        - email
+
+    AuctionResponseData:
+      type: object
+      properties:
+        TransactionId:
+          type: integer
+          description: Unique identifier for the auction transaction
+          example: 5001
+        UserOwner:
+          type: integer
+          description: ID of the user owning the auction
+          example: 1
+        GachaId:
+          type: integer
+          description: ID of the Gacha being auctioned
+          example: 101
+        StartingPrice:
+          type: number
+          description: Starting price of the auction
+          example: 100.0
+        ActualPrice:
+          type: number
+          description: Current highest bid
+          example: 150.0
+        EndDate:
+          type: string
+          format: date-time
+          description: End date of the auction
+          example: "2024-12-31T23:59:59Z"
+        RequestingUser:
+          type: integer
+          description: ID of the user currently holding the highest bid
+          example: 2
+        SendedTo:
+          type: integer
+          description: ID of the user to send the funds to upon auction closure
+          nullable: true
+          example: 2
+      required:
+        - TransactionId
+        - UserOwner
+        - GachaId
+        - StartingPrice
+        - ActualPrice
+        - EndDate
+        - RequestingUser
+
+    TransactionHistoryResponseData:
+      type: object
+      properties:
+        TransactionId:
+          type: integer
+          description: Unique identifier for the transaction
+          example: 5001
+        UserId:
+          type: integer
+          description: ID of the user involved in the transaction
+          example: 1
+        Action:
+          type: string
+          description: Action performed in the transaction
+          example: "bid"
+        Amount:
+          type: number
+          description: Amount involved in the transaction
+          example: 150.0
+        Date:
+          type: string
+          format: date-time
+          description: Date and time of the transaction
+          example: "2024-12-01T15:30:00Z"
+      required:
+        - TransactionId
+        - UserId
+        - Action
+        - Amount
+        - Date
+
+  parameters:
+    TransactionIdPathParam:
+      name: transaction_id
+      in: path
+      required: true
+      description: Unique identifier for the auction transaction
+      schema:
+        type: integer
+        example: 5001
+
+    EmailPathParam:
+      name: email
+      in: path
+      required: true
+      description: Email of the user
+      schema:
+        type: string
+        format: email
+        example: "user@example.com"
+
+    GachaIdPathParam:
+      name: gacha_id
+      in: path
+      required: true
+      description: Unique identifier for the Gacha
+      schema:
+        type: integer
+        example: 101
+
 paths:
-  /new_transaction:
+  /roll:
     post:
-      tags:
-        - Market Service
-      summary: Create a new transaction record.
-      description: Creates a new transaction for a gacha roll and updates the relevant data.
+      summary: Create a new roll transaction
+      operationId: create_roll
       requestBody:
+        description: Details required to create a new roll
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                user_id:
-                  type: integer
-                  description: ID of the user making the purchase.
-                gacha_id:
-                  type: integer
-                  description: ID of the gacha item being purchased.
-                cost:
-                  type: integer
-                  description: The cost of the gacha roll.
-                end_date:
-                  type: string
-                  format: date-time
-                  description: The timestamp when the transaction ends.
-              required:
-                - user_id
-                - gacha_id
-                - cost
-                - end_date
+              $ref: '#/components/schemas/RollRequest'
+            examples:
+              createRoll:
+                value:
+                  user_id: 1
+                  gacha_id: 101
+                  cost: 50.0
+                  end_date: "2024-12-31T23:59:59Z"
       responses:
         '200':
-          description: Transaction created successfully.
+          description: Roll transaction created successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  data:
-                    type: array
-                    items: {}
-                  message:
-                    type: string
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Roll transaction created successfully."
+                    data: null
         '400':
-          description: Bad request, missing required fields.
+          description: Bad Request - Missing or invalid parameters
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  message:
-                    type: string
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                badRequest:
+                  value:
+                    code: 400
+                    message: "Missing required parameters."
+        '404':
+          description: Not Found - Related resources not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "User or Gacha not found."
         '500':
-          description: Internal server error.
+          description: Server Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  message:
-                    type: string
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred."
+
+  /transaction:
+    get:
+      summary: Retrieve all transactions
+      operationId: get_all_transactions
+      responses:
+        '200':
+          description: Transactions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Transactions retrieved successfully."
+                    data:
+                      - TransactionId: 5001
+                        UserId: 1
+                        Action: "bid"
+                        Amount: 150.0
+                        Date: "2024-12-01T15:30:00Z"
+                      - TransactionId: 5002
+                        UserId: 2
+                        Action: "bid"
+                        Amount: 200.0
+                        Date: "2024-12-02T10:20:00Z"
+        '404':
+          description: No transactions found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "No transactions found."
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred."
+
+  /auction/{transaction_id}:
+    get:
+      summary: Retrieve a specific auction by transaction ID
+      operationId: get_specific_auction
+      parameters:
+        - $ref: '#/components/parameters/TransactionIdPathParam'
+      responses:
+        '200':
+          description: Auction retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Auction retrieved successfully."
+                    data:
+                      TransactionId: 5001
+                      UserOwner: 1
+                      GachaId: 101
+                      StartingPrice: 100.0
+                      ActualPrice: 150.0
+                      EndDate: "2024-12-31T23:59:59Z"
+                      RequestingUser: 2
+                      SendedTo: null
+        '404':
+          description: Auction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "Auction not found."
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred."
+
+  /auction:
+    get:
+      summary: Retrieve all auctions
+      operationId: get_all_auctions
+      responses:
+        '200':
+          description: Auctions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Auctions retrieved successfully."
+                    data:
+                      - TransactionId: 5001
+                        UserOwner: 1
+                        GachaId: 101
+                        StartingPrice: 100.0
+                        ActualPrice: 150.0
+                        EndDate: "2024-12-31T23:59:59Z"
+                        RequestingUser: 2
+                        SendedTo: null
+                      - TransactionId: 5002
+                        UserOwner: 2
+                        GachaId: 102
+                        StartingPrice: 200.0
+                        ActualPrice: 250.0
+                        EndDate: "2025-01-15T18:00:00Z"
+                        RequestingUser: 3
+                        SendedTo: null
+        '404':
+          description: No auctions found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "No auctions found."
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred."
+
+  /active_auction:
+    get:
+      summary: Retrieve all active auctions
+      operationId: get_all_active_auctions
+      responses:
+        '200':
+          description: Active auctions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Active auctions retrieved successfully."
+                    data:
+                      - TransactionId: 5001
+                        UserOwner: 1
+                        GachaId: 101
+                        StartingPrice: 100.0
+                        ActualPrice: 150.0
+                        EndDate: "2024-12-31T23:59:59Z"
+                        RequestingUser: 2
+                        SendedTo: null
+        '404':
+          description: No active auctions found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "No active auctions found."
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred."
+
+  /new_auction:
+    post:
+      summary: Create a new auction
+      operationId: create_new_auction
+      requestBody:
+        description: Details required to create a new auction
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewAuctionRequest'
+            examples:
+              createAuction:
+                value:
+                  user_owner: 1
+                  gacha_id: 101
+                  starting_price: 100.0
+                  end_date: "2024-12-31T23:59:59Z"
+      responses:
+        '200':
+          description: Auction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Auction created successfully."
+                    data: null
+        '400':
+          description: Bad Request - Missing or invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                badRequest:
+                  value:
+                    code: 400
+                    message: "Missing required parameters or invalid data."
+        '404':
+          description: User or Gacha not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "User or Gacha not found."
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred."
+
+  /bid/{transaction_id}:
+    put:
+      summary: Place a new bid on an auction
+      operationId: place_bid
+      parameters:
+        - $ref: '#/components/parameters/TransactionIdPathParam'
+      requestBody:
+        description: Bid details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BidRequest'
+            examples:
+              placeBid:
+                value:
+                  bid: 150.0
+                  email: "bidder@example.com"
+      responses:
+        '200':
+          description: Bid placed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Bid inserted successfully."
+                    data: null
+        '400':
+          description: Bad Request - Missing or invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                badRequest:
+                  value:
+                    code: 400
+                    message: "Missing required parameters or invalid bid amount."
+        '404':
+          description: Auction or User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "Auction or User not found."
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred."
+
+  /close_auction/{transaction_id}:
+    put:
+      summary: Close an auction
+      operationId: close_auction
+      parameters:
+        - $ref: '#/components/parameters/TransactionIdPathParam'
+      responses:
+        '200':
+          description: Auction closed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                successNoBid:
+                  value:
+                    code: 200
+                    message: "Auction deleted because it didn't take any bid."
+                    data: null
+                successWithBid:
+                  value:
+                    code: 200
+                    message: "Auction closed successfully."
+                    data: null
+        '404':
+          description: Auction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "Auction not found."
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred."
+
+  /my_transaction_history:
+    get:
+      summary: Retrieve transaction history for a user
+      operationId: get_my_transaction_history
+      parameters:
+        - name: email
+          in: query
+          required: true
+          description: Email of the user
+          schema:
+            type: string
+            format: email
+            example: "user@example.com"
+      responses:
+        '200':
+          description: Transaction history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Transaction history retrieved successfully."
+                    data:
+                      - TransactionId: 5001
+                        UserId: 1
+                        Action: "bid"
+                        Amount: 150.0
+                        Date: "2024-12-01T15:30:00Z"
+                      - TransactionId: 5003
+                        UserId: 1
+                        Action: "auction_creation"
+                        Amount: 100.0
+                        Date: "2024-12-05T09:45:00Z"
+        '400':
+          description: Bad Request - Missing or invalid email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                badRequest:
+                  value:
+                    code: 400
+                    message: "Email is required."
+        '404':
+          description: User not found or no transactions available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "User not found or no transactions available."
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred."
+
+  /auction/history:
+    get:
+      summary: Retrieve historical (expired) auctions
+      operationId: get_auction_history
+      responses:
+        '200':
+          description: Historical auctions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                success:
+                  value:
+                    code: 200
+                    message: "Historical auctions retrieved successfully."
+                    data:
+                      - TransactionId: 5001
+                        UserOwner: 1
+                        GachaId: 101
+                        StartingPrice: 100.0
+                        ActualPrice: 150.0
+                        EndDate: "2024-12-31T23:59:59Z"
+                        RequestingUser: 2
+                        SendedTo: 2
+        '404':
+          description: No historical auctions found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "No historical auctions found."
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  value:
+                    code: 500
+                    message: "Server error occurred."
+
