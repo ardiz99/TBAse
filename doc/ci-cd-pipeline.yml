@@ -1,0 +1,53 @@
+name: CI/CD Pipeline for Microservices
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test-services:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker images for auth
+        run: |
+          docker build -t auth_image -f ./src/auth_service/Dockerfile_test .
+      - name: Run Docker images for auth
+        run: |
+          docker run --name auth_cont -d -p 5001:5001 auth_image
+
+      - name: Build Docker images for gacha
+        run: |
+          docker build -t gacha_image -f ./src/gacha_service/Dockerfile_test .
+
+      - name: Run Docker images for gacha
+        run: |
+          docker run --name gacha_cont -d -p 5002:5002 gacha_image
+
+      - name: Build Docker images for currency
+        run: |
+          docker build -t currency_image -f ./src/currency_service/Dockerfile_test .
+
+      - name: Run Docker images for currency
+        run: |
+          docker run --name currency_cont -d -p 5004:5004 currency_image
+
+      - name: Build Docker images for market
+        run: |
+          docker build -t market_image -f ./src/market_service/Dockerfile_test .
+
+      - name: Run Docker images for market
+        run: |
+          docker run --name market_cont -d -p 5003:5003 market_image
+
+      - name: Tear down Docker containers after unit tests
+        if: always()
+        run: |
+          docker stop auth_cont gacha_cont currency_cont market_cont || true
+          docker rm auth_cont gacha_cont currency_cont market_cont || true
