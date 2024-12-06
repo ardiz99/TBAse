@@ -15,10 +15,13 @@ mock_database = {
     },
 }
 
+
 def mock_save_last(op, args, res):
     print(f"Mock save_last: {op} {args} {res}")
 
+
 main_app.save_last = mock_save_last
+
 
 # Mock della funzione `perform_request`
 def mock_perform_request(method, endpoint, json_data=None):

@@ -131,7 +131,7 @@ def mock_requests_put(url, json=None, **kwargs):
 def handle_get_user_by_email(params):
     email = params.get("email")
     if email not in mock_database["users"]:
-        return MockResponse(400, {"error": "User not found"})
+        return MockResponse(404, {"error": "User not found"})
     user = mock_database["users"][email]
     return MockResponse(200, {"data": {
         "UserId": user["UserId"],

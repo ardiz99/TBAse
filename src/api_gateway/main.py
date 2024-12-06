@@ -505,14 +505,24 @@ def new_auction():
 @app.route('/bid/<int:transaction_id>', methods=["PUT"])
 def new_bid(transaction_id):
     u.reset_response()
+
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized()
+        u.unauthorized("Authorization header missing")
         return u.send_response()
-    acces_token = auth_header.removeprefix("Bearer ").strip()
-    token = u.validate_token(acces_token)
 
-    email = token.get("sub")
+    try:
+        access_token = auth_header.removeprefix("Bearer ").strip()
+        print("Access Token:", access_token)  # Log del token estratto
+    except IndexError:
+        u.unauthorized("Malformed Authorization header")
+        return u.send_response()
+    token = u.validate_token(access_token)  # Funzione per decodificare e validare il token
+    if "error" in token:
+        u.unauthorized(token["error"])  # Se c'è un errore, rispondi con 401
+        return u.send_response()
+    email = token.get("decoded", {}).get("sub")
+
     bid = request.get_json().get("bid")
 
     fields_to_sanitize = u.process_fields([str(bid)])
