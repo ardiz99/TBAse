@@ -1,0 +1,88 @@
+# Definisce il nome del workflow CI/CD per i microservizi, utile per identificare il workflow nella lista di GitHub Actions
+name: CI/CD Pipeline for Microservices
+
+# Specifica gli eventi che attiveranno il workflow
+on:
+  push:
+    branches:
+      - main  # Il workflow viene eseguito su ogni push al ramo 'main'
+  pull_request:
+    branches:
+      - main  # Il workflow viene eseguito anche per ogni pull request verso il ramo 'main'
+
+jobs:
+  build-and-test-services:
+    runs-on: ubuntu-latest  # Esegue il job su un ambiente Ubuntu aggiornato
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4  # Esegue il checkout del codice sorgente dal repository
+
+      - name: Build Docker images for auth
+        run: |
+          docker build -t auth_image -f ./src/auth_service/Dockerfile_test .
+      - name: run Docker images for auth
+        run: |
+          docker run --name auth_cont -p 5001:5001 auth_image
+
+      - name: Build Docker images for gacha
+        run: |
+          docker build -t gacha_image -f ./src/gacha_service/Dockerfile_test .
+
+      - name: run Docker images for gacha
+        run: |
+          docker run --name gacha_cont -p 5002:5002 gacha_image
+
+      - name: Build Docker images for currency
+        run: |
+          docker build -t currency_image -f ./src/currency_service/Dockerfile_test .
+
+      - name: run Docker images for currency
+        run: |
+          docker run --name currency_cont -p 5004:5004 currency_image
+
+      - name: Build Docker images for market
+        run: |
+          docker build -t market_image -f ./src/market_service/Dockerfile_test .
+
+      - name: run Docker images for market
+        run: |
+          docker run --name market_cont -p 5003:5003 market_image
+
+      # Ferma e rimuove tutti i container Docker dopo i test
+      - name: Tear down Docker containers after unit tests
+        if: always()
+        run: |
+          docker stop auth_cont gacha_cont currency_cont market_cont || true
+          docker rm auth_cont gacha_cont currency_cont market_cont || true
+
+
+  integration-tests:
+    runs-on: ubuntu-latest  # Esegue il job su un ambiente Ubuntu aggiornato
+    needs: build-and-test-services  # Il job 'integration-tests' dipende dal completamento del job 'build-and-test-services'
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4  # Esegue il checkout del codice sorgente
+
+      # Avvia i container per i test di integrazione
+      - name: Start Docker Compose services
+        run: docker-compose -f docker-compose.yaml up --build -d
+
+      # Esegui il refresh del DB
+      - name: Refresh DB
+        run: docker exec -i db mysql -u root -p root_password < ./db/ase.sql
+
+      - name: Install Locust
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install locust
+
+      - name: CD
+        run: cd tests 
+    
+      - name: locust
+        run: locust                
+
+# Ferma e rimuove tutti i container Docker dopo aver eseguito i test di integrazione
+      - name: Tear down Docker Compose services
+        if: always()
+        run: docker-compose -f docker-compose.yaml down  

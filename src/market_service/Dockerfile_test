@@ -10,7 +10,7 @@ COPY src/utils.py ./utils.py
 
 RUN pip install -r requirements.txt
 
-EXPOSE 5004
+EXPOSE 5003
 
 ENV FLASK_APP=main_test
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5004", "--cert=/run/secrets/certificate", "--key=/run/secrets/key"]
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5003", "--cert=/run/secrets/certificate", "--key=/run/secrets/key"]
