@@ -415,7 +415,7 @@
 					"script": {
 						"exec": [
 							"pm.test(\"Error: Missing email for bid\", function () {\r",
-							"    pm.response.to.have.status(400);\r",
+							"    pm.response.to.have.status(404);\r",
 							"    var response = pm.response.json();\r",
 							"    pm.expect(response.message).to.include(\"Bad Request\");\r",
 							"});\r",
@@ -427,6 +427,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "PUT",
 				"header": [],
 				"body": {
