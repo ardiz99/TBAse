@@ -158,32 +158,49 @@ def get_all_gachas():
 
 
 # Endpoint per ottenere un singolo gacha dell'utente loggato
+
+# Endpoint per ottenere un singolo gacha dell'utente loggato
 @app.route('/mygacha/<string:email>/<int:gacha_id>', methods=['GET'])
 def get_mygacha(email, gacha_id):
     u.reset_response()
     response = perform_request("GET", f"/get_gacha_of_user/{email}")
-    if isinstance(response, tuple):  # In caso di errore
-        return response
+    if isinstance(response, tuple) or not response:  # In caso di errore
+        u.bad_request()
+        return u.send_response()
+    status_code = response.status_code
+    if status_code == 404:
+        u.not_found("Gacha not found")
+        return u.send_response()
+    if status_code == 500:
+        u.generic_error("Server error occurred")
+        return u.send_response()
     gachaIds = response.json().get("data")
     if not gachaIds:
-        u.RESPONSE["code"] = 404
-        u.RESPONSE["data"] = []
-        u.RESPONSE["message"] = "No expired gacha found"
-        return jsonify(u.RESPONSE)
+        u.not_found("Gacha not found")
+        return u.send_response()
 
     if gacha_id in gachaIds:
         response = perform_request("GET", f"/get/{gacha_id}")
-        if isinstance(response, tuple):  # In caso di errore
-            return response
+        if isinstance(response, tuple) or not response:  # In caso di errore
+            u.bad_request()
+            return u.send_response()
+        status_code = response.status_code
+        if status_code == 404:
+            u.not_found("Gacha not found")
+            return u.send_response()
+        if status_code == 500:
+            u.generic_error("Server error occurred")
+            return u.send_response()
         gacha = response.json().get("data")
         u.RESPONSE["data"] = gacha
         u.RESPONSE["code"] = 200
         u.RESPONSE["message"] = "Gacha retrivied succesfully"
         return jsonify(u.RESPONSE)
     else:
-        u.RESPONSE["code"] = 404
-        u.RESPONSE["data"] = "Gacha Not Found in Collection"
-        u.RESPONSE["message"] = "Gacha Not Found in Collection!"
+        u.not_found("Gacha not found")
+        return u.send_response()
+
+
 
 
 # Endpoint per ottenere tutti i gacha dell'utente loggato

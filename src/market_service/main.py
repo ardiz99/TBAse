@@ -128,7 +128,7 @@ def new_auction():
 
     user_owner_id = response.json().get("data").get("UserId")
 
-    path = u.GACHA_SERVICE_URL + f"/mygacha/{gacha_id}/{user_owner_id}"
+    path = u.GACHA_SERVICE_URL + f"/mygacha/{user_owner_email}/{gacha_id}"
     response = requests.get(path, verify=False)
     if response.status_code != 200:
         u.handle_error(response.status_code)

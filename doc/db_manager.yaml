@@ -7,7 +7,7 @@ info:
     It interacts with a MySQL database, allowing creation, retrieval, update, and deletion of various resources.
 
 servers:
-  - url: http://localhost:8005
+  - url: https://localhost:8005
     description: Local environment
 
 components:
