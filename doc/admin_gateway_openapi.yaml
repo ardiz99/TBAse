@@ -1,0 +1,694 @@
+openapi: 3.0.3
+info:
+  title: Admin API Gateway
+  version: "1.0.0"
+  description: |
+    This is the Admin API Gateway, providing endpoints for managing auctions,
+    admin users, gachas, and other related functionalities.
+servers:
+  - url: https://localhost:8080
+    description: Local environment
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AdminRegisterRequest:
+      type: object
+      properties:
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+          format: email
+        Password:
+          type: string
+      required:
+        - FirstName
+        - LastName
+        - Email
+        - Password
+
+    AdminLoginRequest:
+      type: object
+      properties:
+        Email:
+          type: string
+          format: email
+        Password:
+          type: string
+      required:
+        - Email
+        - Password
+
+    AdminUpdateRequest:
+      type: object
+      properties:
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+          format: email
+        Password:
+          type: string
+      required:
+        - FirstName
+        - LastName
+        - Email
+        - Password
+
+    SpecificUserUpdateRequest:
+      type: object
+      properties:
+        search_email:
+          type: string
+          format: email
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+          format: email
+        Password:
+          type: string
+        CurrencyAmount:
+          type: number
+      required:
+        - search_email
+
+    GachaRequest:
+      type: object
+      properties:
+        GachaId:
+          type: integer
+          description: Unique identifier of the gacha
+        Name:
+          type: string
+          description: Gacha name
+        Type1:
+          type: string
+          description: Primary type of the gacha
+        Type2:
+          type: string
+          description: Secondary type of the gacha (optional)
+        Total:
+          type: integer
+          description: Total base stat sum
+        HP:
+          type: integer
+          description: Health Points
+        Attack:
+          type: integer
+          description: Attack stat
+        Defense:
+          type: integer
+          description: Defense stat
+        SpAtt:
+          type: integer
+          description: Special Attack stat
+        SpDef:
+          type: integer
+          description: Special Defense stat
+        Speed:
+          type: integer
+          description: Speed stat
+        Rarity:
+          type: string
+          description: Rarity category (e.g., Common, Rare, Legendary)
+        Link:
+          type: string
+          format: uri
+          description: URL related to the gacha (e.g., image or info page)
+      required:
+        - GachaId
+        - Name
+        - Type1
+        - Total
+        - HP
+        - Attack
+        - Defense
+        - SpAtt
+        - SpDef
+        - Speed
+        - Rarity
+        - Link
+
+    Gacha:
+      type: object
+      properties:
+        GachaId:
+          type: integer
+          description: Unique identifier of the gacha
+        Name:
+          type: string
+          description: Gacha name
+        Type1:
+          type: string
+          description: Primary type of the gacha
+        Type2:
+          type: string
+          description: Secondary type of the gacha (optional)
+        Total:
+          type: integer
+          description: Total base stat sum
+        HP:
+          type: integer
+          description: Health Points
+        Attack:
+          type: integer
+          description: Attack stat
+        Defense:
+          type: integer
+          description: Defense stat
+        SpAtt:
+          type: integer
+          description: Special Attack stat
+        SpDef:
+          type: integer
+          description: Special Defense stat
+        Speed:
+          type: integer
+          description: Speed stat
+        Rarity:
+          type: string
+          description: Rarity category (e.g., Common, Rare, Legendary)
+        Link:
+          type: string
+          format: uri
+          description: URL related to the gacha (e.g., image or info page)
+      required:
+        - GachaId
+        - Name
+        - Type1
+        - Total
+        - HP
+        - Attack
+        - Defense
+        - SpAtt
+        - SpDef
+        - Speed
+        - Rarity
+        - Link
+
+    Auction:
+      type: object
+      properties:
+        transaction_id:
+          type: integer
+          description: Unique identifier of the auction transaction
+        # Additional auction properties can be added here
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+
+paths:
+  /:
+    get:
+      summary: Home endpoint
+      description: Returns a status message from the API Gateway
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /login_admin:
+    post:
+      summary: Admin login (Auth Service)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminLoginRequest'
+      responses:
+        '200':
+          description: Admin login successful (returns token)
+        '400':
+          description: Bad request
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+      tags:
+        - AUTH SERVICE
+
+  /auction:
+    get:
+      summary: Retrieve all auctions
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of auctions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Auction'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+      tags:
+        - MARKET SERVICE
+
+  /auction/{transaction_id}:
+    get:
+      summary: Retrieve a specific auction by ID
+      parameters:
+        - name: transaction_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Specific auction details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Auction'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+      tags:
+        - MARKET SERVICE
+
+  /close_auction/{transaction_id}:
+    put:
+      summary: Close a specific auction
+      parameters:
+        - name: transaction_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Auction closed successfully
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+      tags:
+        - MARKET SERVICE
+
+  /register_admin:
+    post:
+      summary: Register a new admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminRegisterRequest'
+      responses:
+        '200':
+          description: Admin registered successfully
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+      tags:
+        - AUTH SERVICE
+
+  /delete_admin:
+    delete:
+      summary: Delete an admin
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Admin deleted successfully
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal server error
+      tags:
+        - AUTH SERVICE
+
+  /check_users_profile:
+    get:
+      summary: Check user profiles
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of user profiles
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal server error
+      tags:
+        - AUTH SERVICE
+
+  /logout:
+    get:
+      summary: Admin logout
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal server error
+      tags:
+        - AUTH SERVICE
+
+  /update_admin:
+    put:
+      summary: Update admin data
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUpdateRequest'
+      responses:
+        '200':
+          description: Admin updated successfully
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal server error
+      tags:
+        - AUTH SERVICE
+
+  /update_specific_user:
+    put:
+      summary: Update a specific user
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpecificUserUpdateRequest'
+      responses:
+        '200':
+          description: User updated successfully
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+      tags:
+        - AUTH SERVICE
+
+  /auction/history:
+    get:
+      summary: Retrieve auction history
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Auction history
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal server error
+      tags:
+        - MARKET SERVICE
+
+  /gacha/add:
+    post:
+      summary: Add a new gacha
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GachaRequest'
+      responses:
+        '200':
+          description: Gacha added successfully
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+      tags:
+        - GACHA SERVICE
+
+  /gacha/update/{gacha_id}:
+    put:
+      summary: Update an existing gacha
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GachaRequest'
+      responses:
+        '200':
+          description: Gacha updated successfully
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+      tags:
+        - GACHA SERVICE
+
+  /gacha/delete/{gacha_id}:
+    delete:
+      summary: Delete a gacha
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Gacha deleted successfully
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+      tags:
+        - GACHA SERVICE
+
+  /gacha/get/{gacha_id}:
+    get:
+      summary: Retrieve a gacha by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Gacha details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Gacha'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+      tags:
+        - GACHA SERVICE
+
+  /gacha/getName/{gacha_name}:
+    get:
+      summary: Retrieve a gacha by name
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: gacha_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Gacha details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Gacha'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+      tags:
+        - GACHA SERVICE
+
+  /gacha/get:
+    get:
+      summary: Retrieve all gachas
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of all gachas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Gacha'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+      tags:
+        - GACHA SERVICE
+
+  /specific_history:
+    get:
+      summary: Retrieve specific user history
+      security:
+        - BearerAuth: []
+      responses:
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+      tags:
+        - MARKET SERVICE
+
+  /specific_market_history:
+    get:
+      summary: Retrieve specific market history
+      security:
+        - BearerAuth: []
+      responses:
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+      tags:
+        - MARKET SERVICE
+          

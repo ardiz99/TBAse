@@ -543,10 +543,6 @@ def delete_user():
     # Valida il token e controlla il ruolo
     token_data = u.validate_token(acces_token)
 
-    role = token_data.get('role')
-    if role != "user":
-        return jsonify({"error": "Unauthorized. Admin role required"}), 400
-
     email = token_data.get('sub')  # restituisce l'email  corretta
     password = token_data.get('pass')
 

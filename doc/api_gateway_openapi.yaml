@@ -1,280 +1,578 @@
 openapi: 3.0.3
 info:
-  title: API Gateway Service
-  description: |-
-    This API Gateway acts as the main entry point for client requests, forwarding them
-    to the appropriate microservices for processing. It integrates with multiple services,
-    including `auth-service`, `currency-service`, and `gacha-service`.
-    
-    
-    Some useful links:
-    - [The Pokémon Gacha repository](https://github.com/ardiz99/TBAse)
-    - [The source APIs definition for the Pokémon Gacha](https://github.com/ardiz99/TBAse/doc)
-  version: 1.0.0
-  x-microservice: api-gateway
+  title: API Gateway
+  version: "1.0.0"
+  description: |
+    API Gateway providing endpoints for:
+    - Auth Service (login, register, logout, user/profile management)
+    - Currency Service (roll, golden roll, buy currency)
+    - Gacha Service (retrieve gachas by ID, name, all, or owned by the user)
+    - Market Service (retrieve auctions, create auctions, bid, transaction history)
 servers:
-  - url: http://api-gateway:8000
-    description: API Gateway in Docker environment
-  - url: http://127.0.0.1:8000
-    description: API Gateway on local development
-tags:
-  - name: API Gateway
-    description: API operations for routing requests to other services
+  - url: https://localhost:8000
+    description: Local environment
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+
+    BuyCurrencyRequest:
+      type: object
+      properties:
+        quantity:
+          type: integer
+      required:
+        - quantity
+
+    RegisterRequest:
+      type: object
+      properties:
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+          format: email
+        Password:
+          type: string
+        CurrencyAmount:
+          type: integer
+      required:
+        - FirstName
+        - LastName
+        - Email
+        - Password
+
+    LoginRequest:
+      type: object
+      properties:
+        Email:
+          type: string
+          format: email
+        Password:
+          type: string
+      required:
+        - Email
+        - Password
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        Email:
+          type: string
+          format: email
+        Password:
+          type: string
+        CurrencyAmount:
+          type: integer
+
+    AuctionRequest:
+      type: object
+      properties:
+        gacha_id:
+          type: integer
+        starting_price:
+          type: number
+        end_date:
+          type: string
+          format: date-time
+      required:
+        - gacha_id
+        - starting_price
+        - end_date
+
+    BidRequest:
+      type: object
+      properties:
+        bid:
+          type: number
+      required:
+        - bid
+
+    Gacha:
+      type: object
+      properties:
+        GachaId:
+          type: integer
+        Name:
+          type: string
+        Type1:
+          type: string
+        Type2:
+          type: string
+        Total:
+          type: integer
+        HP:
+          type: integer
+        Attack:
+          type: integer
+        Defense:
+          type: integer
+        SpAtt:
+          type: integer
+        SpDef:
+          type: integer
+        Speed:
+          type: integer
+        Rarity:
+          type: string
+        Link:
+          type: string
+          format: uri
+      required:
+        - GachaId
+        - Name
+        - Type1
+        - Total
+        - HP
+        - Attack
+        - Defense
+        - SpAtt
+        - SpDef
+        - Speed
+        - Rarity
+        - Link
+
 paths:
+  # General endpoint
   /:
     get:
-      tags:
-        - API Gateway
-      summary: Check API Gateway status.
-      description: Simple endpoint to verify that the API Gateway is running.
+      summary: Home endpoint
+      description: Returns a status message from the API Gateway
       responses:
         '200':
-          description: Gateway is running.
+          description: OK
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: API Gateway is running
-  /register_user:
-    post:
-      tags:
-        - Auth Service
-      summary: User login.
-      description: Authenticates a user with the `auth-service`.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties: true
-      responses:
-        '200':
-          description: User logged in successfully.
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                type: object
-        '404':
-          description: Not found.
-          content:
-            application/json:
-              schema:
-                type: object
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                type: object
+                $ref: '#/components/schemas/MessageResponse'
+
+
+  # ======================
+  # AUTH SERVICE ENDPOINTS
+  # ======================
+
   /login:
     post:
-      tags:
-        - Auth Service
-      summary: User login.
-      description: Authenticates a user with the `auth-service`.
+      summary: User login (Auth Service)
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
-          description: User logged in successfully.
-          content:
-            application/json:
-              schema:
-                type: object
+          description: Login successful, returns token
         '400':
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                type: object
+          description: Bad request
         '404':
-          description: Not found.
-          content:
-            application/json:
-              schema:
-                type: object
+          description: Not found
         '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                type: object
+          description: Internal server error
+      tags:
+        - AUTH SERVICE
+
+  /register:
+    post:
+      summary: Register a new user (Auth Service)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: Registered successfully
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+      tags:
+        - AUTH SERVICE
+
+  /delete_user:
+    delete:
+      summary: Delete a user (Auth Service)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User deleted successfully
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+      tags:
+        - AUTH SERVICE
+
+  /logout:
+    get:
+      summary: User logout (Auth Service)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+      tags:
+        - AUTH SERVICE
+
+  /update_user:
+    put:
+      summary: Update user data (Auth Service)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User updated successfully
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+      tags:
+        - AUTH SERVICE
+
+  /check_users_profile:
+    get:
+      summary: Check users' profiles (Auth Service)
+      responses:
+        '200':
+          description: Returns list of user profiles
+        '500':
+          description: Internal server error
+      tags:
+        - AUTH SERVICE
+
+
+  # ===========================
+  # CURRENCY SERVICE ENDPOINTS
+  # ===========================
+
   /roll:
     get:
-      tags:
-        - Currency Service
-      summary: Perform a gacha roll.
-      description: Fetches gacha roll data and image by interacting with the currency service.
+      summary: Perform a roll action (Currency Service)
+      security:
+        - BearerAuth: []
       responses:
         '200':
-          description: Gacha roll executed successfully.
+          description: Image content returned
           content:
-            image/png:
+            image/*:
               schema:
                 type: string
                 format: binary
+        '401':
+          description: Unauthorized
         '500':
-          description: Internal server error.
+          description: Internal server error
+      tags:
+        - CURRENCY SERVICE
+
+  /golden_roll:
+    get:
+      summary: Perform a golden roll action (Currency Service)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Image content returned
           content:
-            application/json:
+            image/*:
               schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  message:
-                    type: string
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+      tags:
+        - CURRENCY SERVICE
 
   /buy_currency:
     put:
-      tags:
-        - Currency Service
-      summary: Purchase in-game currency.
-      description: Allows a user to purchase additional currency by forwarding the request to the currency service.
+      summary: Buy currency (Currency Service)
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                quantity:
-                  type: integer
-                  description: Quantity of currency to purchase.
+              $ref: '#/components/schemas/BuyCurrencyRequest'
       responses:
         '200':
-          description: Currency purchased successfully.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  data:
-                    type: array
-                  message:
-                    type: string
+          description: Currency bought successfully
         '400':
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  message:
-                    type: string
+          description: Bad request
+        '401':
+          description: Unauthorized
         '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  message:
-                    type: string
+          description: Internal server error
+      tags:
+        - CURRENCY SERVICE
 
-  /gacha:
+
+  # ========================
+  # GACHA SERVICE ENDPOINTS
+  # ========================
+
+  /gacha/get/{gacha_id}:
     get:
-      tags:
-        - Gacha Service
-      summary: Retrieve all gacha items.
-      description: Fetches a list of all gacha items from the gacha service.
+      summary: Retrieve a gacha by ID (Gacha Service)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         '200':
-          description: All gacha items retrieved successfully.
+          description: Gacha retrieved successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  data:
-                    type: array
-                    items:
-                      type: object
-                  message:
-                    type: string
+                $ref: '#/components/schemas/Gacha'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Gacha not found
         '500':
-          description: Internal server error.
+          description: Internal server error
+      tags:
+        - GACHA SERVICE
+
+  /gacha/getName/{gacha_name}:
+    get:
+      summary: Retrieve a gacha by name (Gacha Service)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: gacha_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Gacha retrieved successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  message:
-                    type: string
-
-  /gacha/add:
-    post:
+                $ref: '#/components/schemas/Gacha'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Gacha not found
+        '500':
+          description: Internal server error
       tags:
-        - Gacha Service
-      summary: Add a new gacha item.
-      description: Forwards a request to the gacha service to create a new gacha item.
+        - GACHA SERVICE
+
+  /gacha/get:
+    get:
+      summary: Retrieve all gachas (Gacha Service)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of all gachas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Gacha'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+      tags:
+        - GACHA SERVICE
+
+  /gacha/mygacha/{gacha_id}:
+    get:
+      summary: Retrieve a user's specific gacha by ID (Gacha Service)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: gacha_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User's specific gacha retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Gacha'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Gacha not found
+        '500':
+          description: Internal server error
+      tags:
+        - GACHA SERVICE
+
+  /gacha/mygacha:
+    get:
+      summary: Retrieve all gachas owned by the user (Gacha Service)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User's gachas retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Gacha'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+      tags:
+        - GACHA SERVICE
+
+
+  # ===========================
+  # MARKET SERVICE ENDPOINTS
+  # ===========================
+
+  /auction:
+    get:
+      summary: Retrieve all auctions (Market Service)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of auctions
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+      tags:
+        - MARKET SERVICE
+
+  /new_auction:
+    post:
+      summary: Create a new auction (Market Service)
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              additionalProperties: true
+              $ref: '#/components/schemas/AuctionRequest'
       responses:
         '200':
-          description: Gacha item added successfully.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  message:
-                    type: string
+          description: Auction created successfully
         '400':
-          description: Bad request.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  message:
-                    type: string
+          description: Bad request
+        '401':
+          description: Unauthorized
         '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: integer
-                  message:
-                    type: string
+          description: Internal server error
+      tags:
+        - MARKET SERVICE
 
+  /bid/{transaction_id}:
+    put:
+      summary: Place a new bid on an auction (Market Service)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: transaction_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BidRequest'
+      responses:
+        '200':
+          description: Bid placed successfully
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+      tags:
+        - MARKET SERVICE
 
-
-  # Similar patterns for other endpoints like `/register`, `/delete_user`, `/gacha/{id}`, etc.
+  /my_transaction_history:
+    get:
+      summary: Retrieve the user's transaction history (Market Service)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Transaction history retrieved
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+      tags:
+        - MARKET SERVICE
