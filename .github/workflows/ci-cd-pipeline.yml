@@ -59,6 +59,11 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v4
 
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
       - name: Start Docker Compose Services
         run: docker-compose -f docker-compose.yaml up --build -d
 
