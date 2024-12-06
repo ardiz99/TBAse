@@ -42,7 +42,7 @@ services:
       context: src
       dockerfile: ./auth_service/Dockerfile
     container_name: auth-service
-    ports:
+    expose:
       - "8001:8001"
     volumes:
       - ./src/utils.py:/app/utils.py
@@ -60,7 +60,7 @@ services:
       context: src
       dockerfile: ./gacha_service/Dockerfile
     container_name: gacha-service
-    ports:
+    expose:
       - "8002:8002"
     volumes:
       - ./src/utils.py:/app/utils.py
@@ -76,7 +76,7 @@ services:
       context: src
       dockerfile: ./currency_service/Dockerfile
     container_name: currency-service
-    ports:
+    expose:
       - "8004:8004"
     volumes:
       - ./src/utils.py:/app/utils.py
@@ -94,7 +94,7 @@ services:
       context: src
       dockerfile: ./market_service/Dockerfile
     container_name: market-service
-    ports:
+    expose:
       - "8003:8003"
     volumes:
       - ./src/utils.py:/app/utils.py
@@ -110,7 +110,7 @@ services:
       context: src
       dockerfile: ./db_manager/Dockerfile
     container_name: db-manager
-    ports:
+    expose:
       - "8005:8005"
     volumes:
       - ./src/utils.py:/app/utils.py
