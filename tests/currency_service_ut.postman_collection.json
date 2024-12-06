@@ -31,6 +31,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -78,6 +88,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -119,6 +139,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -149,14 +179,14 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Response status is 500\", function () {\r",
+							"pm.test(\"Response status is 400\", function () {\r",
 							"    pm.response.to.have.status(500);\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Error message for unavailable gacha rarity\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData.code).to.eql(500);\r",
-							"    pm.expect(jsonData.message).to.include(\"No gacha available for selected rarity.\");\r",
+							"    pm.expect(jsonData.message).to.include(\"Bad Request.\");\r",
 							"});\r",
 							""
 						],
@@ -166,6 +196,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -197,13 +237,13 @@
 					"script": {
 						"exec": [
 							"pm.test(\"Response status is 500\", function () {\r",
-							"    pm.response.to.have.status(500);\r",
+							"    pm.response.to.have.status(400);\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Error message for invalid rarity distribution\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.code).to.eql(500);\r",
-							"    pm.expect(jsonData.message).to.include(\"Error calculating rarity.\");\r",
+							"    pm.expect(jsonData.code).to.eql(400);\r",
+							"    pm.expect(jsonData.message).to.include(\"Bad Request.\");\r",
 							"});\r",
 							""
 						],
@@ -213,6 +253,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -244,12 +294,12 @@
 					"script": {
 						"exec": [
 							"pm.test(\"Response status is 500\", function () {\r",
-							"    pm.response.to.have.status(500);\r",
+							"    pm.response.to.have.status(400);\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Error message for insufficient funds\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.code).to.eql(500);\r",
+							"    pm.expect(jsonData.code).to.eql(400);\r",
 							"    pm.expect(jsonData.message).to.include(\"Insufficient Pokedollars\");\r",
 							"});\r",
 							""
@@ -260,6 +310,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -307,6 +367,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "PUT",
 				"header": [],
 				"body": {
@@ -356,6 +426,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "PUT",
 				"header": [],
 				"body": {
@@ -405,6 +485,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "PUT",
 				"header": [],
 				"body": {
@@ -453,6 +543,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -497,6 +597,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {

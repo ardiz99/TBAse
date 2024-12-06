@@ -32,7 +32,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"FirstName\": \"Alice\",\r\n  \"LastName\": \"Smith\",\r\n  \"Email\": \"alice@example.com\",\r\n  \"Password\": \"securepassword\",\r\n  \"CurrencyAmount\": \"100\"\r\n}",
+					"raw": "{\r\n  \"FirstName\": \"John\",\r\n  \"LastName\": \"Doe\",\r\n  \"Email\": \"user2@example.com\",\r\n  \"Password\": \"securepassword\",\r\n  \"CurrencyAmount\": \"100\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -164,9 +164,6 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"let response = pm.response.json();\r",
-							"pm.environment.set(\"jwt_token\", response.data);\r",
-							"\r",
 							"pm.test(\"Status code is 200\", function () {\r",
 							"    pm.response.to.have.status(200);\r",
 							"});\r",
@@ -195,7 +192,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"Email\": \"alice@example.com\",\r\n    \"Password\": \"securepassword\"\r\n}",
+					"raw": "{\r\n    \"Email\": \"user@example.com\",\r\n    \"Password\": \"securepassword\"\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -551,6 +548,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -589,6 +596,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -628,6 +645,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "DELETE",
 				"header": [],
 				"url": {
@@ -679,6 +706,16 @@
 				}
 			],
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "DELETE",
 				"header": [],
 				"url": {
