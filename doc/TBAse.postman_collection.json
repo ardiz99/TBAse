@@ -17,7 +17,15 @@
 							"script": {
 								"exec": [
 									"let response = pm.response.json();\r",
-									"pm.environment.set(\"jwt_token\", response.data);"
+									"\r",
+									"// Controlla se l'access token è presente nella risposta\r",
+									"if (response.data && response.data.access_token) {\r",
+									"    pm.environment.set(\"jwt_token\", response.data.access_token);\r",
+									"    console.log(\"Access token salvato:\", response.data.access_token);\r",
+									"} else {\r",
+									"    console.error(\"Access token non trovato nella risposta\");\r",
+									"    pm.environment.set(\"jwt_token\", null);\r",
+									"}"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -71,7 +79,15 @@
 							"script": {
 								"exec": [
 									"let response = pm.response.json();\r",
-									"pm.environment.set(\"jwt_token\", response.data);"
+									"\r",
+									"// Controlla se l'access token è presente nella risposta\r",
+									"if (response.data && response.data.access_token) {\r",
+									"    pm.environment.set(\"jwt_token\", response.data.access_token);\r",
+									"    console.log(\"Access token salvato:\", response.data.access_token);\r",
+									"} else {\r",
+									"    console.error(\"Access token non trovato nella risposta\");\r",
+									"    pm.environment.set(\"jwt_token\", null);\r",
+									"}"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -83,7 +99,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"FirstName\": \"Aldo\",\r\n    \"LastName\": \"Baglio\",\r\n    \"Email\": \"aldo.baglio@example.com\",\r\n    \"Password\": \"ciao\",\r\n    \"CurrencyAmount\": 80\r\n}",
+							"raw": "{\r\n    \"FirstName\": \"Aldo\",\r\n    \"LastName\": \"Baglio\",\r\n    \"Email\": \"aldo.b@example.com\",\r\n    \"Password\": \"ciao\",\r\n    \"CurrencyAmount\": 80\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -213,7 +229,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"FirstName\": \"augusto2\",\r\n    \"LastName\": \"augusto2\",\r\n    \"Email\": \"augusto@augusto2.com\",\r\n    \"Password\": \"augusto2\",\r\n    \"CurrencyAmount\": 9\r\n}",
+							"raw": "{\r\n    \"FirstName\": \"augusto2\",\r\n    \"LastName\": \"augusto2\",\r\n    \"Email\": \"augusto@auggggggusto2.com\",\r\n    \"Password\": \"augusto2\",\r\n    \"CurrencyAmount\": 9\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -239,6 +255,18 @@
 				},
 				{
 					"name": "roll",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",

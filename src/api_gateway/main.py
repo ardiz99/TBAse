@@ -15,13 +15,24 @@ def index():
 @app.route('/roll', methods=['GET'])
 def roll():
     u.reset_response()
+
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized()
+        u.unauthorized("Authorization header missing")
         return u.send_response()
-    acces_token = auth_header.removeprefix("Bearer ").strip()
-    token = u.validate_token(acces_token)
-    email = token.get("sub")
+
+    try:
+        access_token = auth_header.removeprefix("Bearer ").strip()
+        print("Access Token:", access_token)  # Log del token estratto
+    except IndexError:
+        u.unauthorized("Malformed Authorization header")
+        return u.send_response()
+
+    token = u.validate_token(access_token)  # Funzione per decodificare e validare il token
+    if "error" in token:
+        u.unauthorized(token["error"])  # Se c'è un errore, rispondi con 401
+        return u.send_response()
+    email = token.get("decoded", {}).get("sub")
 
     path = u.CURRENCY_SERVICE_URL + f"/roll_info/{u.ROLL_COST}"
     response = requests.get(path, verify=False, params={"email": email})
@@ -49,13 +60,23 @@ def roll():
 @app.route('/golden_roll', methods=['GET'])
 def golden():
     u.reset_response()
+
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized()
+        u.unauthorized("Authorization header missing")
         return u.send_response()
-    acces_token = auth_header.removeprefix("Bearer ").strip()
-    token = u.validate_token(acces_token)
-    email = token.get("sub")
+
+    try:
+        access_token = auth_header.removeprefix("Bearer ").strip()
+        print("Access Token:", access_token)  # Log del token estratto
+    except IndexError:
+        u.unauthorized("Malformed Authorization header")
+        return u.send_response()
+    token = u.validate_token(access_token)  # Funzione per decodificare e validare il token
+    if "error" in token:
+        u.unauthorized(token["error"])  # Se c'è un errore, rispondi con 401
+        return u.send_response()
+    email = token.get("decoded", {}).get("sub")
 
     path = u.CURRENCY_SERVICE_URL + f"/roll_info/{u.GOLDEN_COST}"
     response = requests.get(path,
@@ -85,13 +106,23 @@ def golden():
 @app.route('/buy_currency', methods=['PUT'])
 def buy_currency():
     u.reset_response()
+
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized()
+        u.unauthorized("Authorization header missing")
         return u.send_response()
-    acces_token = auth_header.removeprefix("Bearer ").strip()
-    token = u.validate_token(acces_token)
-    email = token.get("sub")
+
+    try:
+        access_token = auth_header.removeprefix("Bearer ").strip()
+        print("Access Token:", access_token)  # Log del token estratto
+    except IndexError:
+        u.unauthorized("Malformed Authorization header")
+        return u.send_response()
+    token = u.validate_token(access_token)  # Funzione per decodificare e validare il token
+    if "error" in token:
+        u.unauthorized(token["error"])  # Se c'è un errore, rispondi con 401
+        return u.send_response()
+    email = token.get("decoded", {}).get("sub")
 
     data = request.get_json()
     quantity = data.get('quantity')
@@ -323,19 +354,23 @@ def get_all_gachas():
 @app.route('/gacha/mygacha/<string:gacha_id>', methods=['GET'])
 def get_mygacha(gacha_id):
     u.reset_response()
-    auth_header = request.headers.get('Authorization')
-    if not auth_header:
-        u.unauthorized()
-        return u.send_response()
-    acces_token = auth_header.removeprefix("Bearer ").strip()
-    token = u.validate_token(acces_token)
-    email = token.get("sub")
 
-    u.reset_response()
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized()
+        u.unauthorized("Authorization header missing")
         return u.send_response()
+
+    try:
+        access_token = auth_header.removeprefix("Bearer ").strip()
+        print("Access Token:", access_token)  # Log del token estratto
+    except IndexError:
+        u.unauthorized("Malformed Authorization header")
+        return u.send_response()
+    token = u.validate_token(access_token)  # Funzione per decodificare e validare il token
+    if "error" in token:
+        u.unauthorized(token["error"])  # Se c'è un errore, rispondi con 401
+        return u.send_response()
+    email = token.get("decoded", {}).get("sub")
 
     id = u.safe_parse_int(u.sanitize(gacha_id, u.ALLOWED_INT))
     if id is None:
@@ -363,13 +398,23 @@ def get_mygacha(gacha_id):
 @app.route('/gacha/mygacha', methods=['GET'])
 def get_mygachaAll():
     u.reset_response()
+
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized()
+        u.unauthorized("Authorization header missing")
         return u.send_response()
-    acces_token = auth_header.removeprefix("Bearer ").strip()
-    token = u.validate_token(acces_token)
-    email = token.get("sub")
+
+    try:
+        access_token = auth_header.removeprefix("Bearer ").strip()
+        print("Access Token:", access_token)  # Log del token estratto
+    except IndexError:
+        u.unauthorized("Malformed Authorization header")
+        return u.send_response()
+    token = u.validate_token(access_token)  # Funzione per decodificare e validare il token
+    if "error" in token:
+        u.unauthorized(token["error"])  # Se c'è un errore, rispondi con 401
+        return u.send_response()
+    email = token.get("decoded", {}).get("sub")
 
     url = u.GACHA_SERVICE_URL + f"/mygacha/{email}"
     response = requests.get(url, verify=False)

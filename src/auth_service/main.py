@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 import bcrypt
 import requests
+import re
 import base64
 import utils as u
 
@@ -60,12 +61,19 @@ def login():
     stored_hash = response.json().get("data")[0].get("Password")
     salt = response.json().get("data")[0].get("Salt")
     if verify_password(password, stored_hash, salt):
-        role = "user"
-        token = u.generate_token(email, role, stored_hash)
-        u.set_auth_token(token)
+        # Generazione dei token
+        tokens = u.generate_tokens(email, "user")
+
+        # Imposta il token di accesso
+        u.set_auth_token(tokens.get("access_token"))
+
+        # Invio della risposta
         u.RESPONSE["code"] = 200
-        u.RESPONSE["data"] = token
-        u.RESPONSE["message"] = "Login seccessful"
+        u.RESPONSE["data"] = {
+            "id_token": tokens.get("id_token"),
+            "access_token": tokens.get("access_token")
+        }
+        u.RESPONSE["message"] = "Login successful"
         return u.send_response()
     else:
         u.generic_error()
@@ -101,12 +109,19 @@ def login_admin():
     stored_hash = response.json().get("data")[0].get("Password")
     salt = response.json().get("data")[0].get("Salt")
     if verify_password(password, stored_hash, salt):
-        role = "admin"
-        token = u.generate_token(email, role, stored_hash)
-        u.set_auth_token(token)
+        # Generazione dei token
+        tokens = u.generate_tokens(email, "admin")
+
+        # Imposta il token di accesso
+        u.set_auth_token(tokens.get("access_token"))
+
+        # Invio della risposta
         u.RESPONSE["code"] = 200
-        u.RESPONSE["data"] = token
-        u.RESPONSE["message"] = "Login seccessful"
+        u.RESPONSE["data"] = {
+            "id_token": tokens.get("id_token"),
+            "access_token": tokens.get("access_token")
+        }
+        u.RESPONSE["message"] = "Login successful"
         return u.send_response()
     else:
         u.generic_error()
@@ -169,12 +184,18 @@ def register():
         u.set_response(response)
         return u.send_response()
 
-    token = u.generate_token(email, "user", hashed_password)
-    u.set_auth_token(token)
+    # Generazione dei token
+    tokens = u.generate_tokens(email, "user")
+    # Imposta il token di accesso
+    u.set_auth_token(tokens.get("access_token"))
+    # Invio della risposta
     u.RESPONSE["code"] = 200
-    u.RESPONSE["data"] = token
-    u.RESPONSE["message"] = "Registration seccessful"
-    return u.send_response("Registrazione avvenuta con successo!")
+    u.RESPONSE["data"] = {
+        "id_token": tokens.get("id_token"),
+        "access_token": tokens.get("access_token")
+    }
+    u.RESPONSE["message"] = "Registration successful"
+    return u.send_response()
 
 
 # User registration route
@@ -211,18 +232,22 @@ def register_admin():
                                        "Password": hashed_password,
                                        "Salt": salt})
         if response.status_code == 200:  # dal da-manager abbiamo in riscontro positivo
-
-            token = u.generate_token(email, "admin", hashed_password)
-            u.set_auth_token(token)
+            # Generazione dei token
+            tokens = u.generate_tokens(email, "admin")
+            # Imposta il token di accesso
+            u.set_auth_token(tokens.get("access_token"))
+            # Invio della risposta
             u.RESPONSE["code"] = 200
-            u.RESPONSE["data"] = token
-            u.RESPONSE["message"] = "Registration seccessful"
+            u.RESPONSE["data"] = {
+                "id_token": tokens.get("id_token"),
+                "access_token": tokens.get("access_token")
+            }
+            u.RESPONSE["message"] = "Registration successful"
             return u.send_response()
         elif response.status_code == 400:
             return jsonify({"error": "Invalid credentials"}), 400
         else:
-            return jsonify({"error": "Internal server error", "processed_fields": processed_fields, "salt": salt,
-                            "hashed_password": hashed_password}), 500
+            return jsonify({"error": "Internal server error"}), 500
     except requests.exceptions.RequestException as e:
         return jsonify({"error": "Could not connect to db_manager", "details": str(e)}), 500
 
@@ -230,16 +255,28 @@ def register_admin():
 @app.route('/update_user', methods=['PUT'])
 def update_user():
     check_email = False
-    # Recupera il token di autenticazione
+    u.reset_response()
+
+    # Estrai l'header di autorizzazione
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized()
-        return u.send_response("no token found. PLs log in first")
-    acces_token = auth_header.removeprefix("Bearer ").strip()
-    # Valida il token e controlla il ruolo
-    token_data = u.validate_token(acces_token)
+        u.unauthorized("Authorization header missing")
+        return u.send_response()
 
-    email = token_data.get('sub')
+    # Rimuovi il prefisso "Bearer"
+    try:
+        access_token = auth_header.removeprefix("Bearer ").strip()
+        print("Access Token:", access_token)  # Log del token estratto
+    except IndexError:
+        u.unauthorized("Malformed Authorization header")
+        return u.send_response()
+
+    # Valida il token
+    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
+    if "error" in token_data:
+        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
+        return u.send_response()
+    email = token_data.get("decoded", {}).get("sub")
     tmp_email = email
 
     response = requests.get(
@@ -309,7 +346,7 @@ def update_user():
             }
         )
         if check_email and response.status_code == 200:
-            u.BLACKLIST.append(acces_token)
+            u.BLACKLIST.append(access_token)
             u.set_auth_token(None)
             return jsonify({"a": "Update done! pls LOG IN now to continue", "b": response.json()}), response.status_code
         if response.status_code == 200:
@@ -325,16 +362,29 @@ def update_user():
 @app.route('/update_specific_user', methods=['PUT'])
 def update_specific_user():
     check_email = False
-    # Recupera il token di autenticazione
+    u.reset_response()
+
+    # Estrai l'header di autorizzazione
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized()
-        return u.send_response("no token found. PLs log in first")
-    acces_token = auth_header.removeprefix("Bearer ").strip()
-    # Valida il token e controlla il ruolo
-    token_data = u.validate_token(acces_token)
+        u.unauthorized("Authorization header missing")
+        return u.send_response()
 
-    role = token_data.get('role')
+    # Rimuovi il prefisso "Bearer"
+    try:
+        access_token = auth_header.removeprefix("Bearer ").strip()
+        print("Access Token:", access_token)  # Log del token estratto
+    except IndexError:
+        u.unauthorized("Malformed Authorization header")
+        return u.send_response()
+
+    # Valida il token
+    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
+    if "error" in token_data:
+        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
+        return u.send_response()
+
+    role = token_data.get("decoded", {}).get('role')
     if role != "admin":
         return jsonify({"error": "Unauthorized. Admin role required"}), 400
 
@@ -408,7 +458,7 @@ def update_specific_user():
             }
         )
         if check_email and response.status_code == 200:
-            u.BLACKLIST.append(acces_token)
+            u.BLACKLIST.append(access_token)
             u.set_auth_token(None)
             return jsonify({"a": "Update done! pls LOG IN now to continue", "b": response.json()}), response.status_code
         if response.status_code == 200:
@@ -423,16 +473,25 @@ def update_specific_user():
 # only for admin
 @app.route('/update_admin', methods=['PUT'])
 def update_admin():
-    # Recupera il token di autenticazione
+    u.reset_response()
+
+    # Estrai l'header di autorizzazione
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized()
-        return u.send_response("no token found. PLs log in first")
-    acces_token = auth_header.removeprefix("Bearer ").strip()
-    # Valida il token e controlla il ruolo
-    token_data = u.validate_token(acces_token)
+        u.unauthorized("Authorization header missing")
+        return u.send_response()
 
-    role = token_data.get('role')
+    # Rimuovi il prefisso "Bearer"
+    access_token = auth_header.removeprefix("Bearer ").strip()
+    print("Access Token:", access_token)  # Log del token estratto
+
+    # Valida il token
+    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
+    if "error" in token_data:
+        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
+        return u.send_response()
+
+    role = token_data.get("decoded", {}).get('role')
     if role != "admin":
         return jsonify({"error": "Unauthorized. Admin role required"}), 400
 
@@ -505,7 +564,7 @@ def update_admin():
             }
         )
         if check_email and response.status_code == 200:
-            u.BLACKLIST.append(acces_token)
+            u.BLACKLIST.append(access_token)
             u.set_auth_token(None)
             return jsonify("Update done! pls LOG IN now to continue"), response.status_code
         if response.status_code == 200:
@@ -534,21 +593,29 @@ def check_users_profile():
 
 @app.route('/delete_user', methods=['DELETE'])
 def delete_user():
-    # Recupera il token di autenticazione
+    u.reset_response()
+
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized()
-        return u.send_response("no token found. PLs log in first")
-    acces_token = auth_header.removeprefix("Bearer ").strip()
-    # Valida il token e controlla il ruolo
-    token_data = u.validate_token(acces_token)
+        u.unauthorized("Authorization header missing")
+        return u.send_response()
 
-    email = token_data.get('sub')  # restituisce l'email  corretta
-    password = token_data.get('pass')
+    try:
+        access_token = auth_header.removeprefix("Bearer ").strip()
+        print("Access Token:", access_token)  # Log del token estratto
+    except IndexError:
+        u.unauthorized("Malformed Authorization header")
+        return u.send_response()
+
+    token = u.validate_token(access_token)  # Funzione per decodificare e validare il token
+    if "error" in token:
+        u.unauthorized(token["error"])  # Se c'è un errore, rispondi con 401
+        return u.send_response()
+    email = token.get("decoded", {}).get("sub")
 
     # Verifica che i campi richiesti siano presenti
-    if not email or not password:
-        return jsonify({"error": "Email and Password are required"}), 400
+    if not email:
+        return jsonify({"error": "Email required"}), 400
     # check_one_user
     try:
         # Invia una richiesta DELETE al db-manager
@@ -556,10 +623,10 @@ def delete_user():
         response = requests.delete(
             'https://db-manager:8005/delete_user',
             verify=False,
-            json={"Email": email, "Password": password}
+            json={"Email": email}
         )
         if response.status_code == 200:
-            u.BLACKLIST.append(acces_token)
+            u.BLACKLIST.append(access_token)
             u.set_auth_token(None)
         return jsonify(response.json()), response.status_code
     except requests.exceptions.RequestException as e:
@@ -568,16 +635,29 @@ def delete_user():
 
 @app.route('/delete_admin', methods=['DELETE'])
 def delete_admin():
-    # Recupera il token di autenticazione
+    u.reset_response()
+
+    # Estrai l'header di autorizzazione
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized()
-        return u.send_response("no token found. PLs log in first")
-    acces_token = auth_header.removeprefix("Bearer ").strip()
-    # Valida il token e controlla il ruolo
-    token_data = u.validate_token(acces_token)
+        u.unauthorized("Authorization header missing")
+        return u.send_response()
 
-    role = token_data.get('role')
+    # Rimuovi il prefisso "Bearer"
+    try:
+        access_token = auth_header.removeprefix("Bearer ").strip()
+        print("Access Token:", access_token)  # Log del token estratto
+    except IndexError:
+        u.unauthorized("Malformed Authorization header")
+        return u.send_response()
+
+    # Valida il token
+    token_data = u.validate_token(access_token)  # Funzione per decodificare e validare il token
+    if "error" in token_data:
+        u.unauthorized(token_data["error"])  # Se c'è un errore, rispondi con 401
+        return u.send_response()
+
+    role = token_data.get("decoded", {}).get('role')
     if role != "admin":
         return jsonify({"error": "Unauthorized. Admin role required"}), 400
 
@@ -594,7 +674,7 @@ def delete_admin():
             json={"Email": email, "Password": password}
         )
         if response.status_code == 200:
-            u.BLACKLIST.append(acces_token)
+            u.BLACKLIST.append(access_token)
             u.set_auth_token(None)
         return jsonify(response.json()), response.status_code
     except requests.exceptions.RequestException as e:

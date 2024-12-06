@@ -252,17 +252,16 @@ def delete_user():
     # Recupera i dati dal corpo della richiesta
     data = request.get_json()
     email = data.get('Email')
-    password = data.get('Password')
 
-    if not email or not password:
-        u.generic_error("Email and Password are required")
+    if not email:
+        u.generic_error("Email required")
         return u.send_response()
 
     u.reset_response()
 
     # Costruisci la query SQL per eliminare l'utente
-    query = "DELETE FROM user WHERE Email = %s AND Password = %s"
-    handle_db_operation(query, values=(email, password), commit=True)
+    query = "DELETE FROM user WHERE Email = %s"
+    handle_db_operation(query, values=(email,), commit=True)
 
     if u.RESPONSE["data"]:
         u.generic_error("Failed to delete user")

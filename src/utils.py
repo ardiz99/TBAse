@@ -104,8 +104,9 @@ def send_response(message=""):
 
 
 # Secret keys and configurations
+# Secret keys and configurations
 SECRET_KEY = "73e8a1c4efc8d1f9e0e9241bd3c285740be019d57cd6711a2f7635cf09e8dc4a"  # Change to a secure value
-JWT_EXPIRATION_TIME = 36000  # 1 hour in seconds
+JWT_EXPIRATION_TIME = 3600  # 1 hour in seconds
 ALGORITHM = "HS256"  # JWT signing algorithm
 
 # Placeholder for user roles
@@ -125,36 +126,54 @@ def set_auth_token(token):
 
 
 # Helper: Generate JWT
-def generate_token(user_id, role, user_pass):
-    # Leggi la chiave segreta
-    global SECRET_KEY
+def generate_tokens(user_id, role):
+    """
+    Genera un ID Token e un Access Token usando HS256.
+    """
+    issuer = "https://127.0.0.1:8001"  # Cambia con il tuo URL
 
-    if not SECRET_KEY:
-        raise ValueError("SECRET_KEY not found in the environment variables!")
-    payload = {
-        "sub": user_id,
-        "role": role,
-        "pass": user_pass,
-        "iat": datetime.datetime.now(datetime.timezone.utc),
+    # ID Token
+    id_payload = {
+        "iss": issuer,
+        "sub": user_id,  # Identificativo unico dell'utente
+        "role": role,  # Ruolo dell'utente (user/admin)
+        "iat": datetime.datetime.now(datetime.timezone.utc),  # Data di emissione
         "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=JWT_EXPIRATION_TIME)
+        # Scadenza
     }
-    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-    set_auth_token(token)
-    return token
+    id_token = jwt.encode(id_payload, SECRET_KEY, algorithm=ALGORITHM)
+
+    # Access Token
+    access_payload = {
+        "iss": issuer,
+        "sub": user_id,  # Identificativo unico dell'utente
+        "role": role,  # Ruolo dell'utente (user/admin)
+        "scope": "user_operations" if role == "user" else "admin_operations",  # Scope basato sul ruolo
+        "iat": datetime.datetime.now(datetime.timezone.utc),  # Data di emissione
+        "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=JWT_EXPIRATION_TIME),
+        # Scadenza
+        "jti": f"{user_id}-{datetime.datetime.now(datetime.timezone.utc)}"  # ID unico del token
+    }
+    access_token = jwt.encode(access_payload, SECRET_KEY, algorithm=ALGORITHM)
+
+    return {"id_token": id_token, "access_token": access_token}
 
 
-# Helper: Validate JWT
 def validate_token(token):
+    """
+    Valida un token JWT e ritorna il payload decodificato.
+    """
     # Controlla se il token è nella blacklist
     if token in BLACKLIST:
         return {"error": "Token has been invalidated"}
     try:
+        # Decodifica e verifica il token
         decoded = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return decoded
+        return {"valid": True, "decoded": decoded}
     except jwt.ExpiredSignatureError:
-        return {"error": "Token has expired"}
+        return {"valid": False, "error": "Token has expired"}
     except jwt.InvalidTokenError:
-        return {"error": "Invalid token"}
+        return {"valid": False, "error": "Invalid token"}
 
 
 def check_token(enc_token):

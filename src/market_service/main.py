@@ -90,7 +90,8 @@ def get_all_active_auction():
     u.set_response(response)
     return u.send_response()
 
-#Crea nuova aste e controlla se il gacha è posseduto dall'utente
+
+# Crea nuova aste e controlla se il gacha è posseduto dall'utente
 @app.route('/new_auction', methods=["POST"])
 def new_auction():
     u.reset_response()
@@ -147,8 +148,9 @@ def new_auction():
     u.set_response(response)
     return u.send_response("Auction created successfully.")
 
-#Quando un utente vuole puntare su un'asta. I controlli sono sulla quantità di currencyAmount che vuole puntare (>=prezzo). Controllo sull'enddate>now(), asta non chiusa.
-#Prende i soldi di quello che fa la puntata, al requestUser precedente che aveva puntato gli vengono restituiti i soldi
+
+# Quando un utente vuole puntare su un'asta. I controlli sono sulla quantità di currencyAmount che vuole puntare (>=prezzo). Controllo sull'enddate>now(), asta non chiusa.
+# Prende i soldi di quello che fa la puntata, al requestUser precedente che aveva puntato gli vengono restituiti i soldi
 @app.route('/bid/<transaction_id>', methods=["PUT"])
 def new_bid(transaction_id):
     u.reset_response()
