@@ -205,6 +205,7 @@ def handle_new_auction(data):
         "ActualPrice": data["starting_price"],
         "RequestingUser": None
     }
+    print(mock_database["transactions"][auction_id])
     return MockResponse(200, {"message": "Auction created successfully"})
 
 
@@ -222,13 +223,23 @@ def handle_update_amount(data):
 
 
 def handle_update_auction_price(data):
+    auction_id = data.get("auction_id")
+    try:
+        auction_id = int(auction_id)
+    except ValueError:
+        return MockResponse(400, {"error": "Invalid auction ID"})
+    
     bid = data.get("bid")
+    if bid is None or bid <= 0:
+        return MockResponse(400, {"error": "Invalid bid amount"})
+    
     requesting_user = data.get("requesting_user")
-    auction_id = int(data.get("auction_id"))
-
+    if not requesting_user:
+        return MockResponse(400, {"error": "Requesting user is required"})
+    
     if auction_id not in mock_database["transactions"]:
         return MockResponse(404, {"error": "Auction not found"})
-
+    
     mock_database["transactions"][auction_id]["ActualPrice"] = bid
     mock_database["transactions"][auction_id]["RequestingUser"] = requesting_user
     return MockResponse(200, {"message": "Auction price updated successfully"})
@@ -331,17 +342,27 @@ def handle_update_sended_to(data):
 
 
 def handle_delete_transaction(url):
-    transaction_id = int(url.split("/")[-2])
+    try:
+        transaction_id = int(url.split("/")[-1])
+    except ValueError:
+        return MockResponse(400, {"error": "Invalid transaction ID"})
+    
     if transaction_id not in mock_database['transactions']:
         return MockResponse(404, {"error": "Transaction not found"})
+    
     del mock_database['transactions'][transaction_id]
     return MockResponse(200, {"message": "Transaction deleted successfully"})
 
 
 def handle_get_specific_transaction(url):
-    transaction_id = int(url.split("/")[-1])
+    try:
+        transaction_id = int(url.split("/")[-1])
+    except ValueError:
+        return MockResponse(400, {"error": "Invalid transaction ID"})
+    
     if transaction_id not in mock_database['transactions']:
         return MockResponse(404, {"error": "Transaction not found"})
+    
     return MockResponse(200, {"data": mock_database['transactions'][transaction_id]})
 
 
@@ -350,12 +371,19 @@ def handle_get_all_transactions():
 
 
 def handle_get_specific_auction(url):
-    transaction_id = int(url.split("/")[-1])
-    if transaction_id not in mock_database['transactions'] or mock_database['transactions'][transaction_id][
-        'UserOwner'] is None:
+    try:
+        transaction_id = int(url.split("/")[-1])
+    except ValueError:
+        return MockResponse(400, {"error": "Invalid auction ID"})
+    
+    if transaction_id not in mock_database['transactions']:
         return MockResponse(404, {"error": "Auction not found"})
-    return MockResponse(200, {"data": mock_database['transactions'][transaction_id]})
-
+    
+    transaction = mock_database['transactions'][transaction_id]
+    if transaction.get('UserOwner') is None:
+        return MockResponse(404, {"error": "Auction owner not found"})
+    
+    return MockResponse(200, {"data": transaction})
 
 def handle_get_old_auctions():
     old_auctions = []

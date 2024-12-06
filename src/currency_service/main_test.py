@@ -11,7 +11,7 @@ SECRET_KEY = "test-secret-key"
 # Database simulato in memoria
 mock_database = {
     "users": {
-        "alice@example.com": {
+        "user@example.com": {
             "CurrencyAmount": 500,
             "UserId": 1
         }

@@ -93,9 +93,17 @@ def handle_error(code):
 
 
 def set_response(response):
+    global RESPONSE
     RESPONSE["code"] = response.status_code
     RESPONSE["data"] = response.json().get("data")
-    RESPONSE["message"] = RESPONSE["message"] + " / " + response.json().get("message")
+    
+    message = response.json().get("message")
+    if message:
+        RESPONSE["message"] = RESPONSE["message"] + " / " + message
+    else:
+        RESPONSE["message"] = RESPONSE["message"] + " /"
+
+    
 
 
 def send_response(message=""):
