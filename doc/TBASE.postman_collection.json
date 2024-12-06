@@ -10,50 +10,6 @@
 			"name": "API_GATEWAY",
 			"item": [
 				{
-					"name": "register_user",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"let response = pm.response.json();\r",
-									"pm.environment.set(\"jwt_token\", response.data);"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"FirstName\": \"augusto\",\r\n    \"LastName\": \"augusto\",\r\n    \"Email\": \"augusto@augusto.com\",\r\n    \"Password\": \"augusto\",\r\n    \"CurrencyAmount\": 80\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "https://127.0.0.1:8000/register",
-							"protocol": "https",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"register"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "login",
 					"event": [
 						{
@@ -102,6 +58,180 @@
 							"port": "8000",
 							"path": [
 								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "register_user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"pm.environment.set(\"jwt_token\", response.data);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"FirstName\": \"Aldo\",\r\n    \"LastName\": \"Baglio\",\r\n    \"Email\": \"aldo.baglio@example.com\",\r\n    \"Password\": \"ciao\",\r\n    \"CurrencyAmount\": 80\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://127.0.0.1:8000/register",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8000/delete_user",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"delete_user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "logout_user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();\r",
+									"pm.environment.set(\"jwt_token\", response.data);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8000/logout",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"FirstName\": \"augusto2\",\r\n    \"LastName\": \"augusto2\",\r\n    \"Email\": \"augusto@augusto2.com\",\r\n    \"Password\": \"augusto2\",\r\n    \"CurrencyAmount\": 9\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://127.0.0.1:8000/update_user",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"update_user"
 							]
 						}
 					},
@@ -219,20 +349,7 @@
 					"response": []
 				},
 				{
-					"name": "logout_user",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"let response = pm.response.json();\r",
-									"pm.environment.set(\"jwt_token\", response.data);"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
+					"name": "get",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -247,7 +364,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "https://127.0.0.1:8000/logout",
+							"raw": "https://127.0.0.1:8000/gacha/get",
 							"protocol": "https",
 							"host": [
 								"127",
@@ -257,26 +374,15 @@
 							],
 							"port": "8000",
 							"path": [
-								"logout"
+								"gacha",
+								"get"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "delete_user",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
+					"name": "get/id",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -288,10 +394,10 @@
 								}
 							]
 						},
-						"method": "DELETE",
+						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "https://127.0.0.1:8000/delete_user",
+							"raw": "https://127.0.0.1:8000/gacha/get/1",
 							"protocol": "https",
 							"host": [
 								"127",
@@ -301,14 +407,16 @@
 							],
 							"port": "8000",
 							"path": [
-								"delete_user"
+								"gacha",
+								"get",
+								"1"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "update_user",
+					"name": "mygacha",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -320,19 +428,10 @@
 								}
 							]
 						},
-						"method": "PUT",
+						"method": "GET",
 						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"FirstName\": \"augusto2\",\r\n    \"LastName\": \"augusto2\",\r\n    \"Email\": \"augusto@augusto2.com\",\r\n    \"Password\": \"augusto2\",\r\n    \"CurrencyAmount\": 9\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
-							"raw": "https://127.0.0.1:8000/update_user",
+							"raw": "https://127.0.0.1:8000/gacha/mygacha",
 							"protocol": "https",
 							"host": [
 								"127",
@@ -342,7 +441,42 @@
 							],
 							"port": "8000",
 							"path": [
-								"update_user"
+								"gacha",
+								"mygacha"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mygacha/id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://127.0.0.1:8000/gacha/mygacha/61",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"gacha",
+								"mygacha",
+								"61"
 							]
 						}
 					},
@@ -506,140 +640,6 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "get",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "https://127.0.0.1:8000/gacha/get",
-							"protocol": "https",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"gacha",
-								"get"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "get/id",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "https://127.0.0.1:8000/gacha/get/1",
-							"protocol": "https",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"gacha",
-								"get",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "mygacha",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "https://127.0.0.1:8000/gacha/mygacha",
-							"protocol": "https",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"gacha",
-								"mygacha"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "mygacha/id",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "https://127.0.0.1:8000/gacha/mygacha/59",
-							"protocol": "https",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"gacha",
-								"mygacha",
-								"59"
-							]
-						}
-					},
-					"response": []
 				}
 			]
 		},
@@ -647,13 +647,14 @@
 			"name": "ADMIN_GATEWAY",
 			"item": [
 				{
-					"name": "delete_admin",
+					"name": "login_admin",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									""
+									"let response = pm.response.json();\r",
+									"pm.environment.set(\"jwt_token\", response.data);"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -671,43 +672,11 @@
 								}
 							]
 						},
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "https://127.0.0.1:8080/delete_admin",
-							"protocol": "https",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8080",
-							"path": [
-								"delete_admin"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "update_admin",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
+						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"FirstName\": \"cesare\",\r\n    \"LastName\": \"cesare\",\r\n    \"Email\":\"augusto\",\r\n    \"Password\": \"augusto1\"\r\n\r\n}",
+							"raw": "{\r\n    \"Email\": \"augusto@augusto.com\",\r\n    \"Password\": \"augusto\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -715,7 +684,7 @@
 							}
 						},
 						"url": {
-							"raw": "https://127.0.0.1:8080/update_admin",
+							"raw": "https://127.0.0.1:8080/login_admin",
 							"protocol": "https",
 							"host": [
 								"127",
@@ -725,48 +694,7 @@
 							],
 							"port": "8080",
 							"path": [
-								"update_admin"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "update_specific_user",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"search_email\": \"augusto@augusto.com\",\r\n    \"FirstName\": \"augusto1\",\r\n    \"LastName\": \"augusto1\",\r\n    \"Email\":\"augusto2\",\r\n    \"Password\": \"augusto1\",\r\n    \"CurrencyAmount\": 60\r\n\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "https://127.0.0.1:8080/update_specific_user",
-							"protocol": "https",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8080",
-							"path": [
-								"update_specific_user"
+								"login_admin"
 							]
 						}
 					},
@@ -817,14 +745,13 @@
 					"response": []
 				},
 				{
-					"name": "login_admin",
+					"name": "delete_admin",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"let response = pm.response.json();\r",
-									"pm.environment.set(\"jwt_token\", response.data);"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -842,19 +769,10 @@
 								}
 							]
 						},
-						"method": "POST",
+						"method": "DELETE",
 						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"Email\": \"augusto@augusto.com\",\r\n    \"Password\": \"augusto\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
-							"raw": "https://127.0.0.1:8080/login_admin",
+							"raw": "https://127.0.0.1:8080/delete_admin",
 							"protocol": "https",
 							"host": [
 								"127",
@@ -864,7 +782,7 @@
 							],
 							"port": "8080",
 							"path": [
-								"login_admin"
+								"delete_admin"
 							]
 						}
 					},
@@ -953,6 +871,88 @@
 							"port": "8080",
 							"path": [
 								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_admin",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"FirstName\": \"cesare\",\r\n    \"LastName\": \"cesare\",\r\n    \"Email\":\"augusto\",\r\n    \"Password\": \"augusto1\"\r\n\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://127.0.0.1:8080/update_admin",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8080",
+							"path": [
+								"update_admin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_specific_user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"search_email\": \"augusto@augusto.com\",\r\n    \"FirstName\": \"augusto1\",\r\n    \"LastName\": \"augusto1\",\r\n    \"Email\":\"augusto2\",\r\n    \"Password\": \"augusto1\",\r\n    \"CurrencyAmount\": 60\r\n\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://127.0.0.1:8080/update_specific_user",
+							"protocol": "https",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8080",
+							"path": [
+								"update_specific_user"
 							]
 						}
 					},

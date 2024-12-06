@@ -11,10 +11,14 @@ mock_database = {
         2: {"GachaId": 2, "Name": "Epic Shield", "Rarity": "Epic"},
     },
     "user_gachas": {  # Relazione tra utenti e i loro Gacha
-        2: [1, 2],  # L'utente con ID 2 possiede i Gacha con ID 1 e 2
+        "alice@example.com": [1, 2],  # L'utente con ID 2 possiede i Gacha con ID 1 e 2
     },
 }
 
+def mock_save_last(op, args, res):
+    print(f"Mock save_last: {op} {args} {res}")
+
+main_app.save_last = mock_save_last
 
 # Mock della funzione `perform_request`
 def mock_perform_request(method, endpoint, json_data=None):
@@ -41,13 +45,9 @@ def mock_perform_request(method, endpoint, json_data=None):
 
     if "/get/" in endpoint:
         try:
-            gacha_id = int(endpoint.split("/")[-1])  # Estrai l'ID
+            gacha_id = int(endpoint.split("/")[-1])
         except ValueError:
             return MockResponse(400, {"error": "Invalid Gacha ID"})
-
-        # Protezione contro chiavi mancanti
-        if "gacha" not in mock_database:
-            return MockResponse(500, {"error": "Gachas database not initialized"})
 
         gacha = mock_database["gacha"].get(gacha_id)
         if not gacha:
@@ -64,13 +64,9 @@ def mock_perform_request(method, endpoint, json_data=None):
     if "/get" in endpoint and method == "GET":
         return MockResponse(200, {"data": list(mock_database["gacha"].values())})
 
-    elif "/get_gacha_of_user/" in endpoint:
-        try:
-            user_id = int(endpoint.split("/")[-1])
-        except ValueError:
-            return MockResponse(400, {"error": "Invalid User ID"})
-
-        user_gachas = mock_database["user_gachas"].get(user_id, [])
+    if "/get_gacha_of_user/" in endpoint:
+        email = endpoint.split("/")[-1]
+        user_gachas = mock_database["user_gachas"].get(email, [])
         return MockResponse(200, {"data": user_gachas})
 
 

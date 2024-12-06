@@ -22,6 +22,15 @@ GOLDEN_DISTRIBUTION = {
     "Epic": 90,
 }
 
+mock_save_last = None
+
+def save_last(op, args, res):
+    """Funzione per salvare l'ultima operazione effettuata."""
+    if mock_save_last:
+        mock_save_last(op, args, res)
+    else:
+        # Salvataggio nel formato desiderato
+        print(f"Operation: {op}, Arguments: {args}, Result: {res}")
 
 def random_rarity(golden):
     roll = random.uniform(0, 100)

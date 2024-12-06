@@ -456,7 +456,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5002/roll_img?url=/path/to/image.png",
+					"raw": "https://localhost:5002/roll_img?url=/img/charmander.png",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -468,7 +468,7 @@
 					"query": [
 						{
 							"key": "url",
-							"value": "/path/to/image.png"
+							"value": "/img/charmander.png"
 						}
 					]
 				}
@@ -500,7 +500,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5002/roll_img?url=/invalid/path/to/image.png",
+					"raw": "https://localhost:5002/roll_img?url=/img/nessunpokemon.png",
 					"protocol": "https",
 					"host": [
 						"localhost"
@@ -512,7 +512,7 @@
 					"query": [
 						{
 							"key": "url",
-							"value": "/invalid/path/to/image.png"
+							"value": "/img/nessunpokemon.png"
 						}
 					]
 				}

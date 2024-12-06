@@ -1,6 +1,5 @@
 import main as main_app
 from unittest.mock import patch
-from flask import request
 from datetime import datetime
 
 flask_app = main_app.app
@@ -53,11 +52,14 @@ mock_database = {
     "transactions": {}  # Questa tabella gestisce sia le transazioni che le aste
 }
 
+
 # Mock per il salvataggio delle operazioni
 def mock_save_last(op, args, res):
     print(f"Mock save_last: {op} {args} {res}")
 
+
 main_app.mock_save_last = mock_save_last
+
 
 # Mock per le richieste GET
 def mock_requests_get(url, params=None, **kwargs):
@@ -90,6 +92,7 @@ def mock_requests_get(url, params=None, **kwargs):
 
     return MockResponse(404, {"error": "Endpoint not found or unsupported GET method"})
 
+
 # Mock per le richieste POST
 def mock_requests_post(url, json=None, **kwargs):
     print(f"Mock POST to {url} with json {json}")
@@ -104,6 +107,7 @@ def mock_requests_post(url, json=None, **kwargs):
         return handle_create_transaction(json)
 
     return MockResponse(404, {"error": "Endpoint not found or unsupported POST method"})
+
 
 # Mock per le richieste PUT
 def mock_requests_put(url, json=None, **kwargs):
@@ -122,6 +126,7 @@ def mock_requests_put(url, json=None, **kwargs):
 
     return MockResponse(404, {"error": "Endpoint not found or unsupported PUT method"})
 
+
 # Funzioni specifiche per la gestione dei vari endpoint
 def handle_get_user_by_email(params):
     email = params.get("email")
@@ -137,6 +142,7 @@ def handle_get_user_by_email(params):
         "Salt": user["Salt"]
     }})
 
+
 def handle_get_auction_bid(url):
     transaction_id = int(url.split("/")[-2])
     if transaction_id not in mock_database["transactions"]:
@@ -146,6 +152,7 @@ def handle_get_auction_bid(url):
         return MockResponse(404, {"error": "Auction not found"})
     return MockResponse(200, {"data": transaction})
 
+
 def handle_transaction_history(url):
     user_id = int(url.split("/")[-1])
     transactions = []
@@ -154,6 +161,7 @@ def handle_transaction_history(url):
             transactions.append(transaction)
     return MockResponse(200, {"data": transactions})
 
+
 def handle_get_active_auctions():
     active_auctions = []
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -161,6 +169,7 @@ def handle_get_active_auctions():
         if auction["UserOwner"] is not None and auction["EndDate"] > current_time:
             active_auctions.append(auction)
     return MockResponse(200, {"data": active_auctions})
+
 
 def handle_roll(data):
     # Simula la creazione di una transazione di "roll"
@@ -178,6 +187,7 @@ def handle_roll(data):
         "EndDate": data["end_date"]
     }
     return MockResponse(200, {"message": "Roll transaction created successfully"})
+
 
 def handle_new_auction(data):
     # Simula la creazione di una nuova asta
@@ -197,6 +207,7 @@ def handle_new_auction(data):
     }
     return MockResponse(200, {"message": "Auction created successfully"})
 
+
 def handle_update_amount(data):
     email = data.get("email")
     new_amount = data.get("new_amount")
@@ -208,6 +219,7 @@ def handle_update_amount(data):
 
     mock_database["users"][email]["CurrencyAmount"] = new_amount
     return MockResponse(200, {"message": "Amount updated successfully"})
+
 
 def handle_update_auction_price(data):
     bid = data.get("bid")
@@ -221,12 +233,14 @@ def handle_update_auction_price(data):
     mock_database["transactions"][auction_id]["RequestingUser"] = requesting_user
     return MockResponse(200, {"message": "Auction price updated successfully"})
 
+
 def handle_get_amount(params):
     email = params.get("email")
     if email not in mock_database["users"]:
         return MockResponse(400, {"error": "User not found"})
     user = mock_database["users"][email]
     return MockResponse(200, {"data": {"CurrencyAmount": user["CurrencyAmount"]}})
+
 
 def handle_buy_currency(data):
     email = data.get("email")
@@ -258,16 +272,17 @@ def handle_get_gacha_by_rarity(params):
         return MockResponse(400, {"error": "Invalid rarity"})
     return MockResponse(200, {"data": gacha_items})
 
+
 def handle_register_user(data):
     required_fields = ["FirstName", "LastName", "Email", "Password", "Salt", "CurrencyAmount"]
     for field in required_fields:
         if field not in data:
             return MockResponse(400, {"error": f"Missing registration data: {field}"})
-    
+
     email = data['Email']
     if email in mock_database['users']:
         return MockResponse(400, {"error": "User already exists"})
-    
+
     user_id = len(mock_database['users']) + 1
     mock_database['users'][email] = {
         "UserId": user_id,
@@ -279,6 +294,7 @@ def handle_register_user(data):
         "CurrencyAmount": data['CurrencyAmount']
     }
     return MockResponse(200, {"message": "User registered successfully"})
+
 
 def handle_create_transaction(data):
     required_fields = ["user_id", "gacha_id", "cost", "end_date"]
@@ -296,12 +312,14 @@ def handle_create_transaction(data):
     }
     return MockResponse(200, {"message": "Transaction created successfully"})
 
+
 def handle_close_auction(url):
     transaction_id = int(url.split("/")[-2])
     if transaction_id not in mock_database['transactions']:
         return MockResponse(404, {"error": "Auction not found"})
     mock_database['transactions'][transaction_id]['EndDate'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     return MockResponse(200, {"message": "Auction closed successfully"})
+
 
 def handle_update_sended_to(data):
     transaction_id = data.get("transaction_id")
@@ -311,6 +329,7 @@ def handle_update_sended_to(data):
     mock_database['transactions'][transaction_id]['SendedTo'] = sended_to
     return MockResponse(200, {"message": "Transaction updated with SendedTo"})
 
+
 def handle_delete_transaction(url):
     transaction_id = int(url.split("/")[-2])
     if transaction_id not in mock_database['transactions']:
@@ -318,20 +337,25 @@ def handle_delete_transaction(url):
     del mock_database['transactions'][transaction_id]
     return MockResponse(200, {"message": "Transaction deleted successfully"})
 
+
 def handle_get_specific_transaction(url):
     transaction_id = int(url.split("/")[-1])
     if transaction_id not in mock_database['transactions']:
         return MockResponse(404, {"error": "Transaction not found"})
     return MockResponse(200, {"data": mock_database['transactions'][transaction_id]})
 
+
 def handle_get_all_transactions():
     return MockResponse(200, {"data": list(mock_database['transactions'].values())})
 
+
 def handle_get_specific_auction(url):
     transaction_id = int(url.split("/")[-1])
-    if transaction_id not in mock_database['transactions'] or mock_database['transactions'][transaction_id]['UserOwner'] is None:
+    if transaction_id not in mock_database['transactions'] or mock_database['transactions'][transaction_id][
+        'UserOwner'] is None:
         return MockResponse(404, {"error": "Auction not found"})
     return MockResponse(200, {"data": mock_database['transactions'][transaction_id]})
+
 
 def handle_get_old_auctions():
     old_auctions = []
@@ -341,6 +365,7 @@ def handle_get_old_auctions():
             old_auctions.append(auction)
     return MockResponse(200, {"data": old_auctions})
 
+
 # Classe per simulare una risposta
 class MockResponse:
     def __init__(self, status_code, json_data):
@@ -349,6 +374,7 @@ class MockResponse:
 
     def json(self):
         return self._json
+
 
 # Applicazione dei mock
 patch_requests_get = patch("requests.get", side_effect=mock_requests_get)

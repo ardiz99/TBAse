@@ -5,18 +5,30 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4e6ece74-08b3-41c6-a2cf-978e2a41dcd0" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/doc/admin_gateway_openapi.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/market_service/Dockerfile_test" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/market_service/main_test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/Gacha Collection.pptx" beforeDir="false" afterPath="$PROJECT_DIR$/doc/Gacha Collection.pptx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api_gateway_openapi.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/doc/api_gateway_openapi.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/admin_gateway/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/admin_gateway/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/Integration.postman_collection.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/locustfile.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/market_service_ut.postman_collection.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/TBASE.postman_collection.json" beforeDir="false" afterPath="$PROJECT_DIR$/doc/TBASE.postman_collection.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/admin_gateway/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/src/admin_gateway/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/api_gateway/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/api_gateway/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/auth_service/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth_service/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/gacha_service/Dockerfile_test" beforeDir="false" afterPath="$PROJECT_DIR$/src/gacha_service/Dockerfile_test" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/auth_service/main_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth_service/main_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/auth_service/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/auth_service/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/currency_service/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/currency_service/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/currency_service/main_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/currency_service/main_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/db_manager/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/db_manager/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/db_manager/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/db_manager/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/gacha_service/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/gacha_service/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/gacha_service/main_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/gacha_service/main_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/gacha_service/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/gacha_service/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/market_service/Dockerfile_test" beforeDir="false" afterPath="$PROJECT_DIR$/src/market_service/Dockerfile_test" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/market_service/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/market_service/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/market_service/main_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/market_service/main_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/market_service/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/market_service/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/auth_service_ut.postman_collection.json" beforeDir="false" afterPath="$PROJECT_DIR$/tests/auth_service_ut.postman_collection.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/currency_service_ut.postman_collection.json" beforeDir="false" afterPath="$PROJECT_DIR$/tests/currency_service_ut.postman_collection.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/gacha_service_ut.postman_collection.json" beforeDir="false" afterPath="$PROJECT_DIR$/tests/gacha_service_ut.postman_collection.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

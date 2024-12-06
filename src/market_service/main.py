@@ -1,6 +1,6 @@
 import requests
-from flask import Flask, request, jsonify
-from datetime import datetime, timedelta
+from flask import Flask, request
+from datetime import datetime
 # from src import utils as u
 import utils as u
 
