@@ -458,13 +458,23 @@ def get_all_auctions():
 @app.route('/new_auction', methods=["POST"])
 def new_auction():
     u.reset_response()
+
     auth_header = request.headers.get('Authorization')
     if not auth_header:
-        u.unauthorized()
+        u.unauthorized("Authorization header missing")
         return u.send_response()
-    acces_token = auth_header.removeprefix("Bearer ").strip()
-    token = u.validate_token(acces_token)
-    user_owner_email = token.get("sub")
+
+    try:
+        access_token = auth_header.removeprefix("Bearer ").strip()
+        print("Access Token:", access_token)  # Log del token estratto
+    except IndexError:
+        u.unauthorized("Malformed Authorization header")
+        return u.send_response()
+    token = u.validate_token(access_token)  # Funzione per decodificare e validare il token
+    if "error" in token:
+        u.unauthorized(token["error"])  # Se c'è un errore, rispondi con 401
+        return u.send_response()
+    user_owner_email = token.get("decoded", {}).get("sub")
 
     gacha_id = request.get_json().get('gacha_id')
     starting_price = request.get_json().get('starting_price')

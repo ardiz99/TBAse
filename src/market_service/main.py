@@ -100,7 +100,7 @@ def new_auction():
     gacha_id = data.get('gacha_id')
     starting_price = data.get('starting_price')
     end_date = data.get('end_date')
-    if not user_owner_email or not gacha_id or not starting_price or not datetime:
+    if not user_owner_email or not gacha_id or not starting_price or not end_date:
         u.bad_request()
         return u.send_response()
 

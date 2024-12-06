@@ -38,7 +38,7 @@
 					}
 				},
 				"url": {
-					"raw": "https://127.0.0.1:5004/roll",
+					"raw": "https://127.0.0.1:5003/roll",
 					"protocol": "https",
 					"host": [
 						"127",
@@ -46,7 +46,7 @@
 						"0",
 						"1"
 					],
-					"port": "5004",
+					"port": "5003",
 					"path": [
 						"roll"
 					]
@@ -86,7 +86,7 @@
 					}
 				},
 				"url": {
-					"raw": "https://127.0.0.1:5004/roll",
+					"raw": "https://127.0.0.1:5003/roll",
 					"protocol": "https",
 					"host": [
 						"127",
@@ -94,7 +94,7 @@
 						"0",
 						"1"
 					],
-					"port": "5004",
+					"port": "5003",
 					"path": [
 						"roll"
 					]
@@ -125,12 +125,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5004/transaction",
+					"raw": "https://localhost:5003/transaction",
 					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "5004",
+					"port": "5003",
 					"path": [
 						"transaction"
 					]
@@ -161,12 +161,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5004/auction/9999",
+					"raw": "https://localhost:5003/auction/9999",
 					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "5004",
+					"port": "5003",
 					"path": [
 						"auction",
 						"9999"
@@ -199,7 +199,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://127.0.0.1:5004/auction",
+					"raw": "https://127.0.0.1:5003/auction",
 					"protocol": "https",
 					"host": [
 						"127",
@@ -207,7 +207,7 @@
 						"0",
 						"1"
 					],
-					"port": "5004",
+					"port": "5003",
 					"path": [
 						"auction"
 					]
@@ -237,12 +237,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5004/active_auction",
+					"raw": "https://localhost:5003/active_auction",
 					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "5004",
+					"port": "5003",
 					"path": [
 						"active_auction"
 					]
@@ -282,12 +282,12 @@
 					}
 				},
 				"url": {
-					"raw": "https://localhost:5004/new_auction",
+					"raw": "https://localhost:5003/new_auction",
 					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "5004",
+					"port": "5003",
 					"path": [
 						"new_auction"
 					]
@@ -328,12 +328,12 @@
 					}
 				},
 				"url": {
-					"raw": "https://localhost:5004/new_auction",
+					"raw": "https://localhost:5003/new_auction",
 					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "5004",
+					"port": "5003",
 					"path": [
 						"new_auction"
 					]
@@ -373,12 +373,12 @@
 					}
 				},
 				"url": {
-					"raw": "https://localhost:5004/bid/123",
+					"raw": "https://localhost:5003/bid/123",
 					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "5004",
+					"port": "5003",
 					"path": [
 						"bid",
 						"123"
@@ -419,12 +419,12 @@
 					}
 				},
 				"url": {
-					"raw": "https://localhost:5004/bid/123",
+					"raw": "https://localhost:5003/bid/123",
 					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "5004",
+					"port": "5003",
 					"path": [
 						"bid",
 						"123"
@@ -465,12 +465,12 @@
 					}
 				},
 				"url": {
-					"raw": "https://localhost:5004/close_auction/999",
+					"raw": "https://localhost:5003/close_auction/999",
 					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "5004",
+					"port": "5003",
 					"path": [
 						"close_auction",
 						"999"
@@ -511,12 +511,12 @@
 					}
 				},
 				"url": {
-					"raw": "https://localhost:5004/close_auction/9999",
+					"raw": "https://localhost:5003/close_auction/9999",
 					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "5004",
+					"port": "5003",
 					"path": [
 						"close_auction",
 						"9999"
@@ -549,12 +549,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5004/my_transaction_history?email=user@example.com",
+					"raw": "https://localhost:5003/my_transaction_history?email=user@example.com",
 					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "5004",
+					"port": "5003",
 					"path": [
 						"my_transaction_history"
 					],
@@ -591,12 +591,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5004/my_transaction_history?email=nonexistent@example.com",
+					"raw": "https://localhost:5003/my_transaction_history?email=nonexistent@example.com",
 					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "5004",
+					"port": "5003",
 					"path": [
 						"my_transaction_history"
 					],
@@ -633,12 +633,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "https://localhost:5004/auction/history",
+					"raw": "https://localhost:5003/auction/history",
 					"protocol": "https",
 					"host": [
 						"localhost"
 					],
-					"port": "5004",
+					"port": "5003",
 					"path": [
 						"auction",
 						"history"
