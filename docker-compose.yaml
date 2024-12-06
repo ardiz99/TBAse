@@ -94,7 +94,7 @@ services:
       context: src
       dockerfile: ./market_service/Dockerfile
     container_name: market-service
-    expose:
+    ports:
       - "8003:8003"
     volumes:
       - ./src/utils.py:/app/utils.py
@@ -110,7 +110,7 @@ services:
       context: src
       dockerfile: ./db_manager/Dockerfile
     container_name: db-manager
-    expose:
+    ports:
       - "8005:8005"
     volumes:
       - ./src/utils.py:/app/utils.py
