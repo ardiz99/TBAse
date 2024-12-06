@@ -5,6 +5,7 @@ import requests
 import random
 
 import utils as u
+
 # from src import utils as u
 
 app = Flask(__name__)
@@ -24,6 +25,7 @@ GOLDEN_DISTRIBUTION = {
 
 mock_save_last = None
 
+
 def save_last(op, args, res):
     """Funzione per salvare l'ultima operazione effettuata."""
     if mock_save_last:
@@ -31,6 +33,7 @@ def save_last(op, args, res):
     else:
         # Salvataggio nel formato desiderato
         print(f"Operation: {op}, Arguments: {args}, Result: {res}")
+
 
 def random_rarity(golden):
     roll = random.uniform(0, 100)
@@ -172,4 +175,3 @@ def buy_currency():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8004, debug=u.FLASK_DEBUG)
-

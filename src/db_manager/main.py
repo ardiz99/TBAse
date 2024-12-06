@@ -516,9 +516,6 @@ def new_auction():
     gacha_id = data.get('gacha_id')
     starting_price = data.get('starting_price')
     end_date = data.get('end_date')
-    if not user_owner or not gacha_id or not starting_price or not end_date:
-        u.bad_request()
-        return u.send_response()
 
     query = "INSERT INTO transaction (UserOwner, GachaId, StartingPrice, ActualPrice, EndDate) " \
             "VALUES (%s, %s, %s, %s, %s)"
